@@ -115,7 +115,7 @@ const otpVerification = asyncHandler(async (req, res) => {
     const { otp } = req.body;
     const { professionalId } = req.params;
 
-    const user = await Customer.findById(professionalId);
+    const user = await Professional.findById(professionalId);
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();
@@ -150,7 +150,7 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (!validatePhone(contactNumber))
       throw new ApiError(400, "Invalid contact number");
 
-    const user = await Professional.findOne(contactNumber);
+    const user = await Professional.findOne({ contactNumber: contactNumber });
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();

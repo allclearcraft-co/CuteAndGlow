@@ -10,6 +10,7 @@ import { validatePhone } from "../validators/contactNumber.validator.js";
 import otpTemplate from "../template/otp.mail.template.js";
 import sendEmail from "../services/mail.service.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
+import { validateBankDetails } from "../validators/bankDetails.validator.js";
 
 const registerCustomer = asyncHandler(async (req, res) => {
   const { contactNumber, name, email } = req.body;
@@ -440,6 +441,10 @@ const addBankDetails = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Something went wrong, please try again later !");
   await bank.save();
 
+  const user = await Customer.findByIdAndUpdate(customerId, {
+    bankingDetails: bank,
+  });
+
   return res.status(200).json(new ApiResponse(200, {}, "Added successfully !"));
 });
 
@@ -454,6 +459,23 @@ const addUPIid = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Added successfully !"));
 });
 
+const deleteBankDetails = asyncHandler(async (req, res) => {
+  const { bankId, customerId } = req.params;
+  if (!bankId || !customerId)
+    throw new ApiError(400, "Something went wrong please try again later");
+
+  const user = await Customer.findById(customerId);
+  if (!user) throw new ApiError(400, "Invalid request");
+  user.bankingDetails = null;
+  await user.save();
+
+  const bank = await BankDetails.findByIdAndDelete(bankId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Deleted successfully !"));
+});
+
 const dashboardData = asyncHandler(async (req, res) => {
   const { customerId, query = "overview" } = req.params;
 
@@ -466,7 +488,7 @@ const dashboardData = asyncHandler(async (req, res) => {
   switch (query) {
     case "overview": {
       const customerInfo = await Customer.findById(customerId).select(
-        "name contactNumber email gender alternateContactNumber",
+        "name contactNumber email gender alternateContactNumber createdAt bookings",
       );
 
       const defaultAddress = await Address.findOne({
@@ -636,6 +658,7 @@ export {
   deleteAddress,
   addBankDetails,
   addUPIid,
+  deleteBankDetails,
   dashboardData,
   reLoginToken,
 };
