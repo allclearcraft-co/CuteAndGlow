@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Popup from "./Popup"; // Update path if needed
 import Button from "../Button";
 import InputBox from "../Input";
@@ -6,6 +6,7 @@ import { FetchData } from "../../utils/FetchFromApi";
 import { useToast } from "../hooks/ToastContext";
 import { useDispatch } from "react-redux";
 import { addUser, clearUser } from "../../redux/slice/authSlice";
+import { useNavigate } from "react-router-dom";
 
 function OtpVerificationPopup({
   isOpen,
@@ -13,11 +14,49 @@ function OtpVerificationPopup({
   data,
   verificationType = "",
   userType,
+  otpNumber, // delete this input when the sms config is complete
 }) {
   const [otp, setOtp] = useState("");
   const formRef = useRef();
   const { alertSuccess, alertError, alertInfo } = useToast();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const [showButton, setShowButton] = useState(false);
+
+  const Countdown = ({ duration = 5, onComplete, resendOTP = false }) => {
+    const [timeLeft, setTimeLeft] = useState(duration * 60);
+
+    useEffect(() => {
+      if (timeLeft <= 0) {
+        onComplete?.();
+        return;
+      }
+
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }, [timeLeft, onComplete]);
+
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+
+    return (
+      <span className="heading text-red-700 flex justify-center items-center ">
+        {showButton === true ? (
+          ""
+        ) : (
+          <span className="heading text-red-700 flex justify-center items-center ">
+            Time Left:
+            {String(minutes).padStart(2, "0")}:
+            {String(seconds).padStart(2, "0")}
+          </span>
+        )}
+        {showButton && <Button LabelName="Resend OTP" />}
+      </span>
+    );
+  };
 
   const verifyOtp = async (e) => {
     e.preventDefault();
@@ -30,15 +69,15 @@ function OtpVerificationPopup({
       );
       const { user, tokens } = response.data.data;
 
-      localStorage.setItem("AccessToken", tokens.accessToken);
-      localStorage.setItem("RefreshToken", tokens.refreshToken);
+      localStorage.setItem("accessToken", tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
       localStorage.setItem("role", user.role);
 
       dispatch(clearUser());
       dispatch(addUser(user));
-      // openModelOTP(false);
       formRef.current.reset();
       onClose();
+      navigate(`/dashboard`);
       alertSuccess(response.data.message || "Otp Verified successfully !");
     } catch (err) {
       alertError(err?.response?.data);
@@ -61,7 +100,16 @@ function OtpVerificationPopup({
 
           <p className="font-semibold text-[#8B2954] mt-1">
             {data?.user?.contactNumber}
+            <span className="px-5">Paste this OTP:{otpNumber}</span>
           </p>
+          <Countdown
+            duration={1}
+            onComplete={() => {
+              console.log("Time over");
+              // resendOTP();
+              setShowButton(true);
+            }}
+          />
         </div>
 
         <div className="w-full">
