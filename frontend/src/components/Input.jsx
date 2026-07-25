@@ -9,7 +9,7 @@ const InputBox = ({
   name = "",
   value,
   onChange,
-  required = false,
+  required = true,
   disabled = false,
   onClick,
   onKeyDown,

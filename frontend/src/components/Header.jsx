@@ -132,14 +132,14 @@ const Header = () => {
                   <FiUser /> <span>Dashboard</span>
                 </button>
               ) : (
-                <Button
-                  className="truncate"
-                  LabelName="Login / Register"
-                  variant="Secondary"
+                <button
                   onClick={() => {
                     navigate(`/auth/${"login"}/${"customer"}`);
                   }}
-                />
+                  className=" bg-white text-black border border-[#8B2954] shadow-md heading capitalize text-wrap text-center cursor-pointer flex justify-center items-center h-fit px-4 py-1 rounded-full"
+                >
+                  Login / Register
+                </button>
               )}
             </div>
           }
