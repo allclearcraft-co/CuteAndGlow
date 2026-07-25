@@ -9,6 +9,7 @@ import {
   updateProfile,
   submitKYCVerification,
   reLoginToken,
+  dashboardData,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -40,5 +41,9 @@ router.route("/update/submit-kyc/:storeId").post(
   VerifyStore,
   submitKYCVerification,
 );
+
+router
+  .route("/get/dashboard/data/:storeId/:query")
+  .get(VerifyStore, dashboardData);
 
 export default router;

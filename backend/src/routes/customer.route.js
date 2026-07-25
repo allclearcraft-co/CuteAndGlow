@@ -14,6 +14,7 @@ import {
   dashboardData,
   loginCustomer,
   reLoginToken,
+  deleteBankDetails,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
@@ -49,6 +50,9 @@ router
 router
   .route("/update/add-bank-details/:customerId")
   .post(VerifyCustomer, addBankDetails);
+router
+  .route("/update/delete-bank-details/:bankId/:customerId")
+  .delete(VerifyCustomer, deleteBankDetails);
 router
   .route("/update/add-upi-details/:customerId")
   .post(VerifyCustomer, addUPIid);
