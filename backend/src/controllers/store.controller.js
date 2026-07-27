@@ -559,6 +559,16 @@ const dashboardData = asyncHandler(async (req, res) => {
         );
     }
 
+    case "services": {
+      const service = await Services.find({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Details fetched successfully"));
+    }
+
     case "service-bookings": {
       const bookings = await ServiceBookings.find({
         store: storeId,
