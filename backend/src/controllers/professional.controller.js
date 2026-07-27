@@ -476,18 +476,18 @@ const dashboardData = asyncHandler(async (req, res) => {
       "name contactNumber email gender alternateContactNumber about specialization serviceType paymentOptions images",
     );
     if (!professional) throw new ApiError(400, "User not found");
-    const defaultAddress = await Address.findOne({
-      professional: professionalId,
-      defaultAddress: true,
-    });
-    if (!defaultAddress) throw new ApiError(400, "No default address found");
+    // const defaultAddress = await Address.findOne({
+    //   professional: professionalId,
+    //   defaultAddress: true,
+    // });
+    // if (!defaultAddress) throw new ApiError(400, "No default address found");
 
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
-          { professional, defaultAddress },
+          { professional },
           "Dashboard data fetched successfully !",
         ),
       );
