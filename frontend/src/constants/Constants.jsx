@@ -76,7 +76,7 @@ export const DashboardSectionList = [
   {
     label: "Store Staff",
     icon: <FaUser />,
-    query: "store_staff",
+    query: "storeStaff",
     roles: ["Store"],
   },
   {
