@@ -1097,40 +1097,195 @@ const FavoriteProfessional = ({ data, role }) => {
   );
 };
 
-const Services = ({ data, role }) => {
+const Services = ({ data, role, userId, handleReload, callData }) => {
+  const [showForm, setShowForm] = useState(false);
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [storeStaffList, setStoreStaffList] = useState([]);
+  const [products, setProducts] = useState([
+    {
+      productType: "",
+      brand: "",
+    },
+  ]);
+  const [serviceInclusion, setServiceInclusion] = useState([""]);
+  const [serviceExclusion, setServiceExclusion] = useState([""]);
+  const [serviceRequirements, setServiceRequirements] = useState([""]);
+  const { alertInfo, alertSuccess, alertError } = useToast();
+  const formRef = useRef();
+
+  const addProduct = () => {
+    setProducts((prev) => [
+      ...prev,
+      {
+        productType: "",
+        brand: "",
+      },
+    ]);
+  };
+
+  const removeProduct = (index) => {
+    if (products.length === 1) return;
+
+    setProducts((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleProductChange = (index, field, value) => {
+    const updatedProducts = [...products];
+    updatedProducts[index][field] = value;
+    setProducts(updatedProducts);
+  };
+
+  useEffect(() => {
+    callData();
+  }, []);
+
+  const addInclusion = () => {
+    setServiceInclusion((prev) => [...prev, ""]);
+  };
+
+  const addExclusion = () => {
+    setServiceExclusion((prev) => [...prev, ""]);
+  };
+
+  const addRequirement = () => {
+    setServiceRequirements((prev) => [...prev, ""]);
+  };
+
+  const handleRequirement = (index, value) => {
+    const updated = [...serviceRequirements];
+    updated[index] = value;
+    setServiceRequirements(updated);
+  };
+
+  const handleExclusion = (index, value) => {
+    const updated = [...serviceExclusion];
+    updated[index] = value;
+    setServiceExclusion(updated);
+  };
+
+  const handleInclusion = (index, value) => {
+    const updated = [...serviceInclusion];
+    updated[index] = value;
+    setServiceInclusion(updated);
+  };
+
+  const removeInclusion = (index) => {
+    if (serviceInclusion.length === 1) return;
+
+    setServiceInclusion((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExclusion = (index) => {
+    if (serviceExclusion.length === 1) return;
+
+    setServiceExclusion((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeRequirement = (index) => {
+    if (serviceRequirements.length === 1) return;
+
+    setServiceRequirements((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  useEffect(() => {
+    const getAllStoreStaff = async () => {
+      try {
+        const response = await FetchData(
+          `${role}/get/staff-for-service/store-staff/${userId}`,
+          "get",
+        );
+        setStoreStaffList(response.data.data);
+      } catch (err) {
+        // console.log(err.response.data);
+      }
+    };
+
+    getAllStoreStaff();
+  }, []);
+
+  const addService = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(formRef.current);
+      // for (let pair of formData.entries()) {
+      //   console.log(pair[0] + ": " + pair[1]);
+      // }
+      formData.append(
+        "serviceData",
+        JSON.stringify({
+          products,
+          serviceInclusion: serviceInclusion.filter((i) => i.trim()),
+          serviceExclusion: serviceExclusion.filter((i) => i.trim()),
+          serviceRequirements: serviceRequirements.filter((i) => i.trim()),
+        }),
+      );
+      const response = await FetchData(
+        `services/add/service/${role}/${userId}`,
+        "post",
+        formData,
+        true,
+      );
+      alertSuccess(response.data.message);
+      setShowForm(false);
+      formRef.current.reset();
+      handleReload();
+    } catch (err) {
+      alertError(err.response);
+    }
+  };
+
+  const deleteService = async ({ serviceId }) => {
+    try {
+      const response = await FetchData(
+        `${role}/update/delete-bank-details/${serviceId}/${userId}`,
+        "delete",
+      );
+      alertSuccess(response.data.message);
+      handleReload();
+    } catch (err) {
+      alertError(err.response.data);
+    }
+  };
+
+  const handleImage = (e) => {
+    const file = Array.from(e.target.files);
+
+    if (!file) return;
+    if (file.length > 5) {
+      alert("Maximum 5 images allowed");
+      e.target.value = "";
+      return;
+    }
+
+    setImage(file);
+    setImagePreview(file?.map((f) => URL.createObjectURL(f)));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Quick Services</h1>
-
-          <p className="text-gray-500">
-            Book your favorite beauty service instantly.
-          </p>
-        </div>
-
+        <h1 className="text-3xl font-bold">Services</h1>
+        <Button LabelName="Add New Service" onClick={() => setShowForm(true)} />
         <input
           placeholder="Search Service..."
           className="border rounded-lg px-4 py-2"
         />
       </div>
 
-      <div className="space-y-6">
-        <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-5 flex flex-col lg:flex-row gap-6">
+      <div>
+        <div className="bg-white border rounded-2xl shadow-md hover:shadow-xl transition p-3 flex flex-col lg:flex-row gap-4 h-[30vh]">
           {/* Image */}
-
           <img
             src={
               data?.coverImage ||
-              `"https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500`
+              "https://ik.imagekit.io/cuteandglow/storeStaff/profilePicture/1785135280740-___4_.jpeg"
             }
             className="w-full lg:w-72 h-56 rounded-xl object-cover"
           />
-
           {/* Content */}
-
-          <div className="flex-1">
-            <div className="flex justify-between">
+          <div className="flex flex-col justify-between items-start w-full h-full gap-1 bg-blue-400">
+            <div className="flex justify-between bg-red-500 w-full">
               <div>
                 <h2 className="text-2xl font-semibold">
                   {data?.name || "Luxury Hair Spa"}
@@ -1166,7 +1321,7 @@ const Services = ({ data, role }) => {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-3 mt-6">
+            <div className="grid md:grid-cols-2 gap-3 bg-cyan-500">
               <p className="flex gap-2 items-center">
                 <FaStore />
                 {data?.store || "Elite Salon"}
@@ -1192,9 +1347,7 @@ const Services = ({ data, role }) => {
               </p>
             </div>
 
-            {/* Products */}
-
-            <div className="mt-5">
+            <div className=" bg-green-500">
               <h3 className="font-semibold">Products Used</h3>
 
               <div className="flex gap-3 mt-2 flex-wrap">
@@ -1204,9 +1357,7 @@ const Services = ({ data, role }) => {
               </div>
             </div>
 
-            {/* Inclusion */}
-
-            <div className="mt-5">
+            <div className=" bg-yellow-500">
               <h3 className="font-semibold mb-2">Service Includes</h3>
 
               <div className="grid md:grid-cols-2 gap-2">
@@ -1218,6 +1369,393 @@ const Services = ({ data, role }) => {
           </div>
         </div>
       </div>
+      <Popup isOpen={showForm} onClose={() => setShowForm(false)}>
+        <div className="flex justify-start items-start h-screen w-full overflow-scroll">
+          {" "}
+          <form
+            ref={formRef}
+            onSubmit={addService}
+            className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll no-scrollbar"
+          >
+            <h1 className="heading text-3xl">Add Service</h1>
+            <div className="flex flex-col gap-4 w-full">
+              <div>
+                <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                  Basic Details
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <InputBox label="Service Name" name="name" />
+
+                  <InputBox
+                    label="Charges (including tax)"
+                    name="charges"
+                    type="number"
+                  />
+                  <InputBox
+                    label="category"
+                    name="category"
+                    type="text"
+                    placeholder="Eg: Spa, Hair Cut etc."
+                  />
+
+                  <InputBox
+                    label="Duration (Minutes)"
+                    name="duration"
+                    type="number"
+                  />
+                </div>
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              {role === "store" ||
+                ("Store" && (
+                  <div>
+                    <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                      Service Provider
+                    </h2>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block mb-2 font-medium">
+                          Executive
+                        </label>
+
+                        <select
+                          name="executive"
+                          className="w-full border rounded-lg px-4 py-2"
+                          required
+                        >
+                          <option value="">Select Staff</option>
+                          {storeStaffList?.map((item) => (
+                            <option key={item._id} value={item._id}>
+                              <>
+                                Name: {item.name} ({item.designation})
+                                (Specialization: {item.specialization})
+                              </>
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                  Service Timing
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <InputBox
+                    label="Preparation Time (Minutes)"
+                    name="prepTime"
+                    type="number"
+                  />
+
+                  <div className="flex flex-col justify-end gap-4">
+                    <label className="flex items-center gap-3">
+                      <input type="checkbox" name="isPrepTime" defaultChecked />
+                      Preparation Required
+                    </label>
+
+                    <label className="flex items-center gap-3">
+                      <input type="checkbox" name="timeIncludingPrepTime" />
+                      Duration Includes Preparation
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <div className="flex justify-between items-center mb-5">
+                  <h2 className="text-2xl font-semibold text-[#8B2954]">
+                    Products Used
+                  </h2>
+
+                  <button
+                    type="button"
+                    onClick={addProduct}
+                    className="px-4 py-2 rounded bg-[#8B2954] text-white"
+                  >
+                    Add Product
+                  </button>
+                </div>
+
+                {products.map((item, index) => (
+                  <div key={index} className="grid md:grid-cols-3 gap-4 mb-4">
+                    <InputBox
+                      label="Product"
+                      name={`productType-${index}`}
+                      value={item.productType}
+                      onChange={(e) =>
+                        handleProductChange(
+                          index,
+                          "productType",
+                          e.target.value,
+                        )
+                      }
+                    />
+
+                    <InputBox
+                      label="Brand"
+                      name={`brand-${index}`}
+                      value={item.brand}
+                      onChange={(e) =>
+                        handleProductChange(index, "brand", e.target.value)
+                      }
+                    />
+
+                    <button
+                      type="button"
+                      disabled={products.length === 1}
+                      onClick={() => removeProduct(index)}
+                      className={`h-11 mt-9 rounded-lg text-white transition ${
+                        products.length === 1
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <div className="flex justify-between mb-5">
+                  <h2 className="text-2xl font-semibold text-[#8B2954]">
+                    Service Inclusion
+                  </h2>
+
+                  <button
+                    type="button"
+                    onClick={addInclusion}
+                    className="px-4 py-2 bg-[#8B2954] text-white rounded"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {serviceInclusion.map((item, index) => (
+                  <div key={index} className="flex gap-3 mb-3">
+                    <InputBox
+                      label={`Point ${index + 1}`}
+                      name={`serviceInclusion-${index}`}
+                      value={item}
+                      onChange={(e) => handleInclusion(index, e.target.value)}
+                    />
+
+                    <button
+                      type="button"
+                      disabled={serviceInclusion.length === 1}
+                      onClick={() => removeInclusion(index)}
+                      className={`h-11 mt-9 px-4 rounded text-white transition ${
+                        serviceInclusion.length === 1
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <div className="flex justify-between mb-5">
+                  <h2 className="text-2xl font-semibold text-[#8B2954]">
+                    Service Exclusion
+                  </h2>
+
+                  <button
+                    type="button"
+                    onClick={addExclusion}
+                    className="px-4 py-2 bg-[#8B2954] text-white rounded"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {serviceExclusion.map((item, index) => (
+                  <div key={index} className="flex gap-3 mb-3">
+                    <InputBox
+                      label={`Point ${index + 1}`}
+                      value={item}
+                      onChange={(e) => handleExclusion(index, e.target.value)}
+                    />
+
+                    <button
+                      type="button"
+                      disabled={serviceExclusion.length === 1}
+                      onClick={() => removeExclusion(index)}
+                      className={`h-11 mt-9 px-4 rounded text-white transition ${
+                        serviceExclusion.length === 1
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <div className="flex justify-between mb-5">
+                  <h2 className="text-2xl font-semibold text-[#8B2954]">
+                    Customer Requirements
+                  </h2>
+
+                  <button
+                    type="button"
+                    onClick={addRequirement}
+                    className="px-4 py-2 bg-[#8B2954] text-white rounded"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {serviceRequirements.map((item, index) => (
+                  <div key={index} className="flex gap-3 mb-3">
+                    <InputBox
+                      label={`Requirement ${index + 1}`}
+                      value={item}
+                      onChange={(e) => handleRequirement(index, e.target.value)}
+                    />
+
+                    <button
+                      type="button"
+                      disabled={serviceRequirements.length === 1}
+                      onClick={() => removeRequirement(index)}
+                      className={`h-11 mt-9 px-4 rounded text-white transition ${
+                        serviceRequirements.length === 1
+                          ? "bg-gray-300 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600"
+                      }`}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                  Booking
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-2">Service For</label>
+
+                    <select
+                      name="serviceFor"
+                      className="w-full border rounded-lg px-4 py-2"
+                    >
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Both</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-2">Booking Day</label>
+
+                    <select
+                      name="bookingDays"
+                      className="w-full border rounded-lg px-4 py-2"
+                    >
+                      <option>Whole week</option>
+                      <option>Monday</option>
+                      <option>Tuesday</option>
+                      <option>Wednesday</option>
+                      <option>Thursday</option>
+                      <option>Friday</option>
+                      <option>Saturday</option>
+                      <option>Sunday</option>
+                    </select>
+                  </div>
+
+                  <InputBox
+                    label="Booking From"
+                    type="time"
+                    name="bookingFrom"
+                  />
+
+                  <InputBox
+                    label="Booking Till"
+                    type="time"
+                    name="bookingTill"
+                  />
+                </div>
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+              <div>
+                <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                  Service Availability
+                </h2>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" name="onSite" defaultChecked />
+                    On Site
+                  </label>
+
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" name="inHouse" defaultChecked />
+                    In House
+                  </label>
+
+                  <div>
+                    <label className="block mb-2">Service Area</label>
+
+                    <select
+                      name="serviceArea"
+                      className="w-full border rounded-lg px-4 py-2"
+                    >
+                      <option>Inside city</option>
+                      <option>Outside city</option>
+                      <option>Both</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
+
+              <div>
+                <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                  Cover Images
+                </h2>
+
+                <input
+                  type="file"
+                  name="coverImage"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImage}
+                  className="w-full"
+                />
+
+                {imagePreview.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
+                    {imagePreview?.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt=""
+                        className="w-full h-40 object-cover rounded-xl"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-center items-center gap-10 ">
+              <Button LabelName="Submit" type="submit" />
+            </div>
+          </form>
+        </div>
+      </Popup>
     </div>
   );
 };

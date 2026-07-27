@@ -221,11 +221,14 @@ function Dashboard() {
           {activeSection === "fav_professional" && (
             <FavoriteProfessional data={data} role={localStorage.role} />
           )}
-          {activeSection === "wishlist_services" && (
-            <Services data={data} role={localStorage.role} />
-          )}
-          {activeSection === "own_services" && (
-            <Services data={data} role={localStorage.role} />
+          {activeSection === "services" && (
+            <Services
+              callData={() => fetchDashboardData({ query: "services" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "services" })}
+            />
           )}
           {activeSection === "images" && (
             <Images data={data} role={localStorage.role} />

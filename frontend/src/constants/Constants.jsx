@@ -80,9 +80,9 @@ export const DashboardSectionList = [
     roles: ["Store"],
   },
   {
-    label: "Own Services ",
+    label: "Services",
     icon: <FaUser />,
-    query: "own_services",
+    query: "services",
     roles: ["Store", "Professional"],
   },
   {
