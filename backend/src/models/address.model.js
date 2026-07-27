@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const addressSchema = new mongoose.Schema(
   {
     store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
+    storeStaff: { type: mongoose.Schema.Types.ObjectId, ref: "StoreStaff" },
     professional: { type: mongoose.Schema.Types.ObjectId, ref: "Professional" },
     customer: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" },
 
@@ -15,6 +16,7 @@ const addressSchema = new mongoose.Schema(
     area: String,
     locality: String,
     sector: String,
+    pincode: String,
     city: { type: String, required: true },
     state: { type: String, required: true },
     country: { type: String, required: true },
@@ -26,9 +28,9 @@ const addressSchema = new mongoose.Schema(
         enum: ["Point"],
         default: "Point",
       },
-      // the location coordinates are stored in indexes [0]:longitude and [1]:latitude
+      // the location coordinates are stored in indexes [0]:latitude and [1]:longitude
       coordinates: {
-        type: [Number], // [lng, lat]
+        type: [Number], // [lat, lng]
         required: true,
       },
     },
