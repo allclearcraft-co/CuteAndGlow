@@ -33,6 +33,7 @@ import {
   FaDatabase,
   FaMale,
   FaMarsDouble,
+  FaRegUser,
 } from "react-icons/fa";
 import { FaCloudUploadAlt, FaImage, FaCamera } from "react-icons/fa";
 import { useState } from "react";
@@ -45,6 +46,7 @@ import Button from "../../components/Button";
 import Popup from "../../components/ui/Popup";
 import { formatDateString } from "../../utils/utility-functions";
 import AddressMap from "../../components/ui/AddressMap";
+import { MdOutlineVerified } from "react-icons/md";
 
 const Overview = ({ data, role, callData }) => {
   useEffect(() => {
@@ -730,22 +732,88 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
             Add Staff
           </button>
         </div>
-
-        {data ? (
-          ""
-        ) : (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 bg-[#8B2954] text-white px-5 py-2 rounded-lg hover:bg-[#742247] transition"
-          >
-            <FaPlus />
-            Add Staff
-          </button>
-        )}
       </div>
 
       {data ? (
-        <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"></div>
+        <div>
+          {data?.map((data, index) => (
+             <div className="w-full bg-white rounded-xl flex  md:flex-row flex-col justify-between items-center shadow-md md:px-6 py-4 border border-gray-200 ">
+              <div className="md:w-[52vw] flex  md:flex-row md:justify-center md:items-center md:gap-8 gap-6">
+                {/* images */}
+                <div className="md:w-40 md:h-38 h-16 w-22 rounded-full overflow-hidden border border-gray-300">
+                  <img
+                    src={data?.profileImage?.url || NonGenderSvg}
+                    alt={data?.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Store staff details */}
+                <div className="md:w-[40vw] w-full grid md:grid-cols-2 grid-cols-1 md:gap-20 gap-2 ">
+                  <div className="space-y-2">
+                    <h2 className="text-xl font-bold">{data?.name || "Na"}</h2>
+
+                    <p className="text-gray-500">{data?.role}</p>
+
+                    <div className="flex items-center gap-3">
+                      <FaEnvelope className="text-[#8B2954] " />
+                      <span>{data?.email || "na"}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <FaMobileAlt className="text-[#8B2954]" />
+                      <span>{data?.contactNumber || "na"}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <FaUserTie className="text-[#8B2954]" />
+                      <span>{data?.designation || "na"}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <FaStar className="text-[#8B2954]" />
+                      <span>{data?.specialization || " na"}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <FaBriefcase className="text-[#8B2954]" />
+                      <span>{data?.experience || "na"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* buttons status */}
+              <div className="w-full h-full flex flex-col  items-center justify-center gap-4 mt-6 p-4 lg:mt-0">
+                <button
+                  className={` md:w-40 md:h-8 w-full h-full px-4 py-2 rounded-full text-sm font-medium flex items-center justify-center gap-2
+              ${data?.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
+                >
+                  <MdOutlineVerified />
+                  {data?.isActive ? "Active" : "Inactive"}
+                </button>
+
+                <button
+                  className={`md:w-40 md:h-8 w-full h-full px-4 py-2 rounded-full text-sm font-medium
+                ${data?.isVerified ? "bg-blue-100 text-blue-700" : "bg-orange-100 text-orange-700"}`}
+                >
+                  {data?.isVerified ? "Verified" : "Not Verified"}
+                </button>
+
+                <button
+                  className={`md:w-40 md:h-8 h-full w-full px-4 py-2 rounded-full text-sm font-medium
+              ${
+                data?.kycComplete
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+                >
+                  {data?.kycComplete ? "KYC Complete" : "KYC Pending"}
+                </button>
+              </div>
+            </div>
+          ))}
+       
+
+        </div>
       ) : (
         <div>
           <h1>No data found please add staffs</h1>
