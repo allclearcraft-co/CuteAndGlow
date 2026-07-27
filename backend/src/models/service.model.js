@@ -41,7 +41,7 @@ const serviceSchema = new mongoose.Schema(
       ],
       default: "Whole week",
     },
-    bookingAcceptingHours: { from: { type: Date }, till: { type: Date } },
+    bookingAcceptingHours: { from: { type: String }, till: { type: String } },
     coverImage: [{ url: String, fileId: String }],
     serviceArea: {
       type: String,
