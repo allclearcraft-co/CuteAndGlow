@@ -47,6 +47,7 @@ import Popup from "../../components/ui/Popup";
 import { formatDateString } from "../../utils/utility-functions";
 import AddressMap from "../../components/ui/AddressMap";
 import { MdOutlineVerified } from "react-icons/md";
+import ServiceCard from "../../components/ui/ServiceCard";
 
 const Overview = ({ data, role, callData }) => {
   useEffect(() => {
@@ -737,7 +738,7 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
       {data ? (
         <div>
           {data?.map((data, index) => (
-             <div className="w-full bg-white rounded-xl flex  md:flex-row flex-col justify-between items-center shadow-md md:px-6 py-4 border border-gray-200 ">
+            <div className="w-full bg-white rounded-xl flex  md:flex-row flex-col justify-between items-center shadow-md md:px-6 py-4 border border-gray-200 ">
               <div className="md:w-[52vw] flex  md:flex-row md:justify-center md:items-center md:gap-8 gap-6">
                 {/* images */}
                 <div className="md:w-40 md:h-38 h-16 w-22 rounded-full overflow-hidden border border-gray-300">
@@ -811,8 +812,6 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
               </div>
             </div>
           ))}
-       
-
         </div>
       ) : (
         <div>
@@ -1330,6 +1329,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
     setImagePreview(file?.map((f) => URL.createObjectURL(f)));
   };
 
+  console.log(data);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -1341,101 +1342,10 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
         />
       </div>
 
-      <div>
-        <div className="bg-white border rounded-2xl shadow-md hover:shadow-xl transition p-3 flex flex-col lg:flex-row gap-4 h-[30vh]">
-          {/* Image */}
-          <img
-            src={
-              data?.coverImage ||
-              "https://ik.imagekit.io/cuteandglow/storeStaff/profilePicture/1785135280740-___4_.jpeg"
-            }
-            className="w-full lg:w-72 h-56 rounded-xl object-cover"
-          />
-          {/* Content */}
-          <div className="flex flex-col justify-between items-start w-full h-full gap-1 bg-blue-400">
-            <div className="flex justify-between bg-red-500 w-full">
-              <div>
-                <h2 className="text-2xl font-semibold">
-                  {data?.name || "Luxury Hair Spa"}
-                </h2>
-
-                <div className="flex gap-4 mt-3 text-sm">
-                  <span className="flex items-center gap-2">
-                    <FaClock />
-                    {data?.duration || "60 mins"}
-                  </span>
-
-                  <span className="flex items-center gap-2">
-                    {data?.serviceFor === "Male" ? (
-                      <FaMale />
-                    ) : data?.serviceFor === "Female" ? (
-                      <FaFemale />
-                    ) : (
-                      <>
-                        <FaMarsDouble />
-                        <FaFemale />
-                      </>
-                    )}
-
-                    {data?.serviceFor}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <h2 className="text-3xl font-bold text-[#8B2954]">
-                  ₹ {data?.charges || "999"}
-                </h2>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-3 bg-cyan-500">
-              <p className="flex gap-2 items-center">
-                <FaStore />
-                {data?.store || "Elite Salon"}
-              </p>
-
-              <p className="flex gap-2 items-center">
-                <FaUserTie />
-                {data?.professional || "Priya Sharma"}
-              </p>
-
-              <p>
-                {data?.onSite && (
-                  <span className="bg-green-100 px-3 py-1 rounded-full mr-2">
-                    On Site
-                  </span>
-                )}
-
-                {data?.inHouse && (
-                  <span className="bg-blue-100 px-3 py-1 rounded-full">
-                    In House
-                  </span>
-                )}
-              </p>
-            </div>
-
-            <div className=" bg-green-500">
-              <h3 className="font-semibold">Products Used</h3>
-
-              <div className="flex gap-3 mt-2 flex-wrap">
-                <span className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                  {data?.brand}
-                </span>
-              </div>
-            </div>
-
-            <div className=" bg-yellow-500">
-              <h3 className="font-semibold mb-2">Service Includes</h3>
-
-              <div className="grid md:grid-cols-2 gap-2">
-                <p className="flex items-center gap-2">
-                  <FaCheckCircle className="text-green-500" />
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        {data?.map((service) => (
+          <ServiceCard key={service._id} service={service} />
+        ))}
       </div>
       <Popup isOpen={showForm} onClose={() => setShowForm(false)}>
         <div className="flex justify-start items-start h-screen w-full overflow-scroll">
