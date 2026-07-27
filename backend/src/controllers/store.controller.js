@@ -690,6 +690,20 @@ const addStoreStaff = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, staff, "Store staff added successfully."));
 });
 
+const getStaffForService = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+
+  const staffs = await StoreStaff.find({
+    store: storeId,
+    isActive: true,
+  }).select("name specialization designation");
+  if (!staffs) throw new ApiError(400, "No data found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, staffs, "Data fetched successfully !"));
+});
+
 export {
   registerStore,
   loginStore,
@@ -701,5 +715,6 @@ export {
   submitKYCVerification,
   reLoginToken,
   addStoreStaff,
+  getStaffForService,
   dashboardData,
 };

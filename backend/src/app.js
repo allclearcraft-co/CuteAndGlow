@@ -58,9 +58,11 @@ app.use((req, res, next) => {
 import customerRoutes from "./routes/customer.route.js";
 import professionalRoutes from "./routes/professional.route.js";
 import storeRoutes from "./routes/store.route.js";
+import serviceRoutes from "./routes/service.route.js";
 
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/professional", professionalRoutes);
 app.use("/api/v1/store", storeRoutes);
+app.use("/api/v1/services", serviceRoutes);
 
 export { app };
