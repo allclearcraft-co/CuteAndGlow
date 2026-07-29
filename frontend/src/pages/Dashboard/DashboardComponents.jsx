@@ -47,7 +47,7 @@ import Popup from "../../components/ui/Popup";
 import { formatDateString } from "../../utils/utility-functions";
 import AddressMap from "../../components/ui/AddressMap";
 import { MdOutlineVerified } from "react-icons/md";
-import ServiceCard from "../../components/ui/ServiceCard";
+import StoreServiceCard from "../../components/ui/StoreServiceCard";
 
 const Overview = ({ data, role, callData }) => {
   useEffect(() => {
@@ -735,7 +735,7 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
         </div>
       </div>
 
-      {data ? (
+      {Array.isArray(data) ? (
         <div>
           {data?.map((data, index) => (
             <div className="w-full bg-white rounded-xl flex  md:flex-row flex-col justify-between items-center shadow-md md:px-6 py-4 border border-gray-200 ">
@@ -1275,9 +1275,6 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
     e.preventDefault();
     try {
       const formData = new FormData(formRef.current);
-      // for (let pair of formData.entries()) {
-      //   console.log(pair[0] + ": " + pair[1]);
-      // }
       formData.append(
         "serviceData",
         JSON.stringify({
@@ -1329,12 +1326,12 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
     setImagePreview(file?.map((f) => URL.createObjectURL(f)));
   };
 
-  console.log(data);
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Services</h1>
+    <div className="space-y-6 w-full h-full overflow-scroll relative">
+      <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
+        <h1 className="text-3xl font-bold">
+          Services <span className="text-sm">({data?.length})</span>
+        </h1>
         <Button LabelName="Add New Service" onClick={() => setShowForm(true)} />
         <input
           placeholder="Search Service..."
@@ -1342,10 +1339,16 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
         />
       </div>
 
-      <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-        {data?.map((service) => (
-          <ServiceCard key={service._id} service={service} />
-        ))}
+      <div className="w-full">
+        {Array.isArray(data) ? (
+          <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-2 w-full place-items-center">
+            {data?.map((service) => (
+              <StoreServiceCard key={service._id} service={service} />
+            ))}
+          </div>
+        ) : (
+          <span>No service listed kindly list service</span>
+        )}
       </div>
       <Popup isOpen={showForm} onClose={() => setShowForm(false)}>
         <div className="flex justify-start items-start h-screen w-full overflow-scroll">
