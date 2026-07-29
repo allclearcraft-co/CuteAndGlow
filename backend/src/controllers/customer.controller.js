@@ -7,6 +7,10 @@ import { Address } from "../models/address.model.js";
 import { BankDetails } from "../models/bankDetails.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { validatePhone } from "../validators/contactNumber.validator.js";
+import otpTemplate from "../template/otp.mail.template.js";
+import sendEmail from "../services/mail.service.js";
+import welcomeTemplate from "../template/welcome.mail.template.js";
+import { validateBankDetails } from "../validators/bankDetails.validator.js";
 
 const registerCustomer = asyncHandler(async (req, res) => {
   const { contactNumber, name, email } = req.body;
@@ -58,6 +62,12 @@ const registerCustomer = asyncHandler(async (req, res) => {
   );
   if (!user)
     throw new ApiError(400, "Registration incomplete. Please try again later");
+
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
 
   return res
     .status(200)
@@ -126,6 +136,12 @@ const otpVerification = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
+    await sendEmail({
+      to: user?.email,
+      subject: "Welcome",
+      html: welcomeTemplate(user?.name),
+    });
 
     return res
       .status(200)
@@ -425,6 +441,10 @@ const addBankDetails = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Something went wrong, please try again later !");
   await bank.save();
 
+  const user = await Customer.findByIdAndUpdate(customerId, {
+    bankingDetails: bank,
+  });
+
   return res.status(200).json(new ApiResponse(200, {}, "Added successfully !"));
 });
 
@@ -439,102 +459,169 @@ const addUPIid = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Added successfully !"));
 });
 
+const deleteBankDetails = asyncHandler(async (req, res) => {
+  const { bankId, customerId } = req.params;
+  if (!bankId || !customerId)
+    throw new ApiError(400, "Something went wrong please try again later");
+
+  const user = await Customer.findById(customerId);
+  if (!user) throw new ApiError(400, "Invalid request");
+  user.bankingDetails = null;
+  await user.save();
+
+  const bank = await BankDetails.findByIdAndDelete(bankId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Deleted successfully !"));
+});
+
 const dashboardData = asyncHandler(async (req, res) => {
-  const { customerId, query } = req.params;
+  const { customerId, query = "overview" } = req.params;
 
   const customer = await Customer.findById(customerId);
-  if (!customer) throw new ApiError(401, "Invalid request !");
 
-  if (!query || query === "overview") {
-    const customer = await Customer.findById(customerId).select(
-      "name contactNumber email gender alternateContactNumber",
-    );
-    if (!customer) throw new ApiError(400, "User not found");
-    const defaultAddress = await Address.findOne({
-      customer: customerId,
-      defaultAddress: true,
-    });
-    if (!defaultAddress) throw new ApiError(400, "No default address found");
+  if (!customer) {
+    throw new ApiError(404, "Customer not found");
+  }
 
-    return res
-      .status(200)
-      .json(
+  switch (query) {
+    case "overview": {
+      const customerInfo = await Customer.findById(customerId).select(
+        "name contactNumber email gender alternateContactNumber createdAt bookings",
+      );
+
+      const defaultAddress = await Address.findOne({
+        customer: customerId,
+        defaultAddress: true,
+      });
+
+      return res.status(200).json(
         new ApiResponse(
           200,
-          { customer, defaultAddress },
-          "Dashboard data fetched successfully !",
+          {
+            customer: customerInfo,
+            defaultAddress,
+          },
+          "Dashboard data fetched successfully",
         ),
       );
-  }
-  if (query === "address") {
-    const address = await Address.find({ customer: customerId });
-    if (!address) throw new ApiError(404, "No data found");
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, address, "Data fetched successfully !"));
-  }
-  if (query === "bankDetails") {
-    const bankDetails = await BankDetails.findOne({ customer: customerId });
-    if (!bankDetails) throw new ApiError(404, "No data found");
+    case "address": {
+      const addresses = await Address.find({ customer: customerId });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, bankDetails, "Data fetched successfully !"));
-  }
-  if (query === "service-bookings") {
-    const bookings = await ServiceBookings.find({ customer: customerId });
-    if (!bookings) throw new ApiError(404, "No data found");
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, addresses, "Addresses fetched successfully"),
+        );
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, bookings, "Data fetched successfully !"));
-  }
-  if (query === "fav-store") {
-    const favStore = customer.favStore.populate({
-      path: "favStore",
-      select: "storeName logo address storeContactNumber",
-    });
-    if (!favStore) throw new ApiError(404, "No data found");
+    case "bankDetails": {
+      const bankDetails = await BankDetails.findOne({
+        customer: customerId,
+      });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, favStore, "Data fetched successfully !"));
-  }
-  if (query === "fav-professional") {
-    const favProfessional = customer.favProfessional.populate({
-      path: "favProfessional",
-      select: "name contactNumber images isVerified",
-    });
-    if (!favProfessional) throw new ApiError(404, "No data found");
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            bankDetails,
+            "Bank details fetched successfully",
+          ),
+        );
+    }
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, favProfessional, "Data fetched successfully !"),
-      );
-  }
-  if (query === "quick-services") {
-    const quickService = customer.quickServices.populate({
-      path: "quickServices",
-      select: "name coverImage charges serviceFor",
-    });
-    if (!quickService) throw new ApiError(404, "No data found");
+    case "service-bookings": {
+      const bookings = await ServiceBookings.find({
+        customer: customerId,
+      });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, quickService, "Data fetched successfully !"));
-  }
-  if (query === "wishlist") {
-    const wishlist = customer.wishListServices.populate({
-      path: "wishListServices",
-      select: "name coverImage charges serviceFor",
-    });
-    if (!wishlist) throw new ApiError(404, "No data found");
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, wishlist, "Data fetched successfully !"));
+    case "fav-store": {
+      const favStore = await Customer.findById(customerId)
+        .populate({
+          path: "favStore",
+          select: "storeName logo address storeContactNumber",
+        })
+        .select("favStore");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            favStore?.favStore || [],
+            "Favourite stores fetched successfully",
+          ),
+        );
+    }
+
+    case "fav-professional": {
+      const favProfessional = await Customer.findById(customerId)
+        .populate({
+          path: "favProfessional",
+          select: "name contactNumber images isVerified",
+        })
+        .select("favProfessional");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            favProfessional?.favProfessional || [],
+            "Favourite professionals fetched successfully",
+          ),
+        );
+    }
+
+    case "quick-services": {
+      const quickServices = await Customer.findById(customerId)
+        .populate({
+          path: "quickServices",
+          select: "name coverImage charges serviceFor",
+        })
+        .select("quickServices");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            quickServices?.quickServices || [],
+            "Quick services fetched successfully",
+          ),
+        );
+    }
+
+    case "wishlist": {
+      const wishlist = await Customer.findById(customerId)
+        .populate({
+          path: "wishListServices",
+          select: "name coverImage charges serviceFor",
+        })
+        .select("wishListServices");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            wishlist?.wishListServices || [],
+            "Wishlist fetched successfully",
+          ),
+        );
+    }
+
+    default:
+      throw new ApiError(400, "Invalid dashboard query");
   }
 });
 
@@ -571,6 +658,7 @@ export {
   deleteAddress,
   addBankDetails,
   addUPIid,
+  deleteBankDetails,
   dashboardData,
   reLoginToken,
 };

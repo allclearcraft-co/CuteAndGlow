@@ -115,7 +115,7 @@ const otpVerification = asyncHandler(async (req, res) => {
     const { otp } = req.body;
     const { professionalId } = req.params;
 
-    const user = await Customer.findById(professionalId);
+    const user = await Professional.findById(professionalId);
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();
@@ -150,7 +150,7 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (!validatePhone(contactNumber))
       throw new ApiError(400, "Invalid contact number");
 
-    const user = await Professional.findOne(contactNumber);
+    const user = await Professional.findOne({ contactNumber: contactNumber });
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();
@@ -476,18 +476,18 @@ const dashboardData = asyncHandler(async (req, res) => {
       "name contactNumber email gender alternateContactNumber about specialization serviceType paymentOptions images",
     );
     if (!professional) throw new ApiError(400, "User not found");
-    const defaultAddress = await Address.findOne({
-      professional: professionalId,
-      defaultAddress: true,
-    });
-    if (!defaultAddress) throw new ApiError(400, "No default address found");
+    // const defaultAddress = await Address.findOne({
+    //   professional: professionalId,
+    //   defaultAddress: true,
+    // });
+    // if (!defaultAddress) throw new ApiError(400, "No default address found");
 
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
-          { professional, defaultAddress },
+          { professional },
           "Dashboard data fetched successfully !",
         ),
       );

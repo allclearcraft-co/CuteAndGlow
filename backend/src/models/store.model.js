@@ -109,7 +109,7 @@ storeSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     { _id: this._id, role: "Store" },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "20m" },
+    { expiresIn: "1d" },
   );
 };
 

@@ -9,6 +9,9 @@ import {
   updateProfile,
   submitKYCVerification,
   reLoginToken,
+  dashboardData,
+  addStoreStaff,
+  getStaffForService,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -40,5 +43,17 @@ router.route("/update/submit-kyc/:storeId").post(
   VerifyStore,
   submitKYCVerification,
 );
+
+// store staff routes
+router
+  .route("/update/add-store-staff/:storeId")
+  .post(VerifyStore, upload.single("profileImage"), addStoreStaff);
+router
+  .route("/get/staff-for-service/store-staff/:storeId")
+  .get(VerifyStore, getStaffForService);
+
+router
+  .route("/get/dashboard/data/:storeId/:query")
+  .get(VerifyStore, dashboardData);
 
 export default router;

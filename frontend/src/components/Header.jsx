@@ -15,7 +15,7 @@ import { useToast } from "./hooks/ToastContext";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showUser, setShowUser] = useState(false);
+  // const [showUser, setShowUser] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const { alertInfo } = useToast();
   const dispatch = useDispatch();
@@ -110,8 +110,6 @@ const Header = () => {
             className="h-full w-full"
           />
         </a>
-        {user ? <Button LabelName="LogOut" onClick={() => logout()} /> : ""}
-
         <AccordionCard
           children={
             <div className="flex items-center justify-between md:gap-4 gap-2 bg-[#8B2954] rounded-full h-11 px-2 w-fit">
@@ -124,17 +122,24 @@ const Header = () => {
                 </span>
                 <select className="outline-none bg-transparent"></select>
               </div>
-              {showUser === false ? (
-                <Button
-                  className="truncate"
-                  LabelName="Login / Register"
-                  variant="Secondary"
+              {user ? (
+                <button
+                  onClick={() => {
+                    navigate("/dashboard");
+                  }}
+                  className="flex justify-center items-start rounded-full py-1 px-3 bg-white text-black cursor-pointer"
+                >
+                  <FiUser /> <span>Dashboard</span>
+                </button>
+              ) : (
+                <button
                   onClick={() => {
                     navigate(`/auth/${"login"}/${"customer"}`);
                   }}
-                />
-              ) : (
-                <FiUser className="cursor-pointer text-white text-lg" />
+                  className=" bg-white text-black border border-[#8B2954] shadow-md heading capitalize text-wrap text-center cursor-pointer flex justify-center items-center h-fit px-4 py-1 rounded-full"
+                >
+                  Login / Register
+                </button>
               )}
             </div>
           }

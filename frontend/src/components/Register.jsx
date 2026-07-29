@@ -18,6 +18,7 @@ const Register = () => {
   const formRef = useRef();
   const [data, setData] = useState();
   const [otpPopup, setOtpPopup] = useState(false);
+  const [otpNumber, setOTPNumber] = useState("");
 
   const registerContent = {
     customer: {
@@ -54,6 +55,7 @@ const Register = () => {
         setOtpPopup(true);
         formRef.current.reset();
         setData(response.data.data);
+        setOTPNumber(response.data.data.otp);
       }
       alertInfo(response.data.message);
     } catch (err) {
@@ -111,8 +113,15 @@ const Register = () => {
           {customerRegistrationInputs.map((data, index) => (
             <InputBox
               key={index}
-              placeholder={data.placeholder}
-              label={data.label}
+              label={
+                userType === "customer"
+                  ? data.label
+                  : userType === "store"
+                    ? data.storeLabel
+                    : userType === "professional"
+                      ? data.label
+                      : ""
+              }
               type={data.type}
               name={data.name}
             />
@@ -155,6 +164,7 @@ const Register = () => {
         onClose={() => setOtpPopup(false)}
         data={data}
         verificationType="registerVerification"
+        otpNumber={otpNumber}
       />
     </div>
   );

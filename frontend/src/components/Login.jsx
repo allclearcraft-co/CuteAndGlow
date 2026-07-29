@@ -18,6 +18,7 @@ const Login = ({ onRegister }) => {
   const { alertSuccess, alertError, alertInfo } = useToast({});
   const [data, setData] = useState();
   const [otpPopup, setOtpPopup] = useState(false);
+  const [otpNumber, setOTPNumber] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -28,6 +29,7 @@ const Login = ({ onRegister }) => {
         setOtpPopup(true);
         formRef.current.reset();
         setData(response.data.data);
+        setOTPNumber(response.data.data.otp);
       }
       alertInfo(response.data.message);
     } catch (err) {
@@ -102,6 +104,7 @@ const Login = ({ onRegister }) => {
         onClose={() => setOtpPopup(false)}
         data={data}
         verificationType="loginVerification"
+        otpNumber={otpNumber}
       />
     </div>
   );

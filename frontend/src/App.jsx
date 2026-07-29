@@ -6,7 +6,6 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
 import Authentication from "./pages/Auth/Authentication";
-import Service from "./pages/Services/Service";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ScrollToTop from "./components/hooks/ScrollToTop";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,7 +21,7 @@ function App() {
   /* ================= AUTO LOGIN ================= */
 
   useEffect(() => {
-    const refreshToken = localStorage.getItem("RefreshToken");
+    const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) {
       dispatch(stopAuthLoading());
       return;
@@ -30,7 +29,7 @@ function App() {
     const reLogin = async () => {
       try {
         const role = localStorage.getItem("role");
-        const refreshToken = localStorage.getItem("RefreshToken");
+        const refreshToken = localStorage.getItem("refreshToken");
         if (!role || !refreshToken) {
           throw new Error("Missing auth data");
         }
@@ -49,8 +48,8 @@ function App() {
           refreshToken,
         });
         const { user, tokens } = res.data.data;
-        localStorage.setItem("AccessToken", tokens.accessToken);
-        localStorage.setItem("RefreshToken", tokens.refreshToken);
+        localStorage.setItem("accessToken", tokens.accessToken);
+        localStorage.setItem("refreshToken", tokens.refreshToken);
         dispatch(addUser(user));
       } catch (error) {
         console.log("Re-login failed:", error?.message);
@@ -72,15 +71,15 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth/:type/:userType" element={<Authentication />} />
-          <Route
+          {/* <Route
             path={"/services/:location/:gender/:category"}
             element={<Service />}
-          />
-          <Route
+          /> */}
+          {/* <Route
             path="/services/location/female/category"
             element={<Service />}
-          />
-          <Route path="/services/all" element={<Service />} />
+          /> */}
+          {/* <Route path="/services/all" element={<Service />} /> */}
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </div>

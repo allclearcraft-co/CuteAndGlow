@@ -14,6 +14,7 @@ const customerSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Prefer not to say"],
       default: "Prefer not to say",
     },
+    profileImage: { url: String, fileId: String },
     alternateContactNumber: { type: String },
     address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }],
     defaultAddress: String,

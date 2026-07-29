@@ -1,27 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoLogOut, IoStorefrontSharp } from "react-icons/io5";
+import { IoLogOut } from "react-icons/io5";
 import {
   CustomerArray,
   StoreArray,
   ProfessionalArray,
 } from "../../constants/service";
-import {
-  FaHome,
-  FaArrowUp,
-  FaUserEdit,
-  FaUser,
-  FaMapMarkerAlt,
-  FaStore,
-  FaServicestack,
-  FaHeart,
-  FaBars,
-  FaImages,
-} from "react-icons/fa";
-import { GoVerified } from "react-icons/go";
-import { MdDomainVerification } from "react-icons/md";
-import { BsBank2 } from "react-icons/bs";
-
+import { FaHome, FaBars } from "react-icons/fa";
 import {
   Overview,
   SavedAddress,
@@ -34,112 +19,73 @@ import {
   Services,
   Images,
   KycDetails,
-} from "./Customer";
-
+  StoreStaffs,
+} from "./DashboardComponents";
 import { FetchData } from "../../utils/FetchFromApi";
 import Button from "../../components/Button";
-import { CiBank } from "react-icons/ci";
+import { DashboardSectionList } from "../../constants/Constants.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from "../../redux/slice/authSlice.js";
+import { useToast } from "../../components/hooks/ToastContext.jsx";
 
 function Dashboard() {
-  const setUserRole = localStorage.setItem("role", "user");
   const role = localStorage.getItem("role");
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState(
+    () => localStorage.getItem("activeSection") || "overview",
+  );
   const [data, setData] = useState([]);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
-
-  const dashboardSectionList = [
-    {
-      label: "Overview",
-      icon: <GoVerified />,
-      query: "overview",
-      roles: ["user", "store", "professional"],
-    },
-    {
-      label: "Address",
-      icon: <FaMapMarkerAlt />,
-      query: "address",
-      roles: ["user", "store", "professional"],
-    },
-    {
-      label: "Bank Details",
-      icon: <BsBank2 />,
-      query: "bankDetails",
-      roles: ["user", "store", "professional"],
-    },
-    {
-      label: "Favorite Store",
-      icon: <IoStorefrontSharp />,
-      query: "fav_store",
-      roles: ["user"],
-    },
-    {
-      label: "Favorite Professional",
-      icon: <FaHeart />,
-      query: "fav_professional",
-      roles: ["user"],
-    },
-    {
-      label: "Wishlist Services",
-      icon: <FaServicestack />,
-      query: "wishlist_services",
-      roles: ["user"],
-    },
-    {
-      label: "Store Staff",
-      icon: <FaUser />,
-      query: "store_staff",
-      roles: ["store"],
-    },
-    {
-      label: "Own Services ",
-      icon: <FaUser />,
-      query: "own_services",
-      roles: ["store", "professional"],
-    },
-    {
-      label: "Images",
-      icon: <FaImages />,
-      query: "images",
-      roles: ["store", "professional"],
-    },
-    {
-      label: "KYC",
-      icon: <MdDomainVerification />,
-      query: "kyc",
-      roles: ["store", "professional"],
-    },
-  ];
+  const user = useSelector((state) => state.auth.user);
+  const userId = user?._id;
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { alertInfo } = useToast();
 
   const fetchDashboardData = async ({ query }) => {
     try {
-      console.log(query);
-      const response = await FetchData(`get/data/dashboard/${query}`, "get");
-      console.log(response);
+      const userRole = role.toLowerCase();
+      const response = await FetchData(
+        `${userRole}/get/dashboard/data/${userId}/${query}`,
+        "get",
+      );
       setData(response.data.data);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
+      console.log(err.response);
     }
   };
 
-  const mobileNavItems = dashboardSectionList
-    .filter((item) => item.roles.includes(role))
-    .slice(0, 4);
+  // useEffect(() => {
+  //   fetchDashboardData({ query: "overview" });
+  // }, [user]);
 
-  const moreNavItems = dashboardSectionList
-    .filter((item) => item.roles.includes(role))
-    .slice(4);
+  const mobileNavItems = DashboardSectionList.filter((item) =>
+    item.roles.includes(role),
+  ).slice(0, 4);
 
-  return (
-    <div className="relative p-2 flex w-full gap-10 items-start h-[80vh]">
+  const moreNavItems = DashboardSectionList.filter((item) =>
+    item.roles.includes(role),
+  ).slice(4);
+
+  const logout = () => {
+    localStorage.clear();
+    dispatch(clearUser());
+    alertInfo("You are logged out successfully");
+    navigate("/");
+  };
+
+  return user ? (
+    <div className="relative p-2 flex w-full items-start h-[90vh]">
       <aside className="hidden md:flex sticky w-[25vw] h-full bg-[#8B2954] rounded-xl flex-col items-start justify-between text-white py-6 px-5">
         <div className="flex flex-col gap-2">
-          {dashboardSectionList.map((d, index) => (
+          {DashboardSectionList.map((d, index) => (
             <ul key={index} className="w-full">
               {d.roles.includes(role) ? (
                 <li
                   className={`cursor-pointer h-fit hover:bg-white/50 duration-300 ease-in-out hover:text-black rounded-lg px-3 py-2 w-full ${activeSection === d.query ? "bg-white text-black hover:bg-white" : ""}`}
                   onClick={() => {
-                    // fetchDashboardData({ query: d.query });
+                    localStorage.setItem("activeSection", d.query);
+                    fetchDashboardData({ query: d.query });
                     setActiveSection(d.query);
                     // data display
                     // close pop up
@@ -156,13 +102,19 @@ function Dashboard() {
             </ul>
           ))}
         </div>
-        <div className="flex flex-col gap-2">
-          {/* <Button LabelName="Home" variant="secondary" /> */}
-          <button className="flex items-center  bg-white text-black w-66 py-2 px-10 rounded-lg gap-2 ">
+        <div className="flex flex-col gap-2 w-full">
+          <div className=" w-full border-b-[0.2px] rounded-full " />
+          <button
+            onClick={() => navigate("/")}
+            className="bg-white text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
+          >
             <FaHome />
             Home
           </button>
-          <button className="flex items-center  bg-white text-black w-66 py-2 px-10 rounded-lg gap-2 ">
+          <button
+            onClick={() => logout()}
+            className="bg-white text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
+          >
             <IoLogOut />
             Logout
           </button>
@@ -174,7 +126,11 @@ function Dashboard() {
         {mobileNavItems.map((item) => (
           <button
             key={item.query}
-            onClick={() => setActiveSection(item.query)}
+            onClick={() => {
+              setActiveSection(item.query);
+              fetchDashboardData({ query: item.query });
+              localStorage.setItem("activeSection", item.query);
+            }}
             className={`flex flex-col items-center justify-center transition ${activeSection === item.query ? "text-[#8B2954]" : "text-gray-500"}`}
           >
             <span className="text-xl">{item.icon}</span>
@@ -207,6 +163,8 @@ function Dashboard() {
                   onClick={() => {
                     setActiveSection(item.query);
                     setShowMoreMenu(false);
+                    fetchDashboardData({ query: item.query });
+                    localStorage.setItem("activeSection", item.query);
                   }}
                   className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-100"
                 >
@@ -220,18 +178,84 @@ function Dashboard() {
         </>
       )}
       <div className="h-full w-full">
-        <main className="w-full md:w-[75vw] h-full pb-20 md:pb-0">
-          {activeSection === "overview" && <Overview />}
-          {activeSection === "address" && <SavedAddress />}
-          {activeSection === "bankDetails" && <BankingDetails />}
-          {activeSection === "fav_store" && <FavoriteStore />}{" "}
-          {activeSection === "fav_professional" && <FavoriteProfessional />}{" "}
-          {activeSection === "wishlist_services" && <Services />}
-          {activeSection === "own_services" && <Services />}
-          {activeSection === "images" && <Images />}
-          {activeSection === "kyc" && <KycDetails />}
+        <main className="w-full h-full p-1 lg:p-5">
+          {activeSection === "overview" && (
+            <Overview
+              data={data}
+              role={localStorage.role}
+              callData={() => fetchDashboardData({ query: "overview" })}
+              // userId={userId}
+              // handleReload={() => fetchDashboardData({ query: "address" })}
+            />
+          )}
+          {activeSection === "address" && (
+            <SavedAddress
+              callData={() => fetchDashboardData({ query: "address" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "address" })}
+            />
+          )}
+          {activeSection === "bankDetails" && (
+            <BankingDetails
+              callData={() => fetchDashboardData({ query: "bankDetails" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "bankDetails" })}
+            />
+          )}
+          {activeSection === "storeStaff" && (
+            <StoreStaffs
+              callData={() => fetchDashboardData({ query: "storeStaff" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "storeStaff" })}
+            />
+          )}
+          {activeSection === "fav_store" && (
+            <FavoriteStore data={data} role={localStorage.role} />
+          )}{" "}
+          {activeSection === "fav_professional" && (
+            <FavoriteProfessional data={data} role={localStorage.role} />
+          )}
+          {activeSection === "services" && (
+            <Services
+              callData={() => fetchDashboardData({ query: "services" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "services" })}
+            />
+          )}
+          {activeSection === "images" && (
+            <Images data={data} role={localStorage.role} />
+          )}
+          {activeSection === "kyc" && (
+            <KycDetails data={data} role={localStorage.role} />
+          )}
         </main>
       </div>
+    </div>
+  ) : (
+    <div className="h-[80vh] flex flex-col justify-center items-center w-full ">
+      <h1 className="heading capitalize">Please Login to view dashboard</h1>
+      <Button
+        onClick={() => navigate("/")}
+        className="w-[70vw] md:w-[40vw]"
+        LabelName={
+          <h1 className="flex justify-center items-center gap-2 w-full">
+            <FaHome />
+            Home
+          </h1>
+        }
+      />
+      {/* <button
+        onClick={() => navigate("/")}
+        className="bg- text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
+      ></button> */}
     </div>
   );
 }
