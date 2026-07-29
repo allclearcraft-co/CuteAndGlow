@@ -66,7 +66,7 @@ function Landing() {
           />
         </div>
       </div>
-      <Popup isOpen={isOpen} onClose={closePopup}>
+      <Popup isOpen={isOpen} onClose={closePopup} center={true}>
         {appointmentType === "self" ? <AppointmentForm /> : <ExploreServices />}
       </Popup>
     </div>

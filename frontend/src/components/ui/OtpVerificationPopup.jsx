@@ -85,54 +85,56 @@ function OtpVerificationPopup({
   };
 
   return (
-    <Popup isOpen={isOpen} onClose={onClose}>
-      <form
-        ref={formRef}
-        onSubmit={verifyOtp}
-        className="flex flex-col items-center gap-5"
-      >
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800">Verify OTP</h2>
+    <Popup isOpen={isOpen} onClose={onClose} center={true} fit={true}>
+      <div className="w-full md:w-[50vw]">
+        <form
+          ref={formRef}
+          onSubmit={verifyOtp}
+          className="flex flex-col items-center gap-5"
+        >
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800">Verify OTP</h2>
 
-          <p className="text-gray-500 mt-2">
-            We've sent a verification code to
-          </p>
+            <p className="text-gray-500 mt-2">
+              We've sent a verification code to
+            </p>
 
-          <p className="font-semibold text-[#8B2954] mt-1">
-            {data?.user?.contactNumber}
-            <span className="px-5">Paste this OTP:{otpNumber}</span>
-          </p>
-          <Countdown
-            duration={1}
-            onComplete={() => {
-              console.log("Time over");
-              // resendOTP();
-              setShowButton(true);
-            }}
-          />
-        </div>
+            <p className="font-semibold text-[#8B2954] mt-1">
+              {data?.user?.contactNumber}
+              <span className="px-5">Paste this OTP:{otpNumber}</span>
+            </p>
+            <Countdown
+              duration={1}
+              onComplete={() => {
+                console.log("Time over");
+                // resendOTP();
+                setShowButton(true);
+              }}
+            />
+          </div>
 
-        <div className="w-full">
-          <InputBox
-            label="OTP"
-            placeholder="Enter 6-digit OTP"
-            type="text"
-            name="otp"
-            value={otp}
-            maxLength={6}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-          />
-          <input
-            name="contactNumber"
-            value={data?.user?.contactNumber}
-            className="hidden"
-          />
-        </div>
+          <div className="w-full">
+            <InputBox
+              label="OTP"
+              placeholder="Enter 6-digit OTP"
+              type="text"
+              name="otp"
+              value={otp}
+              maxLength={6}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+            />
+            <input
+              name="contactNumber"
+              value={data?.user?.contactNumber}
+              className="hidden"
+            />
+          </div>
 
-        <div className="w-full">
-          <Button LabelName="Verify OTP" type="submit" />
-        </div>
-      </form>
+          <div className="w-full">
+            <Button LabelName="Verify OTP" type="submit" />
+          </div>
+        </form>
+      </div>
     </Popup>
   );
 }

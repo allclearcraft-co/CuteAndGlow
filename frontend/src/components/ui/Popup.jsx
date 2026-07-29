@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Popup = ({ isOpen, onClose, children }) => {
+const Popup = ({ isOpen, onClose, children, center = false, fit = true }) => {
   // Prevent background scrolling
   useEffect(() => {
     if (isOpen) {
@@ -37,17 +37,23 @@ const Popup = ({ isOpen, onClose, children }) => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-start justify-center p-4 overflow-scroll h-screen bg-black/80">
+      <motion.div
+        whileInView={{ opacity: 1, x: 0 }}
+        initial={{ opacity: 0, x: 100 }}
+        exit={{ opacity: 0, x: 100 }}
+        transition={{
+          type: "spring",
+          duration: 0.4,
+          ease: "easeInOut",
+        }}
+        className={`fixed inset-0 z-50 flex ${center === true ? "items-center" : "items-start"} justify-center p-4 overflow-scroll h-screen bg-black/80`}
+      >
         {/* Backdrop */}
         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm h-full"></div>
 
         {/* Popup */}
-        <motion.div
-          whileInView={{ opacity: 1, x: 0 }}
-          initial={{ opacity: 0, x: -100 }}
-          exit={{ opacity: 0, x: 100 }}
-          transition={{ type: "spring", duration: 0.2, ease: "easeInOut" }}
-          className="relative z-10 w-full rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col"
+        <div
+          className={`relative z-10 ${fit === true ? "w-fit" : "w-full"} rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in duration-300 flex flex-col`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Close Button */}
@@ -58,8 +64,8 @@ const Popup = ({ isOpen, onClose, children }) => {
             <IoClose size={24} />
           </button>
           <div className="">{children}</div>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 };
