@@ -562,7 +562,7 @@ const dashboardData = asyncHandler(async (req, res) => {
     case "services": {
       const service = await Services.find({
         store: storeId,
-      });
+      }).populate({ path: "executive", select: "name" });
 
       return res
         .status(200)
