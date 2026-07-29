@@ -178,7 +178,7 @@ function Dashboard() {
         </>
       )}
       <div className="h-full w-full">
-        <main className="w-full h-full p-5">
+        <main className="w-full h-full p-1 lg:p-5">
           {activeSection === "overview" && (
             <Overview
               data={data}
