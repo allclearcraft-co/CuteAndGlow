@@ -51,6 +51,23 @@ const serviceSchema = new mongoose.Schema(
     // requirements from customer
     serviceRequirements: [{ type: String }],
     isActive: { type: Boolean, default: true },
+    sponsor: {
+      type: String,
+      enum: [
+        "first",
+        "second",
+        "third",
+        "fourth",
+        "fifth",
+        "sixth",
+        "seventh",
+        "eighth",
+        "ninth",
+        "tenth",
+        "none",
+      ],
+      default: "first",
+    },
   },
   { timestamps: true },
 );
