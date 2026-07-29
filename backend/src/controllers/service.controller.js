@@ -90,6 +90,7 @@ const createStoreService = asyncHandler(async (req, res) => {
     coverImage: uploadedImages,
     serviceArea,
     serviceRequirements,
+    // sponsor: "first",
   });
   if (!service)
     throw new ApiError(403, "Something went wrong please try again later");
@@ -99,4 +100,26 @@ const createStoreService = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, service, "Added successfully !"));
 });
 
-export { createStoreService };
+const getServices = asyncHandler(async (req, res) => {
+  const { query, limit = 5 } = req.params;
+  const limitNum = parseInt(limit);
+
+  switch (query) {
+    case "heroSection": {
+      const service = await Services.find({
+        isActive: true,
+        sponsor: "first",
+      })
+        .limit(limitNum)
+        .sort({ createdAt: -1 });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Data fetched successfully !"));
+    }
+    default:
+      throw new ApiError(400, "Invalid request query");
+  }
+});
+
+export { createStoreService, getServices };
