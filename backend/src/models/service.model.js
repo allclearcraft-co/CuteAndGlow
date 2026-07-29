@@ -66,7 +66,7 @@ const serviceSchema = new mongoose.Schema(
         "tenth",
         "none",
       ],
-      default: "first",
+      default: "none",
     },
   },
   { timestamps: true },
