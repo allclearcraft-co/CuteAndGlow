@@ -1,11 +1,13 @@
-import ServiceCard from "./ServiceCard";
+import { useState } from "react";
+import CustomerServiceCard from "../../components/ui/CustomerServiceCard";
 
-const ServiceGrid = ({ services, className }) => {
-  // remove the classname parameter when the testing UI has been verified by the client
+const ServiceGrid = ({ services, cssDisplay }) => {
+  const homeClassName = "grid grid-cols-1 lg:grid-cols-2 gap-5";
+
   return (
-    <div className={`gap-8 grid ${className}`}>
+    <div className={`${cssDisplay === "hero" ? homeClassName : ""}`}>
       {services.map((service) => (
-        <ServiceCard key={service.id} service={service} />
+        <CustomerServiceCard key={service.id} service={service} />
       ))}
     </div>
   );
