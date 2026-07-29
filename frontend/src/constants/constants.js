@@ -80,18 +80,21 @@ export const maleServices = [
 export const customerRegistrationInputs = [
   {
     label: "Name",
+    storeLabel: "Store Name",
     placeholder: "Enter your name",
     name: "name",
     type: "text",
   },
   {
     label: "Contact Number",
+    storeLabel: "Store Number",
     placeholder: "Enter your contact number",
     name: "contactNumber",
     type: "text",
   },
   {
     label: "Email",
+    storeLabel: "Store Email",
     placeholder: "Enter your email",
     name: "email",
     type: "email",

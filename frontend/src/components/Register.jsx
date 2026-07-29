@@ -113,8 +113,15 @@ const Register = () => {
           {customerRegistrationInputs.map((data, index) => (
             <InputBox
               key={index}
-              placeholder={data.placeholder}
-              label={data.label}
+              label={
+                userType === "customer"
+                  ? data.label
+                  : userType === "store"
+                    ? data.storeLabel
+                    : userType === "professional"
+                      ? data.label
+                      : ""
+              }
               type={data.type}
               name={data.name}
             />
