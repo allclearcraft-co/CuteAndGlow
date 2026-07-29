@@ -25,6 +25,12 @@ const Footer = () => {
                 className="h-16"
               />
             </a>
+            <h2>
+              <p>Cute & Glow</p>
+              <p className="text-sm text-pink-100 leading-6 max-w-sm flex flex-col items-start">
+                <strong>Brand unit of</strong> CLEAR CRAFT PRIVATE LIMITED
+              </p>
+            </h2>
 
             <p className="text-sm text-pink-100 leading-6 max-w-sm">
               Experience luxury beauty and wellness services designed to
