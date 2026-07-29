@@ -71,15 +71,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth/:type/:userType" element={<Authentication />} />
-          {/* <Route
-            path={"/services/:location/:gender/:category"}
-            element={<Service />}
-          /> */}
-          {/* <Route
-            path="/services/location/female/category"
-            element={<Service />}
-          /> */}
-          {/* <Route path="/services/all" element={<Service />} /> */}
+          
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </div>
