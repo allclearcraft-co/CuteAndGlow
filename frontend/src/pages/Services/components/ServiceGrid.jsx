@@ -1,17 +1,23 @@
+import { useLocation } from "react-router-dom";
 import CustomerServiceCard from "../../../components/ui/CustomerServiceCard";
 
 const ServiceGrid = ({ services }) => {
+  const location = useLocation();
+  const hide = location.pathname === "/";
+
   return (
     <section className="w-full">
       {/* Total Results */}
 
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="heading text-xl md:text-2xl">Available Services</h2>
+      {!hide && (
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="heading text-xl md:text-2xl">Available Services</h2>
 
-        <span className="paragraph text-sm md:text-base text-neutral-500">
-          {services.length} Service{services.length !== 1 && "s"} Found
-        </span>
-      </div>
+          <span className="paragraph text-sm md:text-base text-neutral-500">
+            {services.length} Service{services.length !== 1 && "s"} Found
+          </span>
+        </div>
+      )}
 
       {/* Grid */}
 
