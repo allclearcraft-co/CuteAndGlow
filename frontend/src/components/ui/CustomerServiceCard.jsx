@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaClock, FaStar } from "react-icons/fa";
 import Button from "../Button";
 import { truncateString } from "../../utils/utility-functions";
+import { useNavigate } from "react-router-dom";
 
 const CustomerServiceCard = ({ service }) => {
   const [showDetails, setShowDetails] = useState(false);
-
+  const navigate = useNavigate();
   return (
     <>
       <div className=" group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
@@ -90,7 +91,12 @@ const CustomerServiceCard = ({ service }) => {
               onClick={() => setShowDetails(true)}
             />
 
-            <Button LabelName="Book Now" />
+            <Button
+              LabelName="Book Now"
+              onClick={() =>
+                navigate(`/services/${service?._id}/current-service`)
+              }
+            />
           </div>
         </div>
       </div>
@@ -157,7 +163,13 @@ const CustomerServiceCard = ({ service }) => {
                 </div>
 
                 <div className="mt-8">
-                  <Button LabelName="Book Appointment" className="w-full" />
+                  <Button
+                    LabelName="Book Appointment"
+                    className="w-full"
+                    onClick={() =>
+                      navigate(`/services/${service?._id}/current-service`)
+                    }
+                  />
                 </div>
               </div>
             </motion.div>
