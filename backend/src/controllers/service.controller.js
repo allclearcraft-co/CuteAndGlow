@@ -210,4 +210,31 @@ const getServices = asyncHandler(async (req, res) => {
   );
 });
 
-export { createStoreService, getServices };
+const getServiceById = asyncHandler(async (req, res) => {
+  const { serviceId } = req.params;
+  if (!serviceId) throw new ApiError(400, "Invalid request");
+
+  const service = await Services.findById(serviceId)
+    .populate({
+      path: "store",
+      select: "storeName storeContactNumber storeEmail",
+    })
+    .populate({
+      path: "executive",
+      select:
+        "name contactNumber email specialization profileImage designation experience",
+    })
+    .populate({
+      path: "professional",
+      select:
+        "name contactNumber email images.profileImage gender specialization about",
+    });
+  if (!service) throw new ApiError(400, "Unable to process request !");
+  console.log(service);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, service, "Data fetched successfully !"));
+});
+
+export { createStoreService, getServices, getServiceById };
