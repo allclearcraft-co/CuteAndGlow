@@ -43,22 +43,11 @@ function Home() {
         <h1 className="font-medium text-3xl w-full text-center heading">
           Explore Our Services
         </h1>
-        {/* <div className="w-full">
-          {Array.isArray(data) ? (
-            <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 w-full place-items-center">
-              {data?.map((service) => (
-                <BookingServiceCard key={service._id} service={service} />
-              ))}
-            </div>
-          ) : (
-            <span>No service listed kindly list service</span>
-          )}
-        </div> */}
         <ServiceGrid services={data} cssDisplay="hero" />
-        {/* <Button
+        <Button
           LabelName="Explore More"
           onClick={() => navigate("/services/all")}
-        /> */}
+        />
       </div>
     </div>
   );
