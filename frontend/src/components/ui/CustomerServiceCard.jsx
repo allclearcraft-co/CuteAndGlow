@@ -9,49 +9,18 @@ const CustomerServiceCard = ({ service }) => {
 
   return (
     <>
-      <div
-        className="
-        group
-        bg-white
-        rounded-2xl
-        overflow-hidden
-        border
-        border-neutral-200
-        shadow-sm
-        hover:shadow-xl
-        duration-300
-        flex
-        flex-col
-        h-full
-        "
-      >
+      <div className=" group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
         {/* IMAGE */}
 
         <div className="relative h-56 overflow-hidden">
           <img
             src={service?.coverImage?.[0]?.url || "/images/placeholder.jpg"}
             alt={service?.name}
-            className="
-            w-full
-            h-full
-            object-cover
-            group-hover:scale-105
-            duration-500
-            "
+            className=" w-full h-full object-cover group-hover:scale-105 duration-500"
           />
 
           <div className="absolute top-4 right-4">
-            <span
-              className="
-              bg-white/90
-              backdrop-blur-sm
-              px-3
-              py-1
-              rounded-full
-              text-xs
-              font-semibold
-              "
-            >
+            <span className=" bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold">
               {service?.serviceFor || "Everyone"}
             </span>
           </div>
@@ -121,7 +90,7 @@ const CustomerServiceCard = ({ service }) => {
               onClick={() => setShowDetails(true)}
             />
 
-            <Button LabelName="Book Now"  />
+            <Button LabelName="Book Now" />
           </div>
         </div>
       </div>
@@ -131,59 +100,25 @@ const CustomerServiceCard = ({ service }) => {
       <AnimatePresence>
         {showDetails && (
           <motion.div
-            initial={{
-              opacity: 0,
-            }}
-            animate={{
-              opacity: 1,
-            }}
-            exit={{
-              opacity: 0,
-            }}
-            className="
-            fixed
-            inset-0
-            bg-black/70
-            z-50
-            overflow-y-auto
-            p-5
-            "
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 z-50 overflow-y-auto p-5 "
           >
             <motion.div
-              initial={{
-                scale: 0.95,
-                opacity: 0,
-              }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-              }}
-              exit={{
-                scale: 0.95,
-                opacity: 0,
-              }}
-              className="
-              bg-white
-              rounded-2xl
-              max-w-5xl
-              mx-auto
-              overflow-hidden
-              "
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className=" bg-white rounded-2xl max-w-5xl mx-auto overflow-hidden "
             >
               {/* Gallery */}
-
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3">
                 {service?.coverImage?.map((image, index) => (
                   <img
                     key={index}
                     src={image.url}
                     alt=""
-                    className="
-                      h-48
-                      w-full
-                      object-cover
-                      rounded-xl
-                      "
+                    className=" h-48 w-full object-cover rounded-xl "
                   />
                 ))}
               </div>
