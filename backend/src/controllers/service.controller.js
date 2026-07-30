@@ -101,25 +101,113 @@ const createStoreService = asyncHandler(async (req, res) => {
 });
 
 const getServices = asyncHandler(async (req, res) => {
-  const { query, limit = 5 } = req.params;
-  const limitNum = parseInt(limit);
+  let {
+    page = 1,
+    limit = 20,
+    category,
+    serviceFor,
+    onSite,
+    inHouse,
+    search,
+    store,
+    professional,
+    executive,
+    sortBy = "latest",
+  } = req.query;
 
-  switch (query) {
-    case "heroSection": {
-      const service = await Services.find({
-        isActive: true,
-        sponsor: "first",
-      })
-        .limit(limitNum)
-        .sort({ createdAt: -1 });
+  page = Number(page);
+  limit = Number(limit);
+  const skip = (page - 1) * limit;
 
-      return res
-        .status(200)
-        .json(new ApiResponse(200, service, "Data fetched successfully !"));
-    }
-    default:
-      throw new ApiError(400, "Invalid request query");
+  const filter = {
+    isActive: true,
+  };
+  if (category) {
+    filter.category = category;
   }
+  if (serviceFor) {
+    filter.serviceFor = serviceFor;
+  }
+  if (store) {
+    filter.store = store;
+  }
+  if (professional) {
+    filter.professional = professional;
+  }
+  if (executive) {
+    filter.executive = executive;
+  }
+  if (onSite !== undefined) {
+    filter.onSite = onSite === "true";
+  }
+  if (inHouse !== undefined) {
+    filter.inHouse = inHouse === "true";
+  }
+  if (search) {
+    filter.name = {
+      $regex: search,
+      $options: "i",
+    };
+  }
+
+  let sort = {};
+
+  switch (sortBy) {
+    case "priceLow":
+      sort = {
+        charges: 1,
+      };
+      break;
+
+    case "priceHigh":
+      sort = {
+        charges: -1,
+      };
+      break;
+
+    case "duration":
+      sort = {
+        duration: 1,
+      };
+      break;
+
+    case "latest":
+    default:
+      sort = {
+        "sponsor.priority": 1,
+        createdAt: -1,
+      };
+  }
+
+  const [services, total] = await Promise.all([
+    Services.find(filter)
+      .populate("store", "storeName")
+      .populate("professional", "name")
+      .populate("executive", "name")
+      .sort(sort)
+      .skip(skip)
+      .limit(limit),
+
+    Services.countDocuments(filter),
+  ]);
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        services,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNext: page * limit < total,
+          hasPrev: page > 1,
+        },
+      },
+      "Services fetched successfully.",
+    ),
+  );
 });
 
 export { createStoreService, getServices };
