@@ -11,6 +11,7 @@ import ScrollToTop from "./components/hooks/ScrollToTop";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, clearUser, stopAuthLoading } from "./redux/slice/authSlice";
 import { FetchData } from "./utils/FetchFromApi";
+import Service from "./pages/Services/Service";
 
 function App() {
   const location = useLocation();
@@ -71,7 +72,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth/:type/:userType" element={<Authentication />} />
-          
+          <Route path="/services/all" element={<Service />} />
+
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </div>
