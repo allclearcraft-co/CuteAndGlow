@@ -12,6 +12,5 @@ const router = Router();
 router
   .route("/add/service/store/:storeId")
   .post(VerifyStore, upload.array("coverImage", 5), createStoreService);
-router.route("/get/service/all-service/:query/:limit").get(getServices);
-
+router.route("/get/service").get(getServices);
 export default router;
