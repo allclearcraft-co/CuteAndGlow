@@ -217,20 +217,18 @@ const getServiceById = asyncHandler(async (req, res) => {
   const service = await Services.findById(serviceId)
     .populate({
       path: "store",
-      select: "storeName storeContactNumber storeEmail",
+      select: "storeName",
     })
     .populate({
       path: "executive",
-      select:
-        "name contactNumber email specialization profileImage designation experience",
+      select: "name specialization profileImage designation experience",
     })
     .populate({
       path: "professional",
-      select:
-        "name contactNumber email images.profileImage gender specialization about",
+      select: "name images.profileImage gender specialization about",
     });
   if (!service) throw new ApiError(400, "Unable to process request !");
-  console.log(service);
+
 
   return res
     .status(200)
