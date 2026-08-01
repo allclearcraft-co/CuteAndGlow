@@ -7,6 +7,7 @@ const bookingSchema = new mongoose.Schema({
   dateOfBooking: { type: Date, required: true },
   dateForBooking: { type: Date, required: true },
   payment: { service: String, afterCoupon: String },
+  bookingAmount: Number,
 
   modeOfPayment: { type: String, enum: ["Online Payment", "Cash Payment"] },
 });
