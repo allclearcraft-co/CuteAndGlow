@@ -86,13 +86,13 @@ const CustomerServiceCard = ({ service }) => {
 
           <div className="grid grid-cols-2 gap-3 mt-6">
             <Button
-              LabelName="Details"
+              LabelName="quick view"
               variant="outline"
               onClick={() => setShowDetails(true)}
             />
 
             <Button
-              LabelName="Book Now"
+              LabelName="View full details"
               onClick={() =>
                 navigate(`/services/${service?._id}/current-service`)
               }
