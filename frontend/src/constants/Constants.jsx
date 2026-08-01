@@ -44,6 +44,12 @@ export const DashboardSectionList = [
     roles: ["Customer", "Store", "Professional"],
   },
   {
+    label: "Bookings",
+    icon: <GoVerified />,
+    query: "bookings",
+    roles: ["Customer", "Store", "Professional"],
+  },
+  {
     label: "Address",
     icon: <FaMapMarkerAlt />,
     query: "address",
