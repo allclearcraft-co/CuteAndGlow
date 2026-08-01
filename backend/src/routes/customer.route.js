@@ -15,16 +15,20 @@ import {
   loginCustomer,
   reLoginToken,
   deleteBankDetails,
+  getCustomerById,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
 
 const router = Router();
 
+//public routes
 router.route("/register").post(registerCustomer);
 router.route("/login").post(loginCustomer);
 router.route("/auth/re-login").post(reLoginToken);
+router.route("/get/customer/data/:customerId").get(getCustomerById);
 
+//private routes
 router
   .route("/otp/authentication/:verificationType/:customerId")
   .post(otpVerification);
