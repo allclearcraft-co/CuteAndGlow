@@ -425,24 +425,24 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                   labelClassName="hidden"
                 />
                 <div
-                  className={`w-full border h-0 col-span-2 border-neutral-200 ${role === "customer" ? "block" : "hidden"}`}
+                  className={`w-full border h-0 col-span-2 border-neutral-200 ${role === "customer" || "Customer" ? "block" : "hidden"}`}
                 />
                 <InputBox
                   required={false}
                   label="name"
                   name="name"
-                  labelClassName={`${role === "customer" ? "block" : "hidden"}`}
-                  className={`${role === "customer" ? "block" : "hidden"}`}
+                  labelClassName={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
+                  className={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
                 />
                 <InputBox
                   required={false}
                   label="contact"
                   name="contact"
-                  labelClassName={`${role === "customer" ? "block" : "hidden"}`}
-                  className={`${role === "customer" ? "block" : "hidden"}`}
+                  labelClassName={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
+                  className={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
                 />
                 <div
-                  className={`w-full py-3 ${role === "customer" ? "block" : "hidden"}`}
+                  className={`w-full py-3 ${role === "customer" || "Customer" ? "block" : "hidden"}`}
                 >
                   <label
                     htmlFor={name}
@@ -451,6 +451,8 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                     Address type<span className="text-red-500">*</span>
                   </label>
                   <select
+                    name="addressType"
+                    // value={}
                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed`}
                   >
                     <option value="">Select</option>
@@ -661,6 +663,7 @@ const BankingDetails = ({ data, role, userId, handleReload, callData }) => {
     </div>
   );
 };
+
 const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
   const [showForm, setShowForm] = useState(false);
   const [image, setImage] = useState(null);
@@ -897,7 +900,13 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
   );
 };
 
-const Booking = ({ data, role }) => {
+const Booking = ({ data, role, userId, handleReload, callData }) => {
+  console.log(data);
+
+  useEffect(() => {
+    callData();
+  }, []);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -913,7 +922,7 @@ const Booking = ({ data, role }) => {
       {/* Cards */}
 
       <div className="space-y-5">
-        {bookings.map((booking) => (
+        {data.map((booking) => (
           <div
             key={booking.id}
             className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
@@ -922,7 +931,9 @@ const Booking = ({ data, role }) => {
 
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-semibold">{booking.service}</h2>
+                <h2 className="text-2xl font-semibold">
+                  {booking?.service?.name}
+                </h2>
 
                 <p className="text-gray-500">{booking.store}</p>
               </div>
@@ -930,31 +941,31 @@ const Booking = ({ data, role }) => {
               <span
                 className={`px-4 py-1 rounded-full text-sm font-medium
                   ${
-                    booking.status === "Upcoming"
+                    booking?.dateForBooking < Date.now()
                       ? "bg-yellow-100 text-yellow-700"
-                      : booking.status === "Completed"
+                      : booking.dateForBooking === Date.now()
                         ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-600"
-                  }`}
+                        : "bg-red-100 text-yellow-600"
+                  }
+                  `}
               >
-                {booking.status}
+                {booking?.dateForBooking > Date.now() ? "Today" : "Upcoming"}
               </span>
             </div>
 
             {/* Details */}
-
             <div className="grid md:grid-cols-2 gap-5 mt-6">
               <div className="flex items-center gap-3">
                 <FaCalendarAlt className="text-[#8B2954]" />
-                {booking.date}
+                {formatDateString(booking?.dateForBooking)}
               </div>
 
               <div className="flex items-center gap-3">
                 <FaClock className="text-[#8B2954]" />
-                {booking.time}
+                {booking?.service?.duration || "--"} min
               </div>
 
-              <div className="flex items-center gap-3">
+              {/* <div className="flex items-center gap-3">
                 <FaUserTie className="text-[#8B2954]" />
                 {booking.professional}
               </div>
@@ -962,21 +973,17 @@ const Booking = ({ data, role }) => {
               <div className="flex items-center gap-3">
                 <FaMapMarkerAlt className="text-[#8B2954]" />
                 {booking.location}
-              </div>
+              </div> */}
 
               <div className="flex items-center gap-3">
-                <FaRupeeSign className="text-[#8B2954]" />₹ {booking.amount}
+                <FaRupeeSign className="text-[#8B2954]" />{" "}
+                {booking?.bookingAmount || "--"}
               </div>
             </div>
 
             {/* Buttons */}
 
             <div className="flex flex-wrap gap-3 mt-8">
-              <button className="flex items-center gap-2 bg-[#8B2954] text-white px-5 py-2 rounded-lg hover:bg-[#742247]">
-                <FaEye />
-                View Details
-              </button>
-
               {booking.status === "Upcoming" && (
                 <button className="flex items-center gap-2 bg-red-100 text-red-600 px-5 py-2 rounded-lg hover:bg-red-200">
                   <FaTimesCircle />

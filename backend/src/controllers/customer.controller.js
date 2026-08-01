@@ -11,6 +11,7 @@ import otpTemplate from "../template/otp.mail.template.js";
 import sendEmail from "../services/mail.service.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
+import { StoreStaff } from "../models/storeStaff.model.js";
 
 const registerCustomer = asyncHandler(async (req, res) => {
   const { contactNumber, name, email } = req.body;
@@ -194,6 +195,8 @@ const updateGender = asyncHandler(async (req, res) => {
   const { customerId } = req.params;
   const { gender } = req.body;
   if (!gender) throw new ApiError(403, "Something went wrong");
+  if (gender === "select" || gender === "Select")
+    throw new ApiError(400, "Please select a gender");
 
   const user = await Customer.findByIdAndUpdate(customerId, { gender: gender });
   if (!user)
@@ -305,6 +308,10 @@ const addAddress = asyncHandler(async (req, res) => {
   if (!newAddress)
     throw new ApiError(400, "Something went wrong, please try again later");
 
+  const customer = await Customer.findByIdAndUpdate(customerId, {
+    address: newAddress,
+  });
+
   return res
     .status(200)
     .json(new ApiResponse(200, newAddress, "Added successfully !"));
@@ -312,16 +319,41 @@ const addAddress = asyncHandler(async (req, res) => {
 
 const markAddressDefault = asyncHandler(async (req, res) => {
   const { addressId, customerId } = req.params;
-  if (!addressId || !customerId)
+  console.log(addressId, customerId);
+
+  if (!addressId || !customerId) {
     throw new ApiError(400, "Something went wrong please try again later");
+  }
 
-  const removeDefault = await Address.find({ customer: customerId });
-  removeDefault.defaultAddress = false;
-  await removeDefault.save();
+  // Remove default from all addresses
+  await Address.updateMany(
+    { customer: customerId },
+    { $set: { defaultAddress: false } },
+  );
 
-  const address = await Address.findByIdAndUpdate(addressId, {
-    defaultAddress: true,
-  });
+  // Mark selected address as default
+  const address = await Address.findByIdAndUpdate(
+    addressId,
+    { defaultAddress: true },
+    { new: true },
+  );
+
+  if (!address) {
+    throw new ApiError(400, "Unable to process request");
+  }
+
+  // Update customer's default address reference
+  const customer = await Customer.findByIdAndUpdate(
+    customerId,
+    {
+      address: address, // <-- assuming this field exists
+    },
+    { new: true },
+  );
+
+  if (!customer) {
+    throw new ApiError(400, "Unable to mark as default");
+  }
 
   return res.status(200).json(new ApiResponse(200, {}, "Marked as default"));
 });
@@ -508,6 +540,18 @@ const dashboardData = asyncHandler(async (req, res) => {
       );
     }
 
+    case "bookings": {
+      const bookings = await ServiceBookings.find({
+        customer: customerId,
+      }).populate({ path: "service", select: "name duration executive" });
+      console.log("Executive Id", bookings?.service?.executive);
+      // const executive = await StoreStaff.findById(bookings?.service?.executive);
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
+
     case "address": {
       const addresses = await Address.find({ customer: customerId });
 
@@ -645,6 +689,35 @@ const reLoginToken = asyncHandler(async (req, res) => {
   );
 });
 
+const getCustomerById = asyncHandler(async (req, res) => {
+  const { customerId } = req.params;
+  console.log(customerId);
+  if (!customerId) throw new ApiError(400, "Invalid request");
+
+  const customer = await Customer.findById(customerId).populate("address");
+  if (!customer)
+    throw new ApiError(
+      400,
+      "Unable to authenticate user, please try again later or reload",
+    );
+
+  const address = await Address.find({
+    customer: customerId,
+    defaultAddress: false,
+  });
+  if (!address) throw new ApiError(400, "Address not found");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { customer, address },
+        "Data fetched successfully !",
+      ),
+    );
+});
+
 export {
   registerCustomer,
   loginCustomer,
@@ -659,6 +732,7 @@ export {
   addBankDetails,
   addUPIid,
   deleteBankDetails,
+  getCustomerById,
   dashboardData,
   reLoginToken,
 };

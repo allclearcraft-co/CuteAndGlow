@@ -188,6 +188,15 @@ function Dashboard() {
               // handleReload={() => fetchDashboardData({ query: "address" })}
             />
           )}
+          {activeSection === "bookings" && (
+            <Booking
+              callData={() => fetchDashboardData({ query: "bookings" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "bookings" })}
+            />
+          )}
           {activeSection === "address" && (
             <SavedAddress
               callData={() => fetchDashboardData({ query: "address" })}

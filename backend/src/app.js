@@ -59,10 +59,12 @@ import customerRoutes from "./routes/customer.route.js";
 import professionalRoutes from "./routes/professional.route.js";
 import storeRoutes from "./routes/store.route.js";
 import serviceRoutes from "./routes/service.route.js";
+import serviceBookingRoutes from "./routes/serviceBooking.route.js";
 
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/professional", professionalRoutes);
 app.use("/api/v1/store", storeRoutes);
 app.use("/api/v1/services", serviceRoutes);
+app.use("/api/v1/service-booking", serviceBookingRoutes);
 
 export { app };

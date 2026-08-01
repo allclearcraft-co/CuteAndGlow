@@ -1,101 +1,182 @@
-import React from "react";
-import { FaStar, FaClock } from "react-icons/fa";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaClock, FaStar } from "react-icons/fa";
 import Button from "../Button";
 import { truncateString } from "../../utils/utility-functions";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const CustomerServiceCard = ({ service }) => {
   const [showDetails, setShowDetails] = useState(false);
-
+  const navigate = useNavigate();
   return (
-    <div className="flex flex-col justify-between items-start h-[60vh] md:h-fit lg:h-fit group w-full md:w-[60vw] lg:w-[35vw]  border-[0.1px] rounded-lg border-neutral-100 shadow">
-      <div className="flex justify-center items-center flex-col rounded-t-lg overflow-hidden h-1/2 lg:h-[30vh] bg-red-400 w-full">
-        <img
-          src={service?.coverImage[0]?.url}
-          alt={service?.name}
-          className="group-hover:scale-105 duration-500 ease-in-out h-full w-full object-cover"
-        />
-      </div>
-      <div className="h-1/2 flex flex-col justify-between items-start w-full px-5 py-5">
-        <div className="w-full flex flex-row justify-between items-start border-b border-neutral-300 pt-5 border-dashed">
-          <div className="flex flex-col justify-start items-start">
-            <h2 className="heading text-2xl leading-10">{service?.name}</h2>
-            <div className="flex justify-center items-center w-fit gap-2 paragraph text-xs border-b border-dashed z-0">
-              <FaStar className="text-[#d65f92] drop-shadow-2xl" />
-              <span>{service.rating || "4.8"}</span>
-              <span>({service.reviews || "500+"} Reviews)</span>
-            </div>
-            <div className="flex justify-center items-center w-fit gap-5 py-2">
-              <span className="heading">
-                Starts at{" "}
-                <span className="text-2xl">
-                  ₹ {Number(service.charges || 0).toLocaleString()}
-                </span>
-              </span>{" "}
-              <span className="w-2 h-2 rounded-full bg-black" />
-              <span className="flex justify-center items-center gap-2">
-                <FaClock />
-                <span>{service.duration}</span>
-              </span>
-            </div>
-          </div>
-          <Button LabelName="Book now" variant="secondary" />
-        </div>
-        <div className="flex flex-row w-full justify-between items-start">
-          <div>
-            <h1 className="heading">Service Inclusions</h1>
-            {service?.serviceInclusion
-              ?.slice(
-                service.serviceInclusion.length - 2,
-                service.serviceInclusion.length,
-              )
-              .map((item, index) => (
-                <ul key={index}>
-                  <li>
-                    {index + 1}. {truncateString(item, 20)}
-                  </li>
-                </ul>
-              ))}
-          </div>
-          <div>
-            <h1 className="heading">Service Exclusions</h1>
-            {service?.serviceExclusion
-              ?.slice(
-                service.serviceExclusion.length - 2,
-                service.serviceExclusion.length,
-              )
-              .map((item, index) => (
-                <ul key={index}>
-                  <li>
-                    {index + 1}. {truncateString(item, 20)}
-                  </li>
-                </ul>
-              ))}
+    <>
+      <div className=" group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
+        {/* IMAGE */}
+
+        <div className="relative h-56 overflow-hidden">
+          <img
+            src={service?.coverImage?.[0]?.url || "/images/placeholder.jpg"}
+            alt={service?.name}
+            className=" w-full h-full object-cover group-hover:scale-105 duration-500"
+          />
+
+          <div className="absolute top-4 right-4">
+            <span className=" bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold">
+              {service?.serviceFor || "Everyone"}
+            </span>
           </div>
         </div>
-        <button
-          onClick={() => setShowDetails(true)}
-          className="heading hover:underline text-[#d65f92] duration-300 ease-in-out my-4"
-        >
-          View Details
-        </button>
-        <div className="w-full h-[4px] bg-neutral-100 rounded-full" />
+
+        {/* BODY */}
+
+        <div className="flex flex-col flex-1 p-5">
+          {/* Name */}
+
+          <h2 className="heading text-xl mb-2 line-clamp-2">{service?.name}</h2>
+
+          {/* Rating */}
+
+          <div className="flex items-center gap-2 text-sm mb-4">
+            <FaStar className="text-yellow-500" />
+
+            <span>{service?.rating || 4.8}</span>
+
+            <span className="text-neutral-500">
+              ({service?.reviews || "500+"})
+            </span>
+          </div>
+
+          {/* Price */}
+
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <p className="text-xs text-neutral-500">Starts From</p>
+
+              <h3 className="heading text-2xl text-[#d65f92]">
+                ₹{Number(service?.charges || 0).toLocaleString("en-IN")}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm">
+              <FaClock />
+
+              {service?.duration}
+            </div>
+          </div>
+
+          {/* INCLUSIONS */}
+
+          <div className="mb-4">
+            <h4 className="heading text-sm mb-2">Includes</h4>
+
+            <ul className="space-y-1">
+              {service?.serviceInclusion?.slice(0, 2).map((item, index) => (
+                <li key={index} className="text-sm text-neutral-600">
+                  • {truncateString(item, 40)}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Spacer */}
+
+          <div className="flex-1" />
+
+          {/* Buttons */}
+
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <Button
+              LabelName="quick view"
+              variant="outline"
+              onClick={() => setShowDetails(true)}
+            />
+
+            <Button
+              LabelName="View full details"
+              onClick={() =>
+                navigate(`/services/${service?._id}/current-service`)
+              }
+            />
+          </div>
+        </div>
       </div>
+
+      {/* MODAL */}
+
       <AnimatePresence>
         {showDetails && (
           <motion.div
-            whileInView={{ opacity: 1, y: 0 }}
-            initial={{ opacity: 0, y: -100 }}
-            exit={{ opacity: 0, y: 100 }}
-            transition={{ type: "spring", duration: 0.4, ease: "easeInOut" }}
-            className="fixed top-0 left-0 h-screen bg-black/90 w-full flex justify-center items-end"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 z-50 overflow-y-auto p-5 "
           >
-            <div></div>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className=" bg-white rounded-2xl max-w-5xl mx-auto overflow-hidden "
+            >
+              {/* Gallery */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 p-3">
+                {service?.coverImage?.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image.url}
+                    alt=""
+                    className=" h-48 w-full object-cover rounded-xl "
+                  />
+                ))}
+              </div>
+
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="heading text-3xl">{service?.name}</h2>
+
+                  <Button
+                    LabelName="Close"
+                    variant="secondary"
+                    onClick={() => setShowDetails(false)}
+                  />
+                </div>
+
+                <div className="grid lg:grid-cols-2 gap-10">
+                  <div>
+                    <h3 className="heading mb-3">Service Inclusions</h3>
+
+                    <ul className="space-y-2">
+                      {service?.serviceInclusion?.map((item, index) => (
+                        <li key={index}>• {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h3 className="heading mb-3">Service Exclusions</h3>
+
+                    <ul className="space-y-2">
+                      {service?.serviceExclusion?.map((item, index) => (
+                        <li key={index}>• {item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-8">
+                  <Button
+                    LabelName="Book Appointment"
+                    className="w-full"
+                    onClick={() =>
+                      navigate(`/services/${service?._id}/current-service`)
+                    }
+                  />
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 };
 
