@@ -13,6 +13,7 @@ import { addUser, clearUser, stopAuthLoading } from "./redux/slice/authSlice";
 import { FetchData } from "./utils/FetchFromApi";
 import Service from "./pages/Services/Service";
 import CurrentService from "./pages/CurrentService/CurrentService";
+import ServiceBooking from "./pages/ServiceBooking/ServiceBooking";
 
 function App() {
   const location = useLocation();
@@ -77,6 +78,10 @@ function App() {
           <Route
             path="/services/:serviceId/current-service"
             element={<CurrentService />}
+          />
+          <Route
+            path="/services/book-service/:serviceName/:serviceId/:userId"
+            element={<ServiceBooking />}
           />
 
           <Route path="/dashboard" element={<Dashboard />} />
