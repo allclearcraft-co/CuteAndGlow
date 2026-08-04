@@ -14,6 +14,9 @@ import { FetchData } from "./utils/FetchFromApi";
 import Service from "./pages/Services/Service";
 import CurrentService from "./pages/CurrentService/CurrentService";
 import ServiceBooking from "./pages/ServiceBooking/ServiceBooking";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import TermsAndConditions from "./pages/CMS/TermsAndConditions";
+import Policy from "./pages/CMS/Policy";
 
 function App() {
   const location = useLocation();
@@ -85,6 +88,12 @@ function App() {
           />
 
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route
+            path="/terms-and-conditions"
+            element={<TermsAndConditions />}
+          />
+          <Route path="/policy" element={<Policy />} />
         </Routes>
       </div>
       {!hideFooter && <Footer />}
