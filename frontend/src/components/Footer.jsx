@@ -5,10 +5,12 @@ const Footer = () => {
   const quickLinks = [
     { name: "Female Services", path: "/services/location/female/category" },
     { name: "Male Services", path: "/services/location/male/category" },
+    { name: "Admin", path: "/admin/dashboard" },
   ];
   const usefulLinks = [
     { name: "Store", path: `/auth/${"login"}/${"store"}` },
     { name: "Professional", path: `/auth/${"login"}/${"professional"}` },
+  
   ];
 
   return (
@@ -121,11 +123,11 @@ const Footer = () => {
             <a href="#" className="hover:text-white">
               Contact Us
             </a>
-            <a href="#" className="hover:text-white">
-              Privacy Policy
+            <a href="/policy" className="hover:text-white">
+              Policy
             </a>
 
-            <a href="#" className="hover:text-white">
+            <a href="/terms-and-conditions" className="hover:text-white">
               Terms & Conditions
             </a>
           </div>
