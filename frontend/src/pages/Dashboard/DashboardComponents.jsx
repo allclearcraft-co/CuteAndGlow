@@ -1011,7 +1011,7 @@ const FavoriteStore = ({ data, role }) => {
       {/* Header */}
 
       <div>
-        <h1 className="text-3xl font-bold text-gray-800">Favourite Stores</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Favorite Stores</h1>
 
         <p className="text-gray-500 mt-1">
           Your saved salons and beauty studios.
@@ -1889,18 +1889,100 @@ const CurrentlyUnderBooking = ({ data, role }) => {
 };
 
 const Images = ({ data, role }) => {
-  const [coverImage] = useState(
-    "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200",
-  );
 
-  const [gallery] = useState([
-    "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500",
-    "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500",
-    "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500",
-    "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=500",
-    "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500",
-    "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500",
-  ]);
+  const [coverImage, setCoverImage] = useState(data?.coverImage || {});
+
+  const [gallery, setGallery] = useState(data?.gallery || []);
+
+  const [uploading, setUploading] = useState(false);
+
+  // const [coverImage] = useState(
+  //   "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200",
+  // );
+
+  const handleGalleryUpload = async (e) => {
+    const files = Array.from(e.target.files);
+
+    if (!files.length) return;
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("gallery", file);
+      });
+
+      const response = await FetchData(
+        "/store/upload-gallery",
+        "patch",
+        formData,
+      );
+
+      setGallery(response.data.data.gallery);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+  const handleCoverUpload = async (e) => {
+    const file = e.target.files[0];
+
+    if (!file) return;
+
+    try {
+      setUploading(true);
+
+      const formData = new FormData();
+
+      formData.append("coverImage", file);
+
+      const response = await FetchData(
+        "/store/upload-cover",
+        "patch",
+        formData,
+      );
+
+      setCoverImage(response.data.data.coverImage);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setUploading(false);
+    }
+  };
+  // const handleDelete = async (fileId) => {
+  //   try {
+  //     const response = await FetchData(
+  //       `/store/delete-gallery/${fileId}`,
+  //       "delete",
+  //     );
+
+  //     setGallery(response.data.data.gallery);
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // };
+      const deleteImage = async ({ ImgId }) => {
+        try {
+          const response = await FetchData(``, "delete");
+          console.log(response);
+          alertSuccess(response.data.message);
+        } catch (err) {
+          console.log(err.response);
+          alertError(err.response.data);
+        }
+      };
+  // const [gallery] = useState([
+  //   "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500",
+  //   "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500",
+  //   "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500",
+  //   "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=500",
+  //   "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500",
+  //   "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500",
+  // ]);
 
   return (
     <div className="space-y-6 w-full">
@@ -1926,15 +2008,26 @@ const Images = ({ data, role }) => {
       <div className="bg-white rounded-2xl shadow">
         <div className="relative">
           <img
-            src={coverImage}
+            src={
+              coverImage?.url ||
+              "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200"
+            }
             alt="Cover"
             className="w-full h-52 md:h-72 object-cover rounded-t-2xl"
           />
 
-          <button className="absolute bottom-4 right-4 bg-white shadow px-4 py-2 rounded-lg flex items-center gap-2">
+          <label className="absolute bottom-4 right-4 bg-white shadow px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer">
             <FaCamera />
-            Change Cover
-          </button>
+
+            {uploading ? "Uploading..." : "Change Cover"}
+
+            <input
+              type="file"
+              hidden
+              accept="image/*"
+              onChange={handleCoverUpload}
+            />
+          </label>
         </div>
       </div>
 
@@ -1951,19 +2044,22 @@ const Images = ({ data, role }) => {
       {/* Gallery */}
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
-        {gallery.map((image, index) => (
+        {gallery.map((image) => (
           <div
-            key={index}
+            key={image.fileId}
             className="relative group rounded-xl overflow-hidden bg-white shadow"
           >
             <img
-              src={image}
+              src={image.url}
               alt=""
               className="w-full h-48 object-cover group-hover:scale-105 duration-300"
             />
 
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex justify-center items-center">
-              <button className="bg-red-500 text-white p-3 rounded-full">
+              <button
+                onClick={() => handleDelete(image.ImgId)}
+                className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full transition"
+              >
                 <FaTrash />
               </button>
             </div>
@@ -1975,9 +2071,17 @@ const Images = ({ data, role }) => {
         <label className="border-2 border-dashed border-[#8B2954] rounded-xl h-48 flex flex-col justify-center items-center cursor-pointer hover:bg-pink-50 transition">
           <FaImage className="text-4xl text-[#8B2954]" />
 
-          <p className="mt-3 font-medium">Add Images</p>
+          <p className="mt-3 font-medium">
+            {uploading ? "Uploading..." : "Add Images"}
+          </p>
 
-          <input type="file" multiple className="hidden" />
+          <input
+            type="file"
+            hidden
+            multiple
+            accept="image/*"
+            onChange={handleGalleryUpload}
+          />
         </label>
       </div>
     </div>
@@ -1985,6 +2089,7 @@ const Images = ({ data, role }) => {
 };
 
 const KycDetails = ({ data, role }) => {
+
   return (
     <div className="w-full space-y-6">
       {/* Header */}

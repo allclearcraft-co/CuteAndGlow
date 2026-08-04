@@ -4,6 +4,7 @@ import { MdFaceRetouchingNatural } from "react-icons/md";
 import { FaFemale, FaMale } from "react-icons/fa";
 import { FaCut, FaUserTie } from "react-icons/fa";
 import { GiBeard } from "react-icons/gi";
+import { FaUserAlt } from "react-icons/fa";
 
 export const femaleServices = [
   {
@@ -167,3 +168,50 @@ export const activeBookings = [
     phone: "+91 9876543210",
   },
 ];
+
+export const adminDashboardSection = [
+  {
+    query: "customer",
+    label: "Customer",
+    count: 0,
+    icon: FaUserAlt,
+  },
+  {
+    query: "store",
+    label: "Store",
+    icon: FaUserAlt,
+    count: 0,
+  },
+  {
+    query: "professional",
+    label: "Professional",
+    icon: FaUserAlt,
+    count: 0,
+  },
+  {
+    query: "activeService",
+    label: "Active Service",
+    count: 0,
+  },
+  {
+    query: "inActiveService",
+    label: "In Active Service",
+    count: 0,
+  },
+  {
+    query: "pricing",
+    label: "Pricing",
+    count: 0,
+  },
+  {
+    query: "booking",
+    label: "Booking",
+    count: 0,
+  },
+  {
+    query: "registerAdmin",
+    label: "Register Admin",
+    count: 0,
+  },
+];
+
