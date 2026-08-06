@@ -20,7 +20,8 @@ import Policy from "./pages/CMS/Policy";
 
 function App() {
   const location = useLocation();
-  const hideFooter = location.pathname === "/dashboard";
+  const hideFooterRoutes = ["/dashboard", "/admin/dashboard"];
+  const hideFooter = hideFooterRoutes.includes(location.pathname);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const isHome = location.pathname === "/";
@@ -97,6 +98,7 @@ function App() {
         </Routes>
       </div>
       {!hideFooter && <Footer />}
+    
     </div>
   );
 }
