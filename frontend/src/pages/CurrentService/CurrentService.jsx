@@ -181,7 +181,7 @@ const CurrentService = () => {
                 <div className=" flex flex-col items gap-6">
                   {/* Header */}
                   <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mt-3">
+                    <h1 className="text-2xl font-bold text-gray-900 mt-3 heading">
                       {services?.name}
                     </h1>
 
@@ -211,23 +211,23 @@ const CurrentService = () => {
 
                   {/* Badges */}
 
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center gap-2 bg-white border rounded-xl px-2 py-1 shadow-sm">
+                  <div className="grid grid-cols-2 place-items-center gap-2">
+                    <div className="flex items-center gap-2 bg-white border border-neutral-100 rounded-xl px-2 py-1 shadow-sm">
                       <FaMarsStroke className="text-[#8B2954]" />
                       <span className="">{services?.category}</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-white border rounded-xl px-2 py-1 shadow-sm">
+                    <div className="flex items-center gap-2 bg-white border border-neutral-100 rounded-xl px-2 py-1 shadow-sm">
                       <FaFemale className="text-[#8B2954]" />
                       <span>{services?.serviceFor}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 bg-white border rounded-xl px-2 py-1 shadow-sm">
+                    <div className="flex items-center gap-2 bg-white border border-neutral-100 rounded-xl px-2 py-1 shadow-sm">
                       <FaClock className="text-[#8B2954]" />
                       <span>{services?.duration} min</span>
                     </div>
 
                     {services?.isPrepTime && (
-                      <div className="flex items-center gap-2 bg-white border rounded-xl px-2 py-1 shadow-sm">
+                      <div className="flex items-center gap-2 bg-white border border-neutral-100 rounded-xl px-2 py-1 shadow-sm">
                         <MdOutlineAccessTime className="text-[#8B2954]" />
                         <span>Prep : {services?.prepTime} min</span>
                       </div>
@@ -236,14 +236,14 @@ const CurrentService = () => {
 
                   {/* Service Highlights */}
 
-                  <div className="grid md:grid-cols-3 grid-cols-2">
-                    <div className="bg-white w-28 h-fit rounded-2xl   flex flex-col items-center ">
+                  <div className="grid md:grid-cols-2 grid-cols-2 place-items-center gap-2">
+                    {/* <div className="bg-white w-28 h-fit rounded-2xl   flex flex-col items-center ">
                       <HiOutlineOfficeBuilding className="text-xl text-[#8B2954]" />
                       <p className="text-gray-500 text-sm mt-2">In House</p>
                       <span className="font-semibold text-green-600">
                         {services?.inHouse ? "Yes" : "No"}
                       </span>
-                    </div>
+                    </div> */}
 
                     <div className="bg-white w-28 h-fit rounded-2xl   flex flex-col items-center ">
                       <FaHome className="text-xl text-[#8B2954]" />
@@ -266,16 +266,16 @@ const CurrentService = () => {
             </div>
 
             {/* products used  */}
-            <div className="px-2 md:px-8 py-6 space-y-4 mx-8 rounded-lg border-neutral-200 md:border ">
+            <div className="px-2 md:px-8 py-6 space-y-4 mx-8 rounded-lg border-neutral-200 md:border bg-neutral-100">
               <h2 className="text-2xl font-bold text-gray-800">
                 Products used
               </h2>
 
-              <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 w-full place-items-start">
+              <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 w-full place-items-start gap-2">
                 {services?.products?.map((item, index) => (
                   <div
                     key={index}
-                    className="bg-neutral-200 rounded-full flex justify-center items-center gap-2 px-2 py-1 text-sm"
+                    className="bg-neutral-200 rounded-full flex  justify-center items-center gap-2 px-2 py-1 text-sm"
                   >
                     <p className="capitalize ">{item?.productType}</p> -
                     <h3 className="capitalize heading flex justify-center items-center gap-2">

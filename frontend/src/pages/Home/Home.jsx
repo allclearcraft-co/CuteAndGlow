@@ -56,9 +56,6 @@ function Home() {
   return (
     <div className="h-full pb-10 flex flex-col gap-10 relative">
       <Landing />
-      <ServiceCard />
-      <ChooseUs />
-      {/* remove this below section when not needed */}
       <div className="flex flex-col justify-center items-center gap-5 px-2 w-full">
         <h1 className="font-medium text-3xl w-full text-center heading">
           Explore Our Services
@@ -78,6 +75,9 @@ function Home() {
           onClick={() => navigate("/services/all")}
         />
       </div>
+      {/* extras  */}
+      <ServiceCard />
+      <ChooseUs />
     </div>
   );
 }

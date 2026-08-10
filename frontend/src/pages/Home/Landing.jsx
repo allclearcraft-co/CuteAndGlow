@@ -58,12 +58,12 @@ function Landing() {
               openExploreServices();
             }}
           />
-          <Button
+          {/* <Button
             LabelName="Explore Services"
             onClick={() => {
               openExploreServices();
             }}
-          />
+          /> */}
         </div>
       </div>
       <Popup isOpen={isOpen} onClose={closePopup} center={true}>

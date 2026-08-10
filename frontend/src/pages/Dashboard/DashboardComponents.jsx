@@ -279,7 +279,6 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
         "post",
         formData,
       );
-      console.log(response);
       setShowForm(false);
       formRef.current.reset();
       alertSuccess(response.data.message);
@@ -293,10 +292,8 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
   const deleteCurrentAddress = async ({ addressId }) => {
     try {
       const response = await FetchData(``, "delete");
-      console.log(response);
       alertSuccess(response.data.message);
     } catch (err) {
-      console.log(err.response);
       alertError(err.response.data);
     }
   };
@@ -717,8 +714,6 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
     setImagePreview(URL.createObjectURL(file));
   };
 
-  console.log(data);
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -901,7 +896,6 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
 };
 
 const Booking = ({ data, role, userId, handleReload, callData }) => {
-  console.log(data);
 
   useEffect(() => {
     callData();
@@ -920,26 +914,26 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
       </div>
 
       {/* Cards */}
+      {Array.isArray(data) ? (
+        <div className="space-y-5">
+          {data?.map((booking,index) => (
+            <div
+              key={index}
+              className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
+            >
+              {/* Top */}
 
-      <div className="space-y-5">
-        {data.map((booking) => (
-          <div
-            key={booking.id}
-            className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
-          >
-            {/* Top */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-semibold">
+                    {booking?.service?.name}
+                  </h2>
 
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-semibold">
-                  {booking?.service?.name}
-                </h2>
+                  <p className="text-gray-500">{booking.store}</p>
+                </div>
 
-                <p className="text-gray-500">{booking.store}</p>
-              </div>
-
-              <span
-                className={`px-4 py-1 rounded-full text-sm font-medium
+                <span
+                  className={`px-4 py-1 rounded-full text-sm font-medium
                   ${
                     booking?.dateForBooking < Date.now()
                       ? "bg-yellow-100 text-yellow-700"
@@ -948,24 +942,24 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                         : "bg-red-100 text-yellow-600"
                   }
                   `}
-              >
-                {booking?.dateForBooking > Date.now() ? "Today" : "Upcoming"}
-              </span>
-            </div>
-
-            {/* Details */}
-            <div className="grid md:grid-cols-2 gap-5 mt-6">
-              <div className="flex items-center gap-3">
-                <FaCalendarAlt className="text-[#8B2954]" />
-                {formatDateString(booking?.dateForBooking)}
+                >
+                  {booking?.dateForBooking > Date.now() ? "Today" : "Upcoming"}
+                </span>
               </div>
 
-              <div className="flex items-center gap-3">
-                <FaClock className="text-[#8B2954]" />
-                {booking?.service?.duration || "--"} min
-              </div>
+              {/* Details */}
+              <div className="grid md:grid-cols-2 gap-5 mt-6">
+                <div className="flex items-center gap-3">
+                  <FaCalendarAlt className="text-[#8B2954]" />
+                  {formatDateString(booking?.dateForBooking)}
+                </div>
 
-              {/* <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3">
+                  <FaClock className="text-[#8B2954]" />
+                  {booking?.service?.duration || "--"} min
+                </div>
+
+                {/* <div className="flex items-center gap-3">
                 <FaUserTie className="text-[#8B2954]" />
                 {booking.professional}
               </div>
@@ -975,32 +969,35 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                 {booking.location}
               </div> */}
 
-              <div className="flex items-center gap-3">
-                <FaRupeeSign className="text-[#8B2954]" />{" "}
-                {booking?.bookingAmount || "--"}
+                <div className="flex items-center gap-3">
+                  <FaRupeeSign className="text-[#8B2954]" />{" "}
+                  {booking?.bookingAmount || "--"}
+                </div>
+              </div>
+
+              {/* Buttons */}
+
+              <div className="flex flex-wrap gap-3 mt-8">
+                {booking.status === "Upcoming" && (
+                  <button className="flex items-center gap-2 bg-red-100 text-red-600 px-5 py-2 rounded-lg hover:bg-red-200">
+                    <FaTimesCircle />
+                    Cancel Booking
+                  </button>
+                )}
+
+                {booking.status === "Completed" && (
+                  <button className="flex items-center gap-2 bg-yellow-100 text-yellow-700 px-5 py-2 rounded-lg hover:bg-yellow-200">
+                    <FaStar />
+                    Rate & Review
+                  </button>
+                )}
               </div>
             </div>
-
-            {/* Buttons */}
-
-            <div className="flex flex-wrap gap-3 mt-8">
-              {booking.status === "Upcoming" && (
-                <button className="flex items-center gap-2 bg-red-100 text-red-600 px-5 py-2 rounded-lg hover:bg-red-200">
-                  <FaTimesCircle />
-                  Cancel Booking
-                </button>
-              )}
-
-              {booking.status === "Completed" && (
-                <button className="flex items-center gap-2 bg-yellow-100 text-yellow-700 px-5 py-2 rounded-lg hover:bg-yellow-200">
-                  <FaStar />
-                  Rate & Review
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
@@ -1271,7 +1268,6 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
         );
         setStoreStaffList(response.data.data);
       } catch (err) {
-        // console.log(err.response.data);
       }
     };
 
@@ -1889,7 +1885,6 @@ const CurrentlyUnderBooking = ({ data, role }) => {
 };
 
 const Images = ({ data, role }) => {
-
   const [coverImage, setCoverImage] = useState(data?.coverImage || {});
 
   const [gallery, setGallery] = useState(data?.gallery || []);
@@ -1922,7 +1917,6 @@ const Images = ({ data, role }) => {
 
       setGallery(response.data.data.gallery);
     } catch (err) {
-      console.log(err);
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -1948,7 +1942,6 @@ const Images = ({ data, role }) => {
 
       setCoverImage(response.data.data.coverImage);
     } catch (err) {
-      console.log(err);
     } finally {
       setUploading(false);
     }
@@ -1962,19 +1955,19 @@ const Images = ({ data, role }) => {
 
   //     setGallery(response.data.data.gallery);
   //   } catch (err) {
-  //     console.log(err);
+
   //   }
   // };
-      const deleteImage = async ({ ImgId }) => {
-        try {
-          const response = await FetchData(``, "delete");
-          console.log(response);
-          alertSuccess(response.data.message);
-        } catch (err) {
-          console.log(err.response);
-          alertError(err.response.data);
-        }
-      };
+  const deleteImage = async ({ ImgId }) => {
+    try {
+      const response = await FetchData(``, "delete");
+
+      alertSuccess(response.data.message);
+    } catch (err) {
+
+      alertError(err.response.data);
+    }
+  };
   // const [gallery] = useState([
   //   "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500",
   //   "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500",
@@ -2089,7 +2082,6 @@ const Images = ({ data, role }) => {
 };
 
 const KycDetails = ({ data, role }) => {
-
   return (
     <div className="w-full space-y-6">
       {/* Header */}
