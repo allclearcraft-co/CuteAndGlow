@@ -13,7 +13,10 @@ const CustomerServiceCard = ({ service }) => {
       <div className=" group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
         {/* IMAGE */}
 
-        <div className="relative h-56 overflow-hidden">
+        <div
+          onClick={() => navigate(`/services/${service?._id}/current-service`)}
+          className="relative h-56 overflow-hidden cursor-pointer"
+        >
           <img
             src={service?.coverImage?.[0]?.url || "/images/placeholder.jpg"}
             alt={service?.name}
@@ -32,7 +35,17 @@ const CustomerServiceCard = ({ service }) => {
         <div className="flex flex-col flex-1 p-5">
           {/* Name */}
 
-          <h2 className="heading text-xl mb-2 line-clamp-2">{service?.name}</h2>
+          <h2
+            onClick={() =>
+              navigate(`/services/${service?._id}/current-service`)
+            }
+            className="heading text-xl mb-2 line-clamp-2 cursor-pointer"
+          >
+            {service?.name}{" "}
+            <span className="paragraph text-[10px] ">
+              by {service?.store?.storeName}
+            </span>
+          </h2>
 
           {/* Rating */}
 

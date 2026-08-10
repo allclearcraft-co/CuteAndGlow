@@ -44,7 +44,7 @@ router
   .post(VerifyCustomer, addAddress);
 router
   .route("/update/add-address/:customerId/:addressId")
-  .post(VerifyCustomer, markAddressDefault);
+  .post(markAddressDefault); // i have removed the middleware of customer from this route fix it and make it work here
 router
   .route("/update/modify-address/:customerId/:addressId")
   .post(VerifyCustomer, updateAddress);
