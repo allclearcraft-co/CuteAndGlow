@@ -20,6 +20,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
   const navigate = useNavigate();
 
   const handleBookAppointment = async (e) => {
+    console.log(customerDefaultAddress);
     e.preventDefault();
     try {
       startLoading();
@@ -195,28 +196,18 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
             value={110 + 20 + service?.charges}
             className="hidden"
           />
+          <InputBox
+            type="text"
+            name="address"
+            value={customerDefaultAddress[0]?._id}
+            className="hidden"
+            // required={false}
+          />
           <Button
             className="w-full "
             LabelName="Book Appointment"
             type="submit"
           />
-
-          {/* <label
-            className={`block text-sm font-medium text-gray-700 mb-2 capitalize`}
-          >
-            Mode of payment<span className="text-red-500">*</span>
-          </label>
-          <select
-            name="modeOfPayment"
-            className={`w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed`}
-          >
-            <option value="">Select</option>
-            {["Online Payment", "Cash Payment"].map((i, index) => (
-              <option key={index} value={i}>
-                {index + 1}. {i}
-              </option>
-            ))}
-          </select> */}
         </form>
       </div>
 
