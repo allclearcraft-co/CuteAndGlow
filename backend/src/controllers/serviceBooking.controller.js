@@ -10,13 +10,14 @@ import { ServiceBookings } from "../models/serviceBooking.model.js";
 
 const createAppointment = asyncHandler(async (req, res) => {
   const { serviceId, customerId } = req.params;
-  const { dateForBooking, modeOfPayment, bookingAmount } = req.body;
+  const { dateForBooking, modeOfPayment, bookingAmount, address } = req.body;
   if (!serviceId || !customerId || !dateForBooking || !modeOfPayment)
     throw new ApiError(400, "Something went wrong, please try again ");
 
   const newService = await ServiceBookings.create({
     service: serviceId,
     customer: customerId,
+    address: address,
     dateOfBooking: new Date(),
     dateForBooking: dateForBooking,
     modeOfPayment: modeOfPayment,
