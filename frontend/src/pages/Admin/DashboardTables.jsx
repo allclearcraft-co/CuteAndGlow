@@ -8,35 +8,80 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { truncateString } from "../../utils/utility-functions";
 
-const customerHeaders = [{
-  text: "Customer",
-  header: ["Name", "Contact Number", "Email", "Actions"],
-}]
-const professionalHeaders = [
-  {
+const TABLE_CONFIG = {
+  customer: {
+    text: "Customer",
+    columns: [
+      { header: "Name", key: "name" },
+      { header: "Contact Number", key: "contactNumber" },
+      { header: "Email", key: "email" },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+
+  professional: {
     text: "Professional",
-    header: ["Name", "Contact Number", "Email", "Actions"],
+    columns: [
+      { header: "Name", key: "name" },
+      { header: "Contact Number", key: "contactNumber" },
+      { header: "Email", key: "email" },
+      { header: "Actions", key: "actions" },
+    ],
   },
-];
-const storeHeaders = [
-  {
+
+  store: {
     text: "Store",
-    header: ["Name", "Contact Number", "Email", "Actions", "Store name"],
+    columns: [
+      { header: "Store Name", key: "storeName" },
+      { header: "Contact Number", key: "storeContactNumber" },
+      { header: "Email", key: "storeEmail" },
+      { header: "Actions", key: "actions" },
+    ],
   },
-];
-console.log(customerHeaders)
 
-const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
-  const role = userRole.toLowerCase();
+  activeService: {
+    text: "Active Services",
+    columns: [
+      { header: "Category", key: "category" },
+      { header: "Service For", key: "serviceFor" },
+      { header: "In House", key: "inHouse" },
+      { header: "Store", key: "store.name" },
+    ],
+  },
 
-  const TableHeader =
-    role === "customer"
-      ? customerHeaders
-      : role === "professional"
-        ? professionalHeaders
-        : role === "store"
-          ? storeHeaders
-          : "";
+  inActiveService: {
+    text: "Inactive Services",
+    columns: [
+      { header: "Category", key: "category" },
+      { header: "Service For", key: "serviceFor" },
+      { header: "In House", key: "inHouse" },
+      { header: "Store", key: "store.name" },
+    ],
+  },
+
+  Pricing: {
+    text: "Subscriptions",
+    columns: [
+      { header: "Plan", key: "planName" },
+      { header: "For", key: "planFor" },
+      { header: "Price", key: "price" },
+      { header: "Status", key: "isActive" },
+    ],
+  },
+
+  booking: {
+    text: "Bookings",
+    columns: [
+      { header: "Service", key: "service.name" },
+      { header: "Date", key: "dateForBooking" },
+      { header: "Payment", key: "payment" },
+      { header: "Amount", key: "bookingAmount" },
+    ],
+  },
+};
+
+const DashboardTable = ({ TableData, tableRole = "", Text }) => {
+  const TableHeader = TABLE_CONFIG[tableRole];
 
   const [search, setSearch] = useState("");
 
@@ -53,7 +98,8 @@ const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
     <div>
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-2xl font-bold">
-          {TableHeader.text} (<span className="text-sm">{filterData?.length}</span>)
+          {TableHeader.text} (
+          <span className="text-sm">{filterData?.length}</span>)
         </h2>
 
         <div className="w-96">
@@ -71,30 +117,37 @@ const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
         <table className="w-full text-sm text-left bg-white rounded-xl shadow-sm overflow-hidden">
           <thead className="bg-gray-100 text-gray-600">
             <tr>
-              {TableHeader[0].header?.map((header, index) => (
-                <th key={index} className="px-5 py-3 font-medium">
-                  {header}
+              {TableHeader?.columns.map((col) => (
+                <th key={col.header} className="px-5 py-3 font-medium">
+                  {col.header}
                 </th>
               ))}
             </tr>
           </thead>
 
           <tbody>
-            {filterData?.length > 0 ? (
-              filterData?.map((data) => (
-                <tr key={data._id} className="hover:bg-gray-50 border-b">
-                  <td className="px-5 py-3">{data?.name}</td>
-                  <td className="px-5 py-3">{data?.state?.name}</td>
-                  <td className="px-5 py-3">{data?.state?.code}</td>
-                  <td className="px-5 py-3">
-                    Long: {data?.location?.coordinates[0]} | Lat:{" "}
-                    {data?.location?.coordinates[1]}
-                  </td>
+            {filterData?.length ? (
+              filterData.map((row) => (
+                <tr key={row._id} className="hover:bg-gray-50 border-b">
+                  {TableHeader.columns.map((col) => (
+                    <td key={col.header} className="px-5 py-3">
+                      {col.key === "actions" ? (
+                        <button className="text-blue-600">View</button>
+                      ) : (
+                        (col.key
+                          .split(".")
+                          .reduce((obj, key) => obj?.[key], row) ?? "-")
+                      )}
+                    </td>
+                  ))}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="text-center py-6 text-gray-500">
+                <td
+                  colSpan={TableHeader?.columns.length}
+                  className="text-center py-6 text-gray-500"
+                >
                   No Data found.
                 </td>
               </tr>
@@ -106,4 +159,4 @@ const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
   );
 };
 
-export default DashboardTables;
+export default DashboardTable;
