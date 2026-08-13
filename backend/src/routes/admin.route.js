@@ -1,0 +1,26 @@
+import { Router } from "express";
+import {
+  createAdmin,
+  reLoginToken,
+  getAllAdmins,
+  getAdminById,
+  markAsActiveVerified,
+  dashboardData,
+} from "../controllers/admin.controller.js";
+
+import { VerifyAdmin } from "../middlewares/admin.middleware.js";
+
+const router = Router();
+
+//public routes
+router.route("/register").post(createAdmin);
+// router.route("/login").post(loginCustomer);
+router.route("/auth/re-login").post(reLoginToken);
+router.route("/get/data/dashboard-data/:query").get(dashboardData);
+
+//private routes
+// router
+//   .route("/otp/authentication/:verificationType/:customerId")
+//   .post(otpVerification);
+
+export default router;
