@@ -1,8 +1,13 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import validatePhone from "../validators/contactNumber.validator.js";
-import { Admin } from "../models/admin.model";
+import {validatePhone} from "../validators/contactNumber.validator.js";
+import { Admin } from "../models/admin.model.js";
+import { Customer } from "../models/customer.model.js";
+import { Store } from "../models/store.model.js";
+import { Services } from "../models/service.model.js";
+import { Subscription } from "../models/subscription.model.js";
+import { ServiceBookings } from "../models/serviceBooking.model.js";
 
 const createAdmin = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
@@ -130,4 +135,142 @@ const markAsActiveVerified = asyncHandler(async (req, res) => {
   }
 });
 
-export { createAdmin, getAllAdmins, getAdminById, markAsActiveVerified };
+const reLoginToken = asyncHandler(async (req, res) => {
+  const token = req.body.refreshToken;
+  if (!token) throw new ApiError(401, "Unauthorized request");
+
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+  const user = await Admin.findById(decoded._id);
+  if (!user) throw new ApiError(401, "Invalid refresh token");
+
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      user,
+      tokens: { accessToken, refreshToken },
+    }),
+  );
+});
+
+const dashboardData = asyncHandler(async (req, res) => {
+  const { query } = req.params;
+  // const { sanitizedQuery } = query.toLowercase();
+
+  switch (query) {
+    // case "overview": {
+    //   const totalVisits = await Visitor.countDocuments();
+    //   const today = new Date().toISOString().slice(0, 10);
+    //   const todayVisits = await Visitor.countDocuments({
+    //     visitDate: today,
+    //   });
+    //   const uniqueVisitors = await Visitor.aggregate([
+    //     {
+    //       $group: {
+    //         _id: "$ip",
+    //       },
+    //     },
+    //     {
+    //       $count: "uniqueVisitors",
+    //     },
+    //   ]);
+    //   const placeOverview = await Place.find().select("name category");
+    //   return res.status(200).json(
+    //     new ApiResponse(
+    //       200,
+    //       {
+    //         totalVisits,
+    //         todayVisits,
+    //         uniqueVisitors: uniqueVisitors[0]?.uniqueVisitors || 0,
+    //         placeOverview,
+    //       },
+    //       "Data fetched successfully",
+    //     ),
+    //   );
+    // }
+
+    case "customer": {
+      const customer = await Customer.find()
+        .select("name contactNumber email gender")
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, customer, "Data fetched successfully"));
+    }
+
+    case "store": {
+      const store = await Store.find()
+        .select("storeName storeContactNumber storeEmail")
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, store, "Data fetched successfully"));
+    }
+
+    case "inactive_services": {
+      const services = await Services.find({ isActive: false })
+        .select("category serviceFor inHouse")
+        .populate({ path: "store", select: "name" })
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, services, "Data fetched successfully"));
+    }
+
+    case "active_services": {
+      const services = await Services.find({ isActive: true })
+        .select("category serviceFor inHouse")
+        .populate({ path: "store", select: "name" })
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, services, "Data fetched successfully"));
+    }
+
+    case "subscription": {
+      const subscription = await Subscription.find()
+        .select("planName planFor customModelFor customModel price isActive")
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, subscription, "Data fetched successfully"));
+    }
+
+    case "bookings": {
+      const bookings = await ServiceBookings.find()
+        .select("dateForBooking payment bookingAmount")
+        .populate({ path: "service", select: "name" })
+        .populate({ path: "service", select: "name" })
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Data fetched successfully"));
+    }
+
+    default:
+      throw new ApiError(400, "Invalid session or query");
+  }
+});
+
+export {
+  createAdmin,
+  getAllAdmins,
+  getAdminById,
+  markAsActiveVerified,
+  reLoginToken,
+  dashboardData,
+};
