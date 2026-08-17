@@ -59,7 +59,7 @@ const TABLE_CONFIG = {
     ],
   },
 
-  Pricing: {
+  pricing: {
     text: "Subscriptions",
     columns: [
       { header: "Plan", key: "planName" },
@@ -95,7 +95,7 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
   }, [search, TableData]);
 
   return (
-    <div>
+    <div className="h-full">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-2xl font-bold">
           {TableHeader.text} (
@@ -113,7 +113,7 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
         </div>
       </div>
 
-      <div className="w-full mt-1 h-[500px] overflow-scroll">
+      <div className="w-full mt-1 h-[70vh] overflow-scroll">
         <table className="w-full text-sm text-left bg-white rounded-xl shadow-sm overflow-hidden">
           <thead className="bg-gray-100 text-gray-600">
             <tr>
