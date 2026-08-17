@@ -12,7 +12,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import EmptyState from "../Services/components/EmptyState";
 import LoadingSkeleton from "../Services/components/LoadingSkeleton";
-import MobileServiceTags from "./Testing";
+import MobileServiceTags from "./MobileNavigator";
 
 function Home() {
   const navigate = useNavigate();

@@ -15,7 +15,7 @@ const Service = () => {
   const [filters, setFilters] = useState({
     page: 1,
     limit: 20,
-    category: "",
+    category: localStorage.getItem("homeClickedCategory") || "",
     serviceFor: "",
     search: "",
     sortBy: "latest",
