@@ -92,13 +92,17 @@ const storeSchema = new mongoose.Schema(
     storeKycSubmitted: { type: Boolean, default: false },
     storeKycComplete: { type: Boolean, default: false },
     isProfileComplete: { type: Boolean, default: false },
-    isRegistrationFee: { type: String, default: "500" },
-    isRegistrationFeePaid: { type: Boolean, default: false },
     isSubscribed: { type: Boolean, default: true },
     subscription: { type: mongoose.Schema.Types.ObjectId, ref: "Subscription" },
 
     // validation if the user has temporarily registered or not
     isTemporaryRegistered: { type: Boolean, default: true },
+    isRegistrationFeePaid: { type: Boolean, default: false },
+    registrationFeePaidAt: Date,
+    registrationPaymentTransaction: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PaymentTransaction",
+    },
 
     // make it "true" when the user starts the registering process. if the user holds back button or reloads the tab delete the temporary registration. when he is smart and closes the browser... this will be marked as "true" earlier and when he tries to register or login again... we will verify this step once again.
     subscription: {
