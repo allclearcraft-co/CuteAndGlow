@@ -507,7 +507,7 @@ const dashboardData = asyncHandler(async (req, res) => {
   switch (query) {
     case "overview": {
       const storeInfo = await Store.findById(storeId).select(
-        "storeName storeContactNumber storeEmail createdAt bookings",
+        "storeName storeContactNumber storeEmail createdAt bookings isRegistrationFeePaid",
       );
 
       return res.status(200).json(
@@ -714,6 +714,18 @@ const getStaffForService = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, staffs, "Data fetched successfully !"));
 });
 
+const registrationFeePaid = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  const store = await Store.findByIdAndUpdate(storeId, {
+    isRegistrationFeePaid: true,
+  });
+  if (!store) throw new ApiError(400, "Something went wrong");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, store, "Data updated successfully !"));
+});
+
 export {
   registerStore,
   loginStore,
@@ -726,5 +738,6 @@ export {
   reLoginToken,
   addStoreStaff,
   getStaffForService,
+  registrationFeePaid,
   dashboardData,
 };
