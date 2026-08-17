@@ -4,8 +4,12 @@ import { useState } from "react";
 import { HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import DashboardTable from "./DashboardTables";
 import { FetchData } from "../../utils/FetchFromApi";
+import Button from "../../components/Button";
+import InputBox from "../../components/Input";
+import { useNavigate } from "react-router-dom";
 
 function AdminDashboard() {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState(
     () => localStorage.getItem("adminDashboardQuery") || "customer",
   );
@@ -63,13 +67,19 @@ function AdminDashboard() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto p-5">
+      <main className="flex-1 overflow-y-auto p-5 h-full">
         {activeSection === "customer" && (
           <DashboardTable tableRole="customer" TableData={data} />
         )}
 
         {activeSection === "store" && (
-          <DashboardTable tableRole="store" TableData={data} />
+          <div>
+            <Button
+              LabelName="Add new Store"
+              onClick={() => navigate(`/auth/${"register"}/${"store"}`)}
+            />
+            <DashboardTable tableRole="store" TableData={data} />
+          </div>
         )}
 
         {activeSection === "active_services" && (
@@ -81,7 +91,68 @@ function AdminDashboard() {
         )}
 
         {activeSection === "pricing" && (
-          <DashboardTable tableRole="Pricing" TableData={data} />
+          <div className="w-full">
+            <div className="w-full bg-neutral-200 p-3 rounded-xl">
+              <form className="grid grid-cols-3 place-items-center w-full gap-2">
+                <div className={`w-full py-3 `}>
+                  <label
+                    htmlFor={name}
+                    className={`block text-sm font-medium text-gray-700 mb-2 capitalize`}
+                  >
+                    Plan name<span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="planName"
+                    // value={}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  >
+                    <option className="uppercase" value="">
+                      Select
+                    </option>
+                    {["platinum", "gold", "silver", "bronze", "basic"].map(
+                      (i, index) => (
+                        <option className="uppercase" key={index} value={i}>
+                          {index + 1}. {i}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+                <div className={`w-full py-3 `}>
+                  <label
+                    htmlFor={name}
+                    className={`block text-sm font-medium text-gray-700 mb-2 capitalize`}
+                  >
+                    Plan for<span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    name="planFor"
+                    // value={}
+                    className={`w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed`}
+                  >
+                    <option className="uppercase" value="">
+                      Select
+                    </option>
+                    {["customer", "store", "professional", "custom"].map(
+                      (i, index) => (
+                        <option className="uppercase" key={index} value={i}>
+                          {index + 1}. {i}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+                <InputBox
+                  name="tagline"
+                  label="Tagline"
+                  type="text"
+                  placeholder="Tagline for this subscription"
+                />
+              </form>
+              <Button LabelName="Add new" />
+            </div>
+            <DashboardTable tableRole="pricing" TableData={data} />
+          </div>
         )}
 
         {activeSection === "bookings" && (

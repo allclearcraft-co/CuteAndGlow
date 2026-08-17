@@ -199,8 +199,8 @@ export const adminDashboardSection = [
     count: 0,
   },
   {
-    query: "subscription",
-    label: "Subscription",
+    query: "pricing",
+    label: "Subscriptions",
     count: 0,
   },
   {
