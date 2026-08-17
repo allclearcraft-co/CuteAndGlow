@@ -34,7 +34,6 @@ const Service = () => {
         `services/get/service?${params.toString()}`,
         "get",
       );
-      console.log(response);
       setServices(response.data.data.services);
       setPagination(response.data.data.pagination);
     } catch (err) {

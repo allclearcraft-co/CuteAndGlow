@@ -120,6 +120,10 @@ const ServiceFilters = ({ filters, setFilters }) => {
                 <option value="duration">Duration</option>
               </select>
               <Button
+                onClick={() => {
+                  setFilters("");
+                  localStorage.clear("homeClickedCategory");
+                }}
                 variant="secondary"
                 LabelName={
                   <h1 className="flex justify-center items-center gap-2">
@@ -134,10 +138,16 @@ const ServiceFilters = ({ filters, setFilters }) => {
       </div>
       {/* Applied Filters */}
       <div className="flex flex-wrap gap-2 mt-6">
-        {filters.category && (
-          <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs">
-            Category : {filters.category}
-          </span>
+        {filters?.category?.length ? (
+          <div>
+            {filters.category && (
+              <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs">
+                Category : {filters.category}
+              </span>
+            )}
+          </div>
+        ) : (
+          ""
         )}
 
         {filters.serviceFor && (
