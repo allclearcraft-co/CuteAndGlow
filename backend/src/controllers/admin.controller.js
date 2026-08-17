@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import {validatePhone} from "../validators/contactNumber.validator.js";
+import { validatePhone } from "../validators/contactNumber.validator.js";
 import { Admin } from "../models/admin.model.js";
 import { Customer } from "../models/customer.model.js";
 import { Store } from "../models/store.model.js";
@@ -49,6 +49,29 @@ const createAdmin = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, newAdmin, "Created successfully !"));
   }
+});
+
+const adminLogin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const admin = await Admin.findOne({ email });
+  if (!admin) throw new ApiError(401, "Invalid credentials");
+
+  const isValid = await admin.isPasswordCorrect(password);
+  if (!isValid) throw new ApiError(401, "Invalid credentials");
+
+  const accessToken = admin.generateAccessToken();
+  const refreshToken = admin.generateRefreshToken();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { admin, tokens: { accessToken, refreshToken } },
+        "Logged in successful !",
+      ),
+    );
 });
 
 const getAllAdmins = asyncHandler(async (req, res) => {
@@ -273,4 +296,5 @@ export {
   markAsActiveVerified,
   reLoginToken,
   dashboardData,
+  adminLogin,
 };
