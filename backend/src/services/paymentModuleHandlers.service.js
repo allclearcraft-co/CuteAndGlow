@@ -1,5 +1,5 @@
 import { PAYMENT_MODULES } from "../constants/payment.constants.js";
-import { CityDarshanBooking } from "../models/cityDarshanBooking.models.js";
+import { Store } from "../models/store.model.js";
 
 /**
  * CITY DARSHAN HANDLER
@@ -84,14 +84,28 @@ const subscriptionHandler = {
   onPaymentFailed: async () => true,
 };
 
+const registrationHandler = {
+  onPaymentSuccess: async (transaction) => {
+    const store = await Store.findById(transaction.user);
+
+    if (!store) return false;
+
+    if (store.registrationFeePaid) return true;
+
+    store.registrationFeePaid = true;
+    store.registrationFeePaidAt = new Date();
+    store.registrationPaymentTransaction = transaction._id;
+
+    await store.save();
+
+    return true;
+  },
+
+  onPaymentFailed: async () => true,
+};
+
 const handlers = {
-  [PAYMENT_MODULES.CITY_DARSHAN]: cityDarshanHandler,
-  [PAYMENT_MODULES.HOTEL]: hotelHandler,
-  [PAYMENT_MODULES.PACKAGE]: travelPackageHandler,
-  [PAYMENT_MODULES.FACILITATOR]: facilitatorHandler,
-  [PAYMENT_MODULES.CLUB]: clubHandler,
-  [PAYMENT_MODULES.PROMOTION]: promotionHandler,
-  [PAYMENT_MODULES.SUBSCRIPTION]: subscriptionHandler,
+  [PAYMENT_MODULES.REGISTRATION_CHARGE]: registrationHandler,
 };
 
 export const getPaymentModuleHandler = (module) => {
