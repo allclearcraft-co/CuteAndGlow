@@ -89,16 +89,19 @@ function App() {
           />
 
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
           <Route
             path="/terms-and-conditions"
             element={<TermsAndConditions />}
           />
           <Route path="/policy" element={<Policy />} />
+
+          {/* =========================ADMIN ================================== */}
+          {/* <Route path="/admin/authentication/login" element={<AdminAuth />} />  */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </div>
       {!hideFooter && <Footer />}
-    
     </div>
   );
 }
