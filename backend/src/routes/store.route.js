@@ -12,6 +12,7 @@ import {
   dashboardData,
   addStoreStaff,
   getStaffForService,
+  registrationFeePaid,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -33,6 +34,9 @@ router
 router
   .route("/update/add-bank-details/:storeId")
   .post(VerifyStore, addBankDetails);
+router
+  .route("/update/registration-fee-paid/true/:storeId")
+  .post(VerifyStore, registrationFeePaid);
 router.route("/update/submit-kyc/:storeId").post(
   upload.fields([
     { name: "aadharFront", maxCount: 1 },
