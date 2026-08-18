@@ -11,16 +11,8 @@ import { truncateString } from "../../utils/utility-functions";
 const TABLE_CONFIG = {
   customer: {
     text: "Customer",
-    columns: [
-      { header: "Name", key: "name" },
-      { header: "Contact Number", key: "contactNumber" },
-      { header: "Email", key: "email" },
-      { header: "Actions", key: "actions" },
-    ],
-  },
-
-  professional: {
-    text: "Professional",
+    searchKeys: ["name", "contactNumber", "email"],
+    viewRoute: (id) => `/admin/current-customer/${id}`,
     columns: [
       { header: "Name", key: "name" },
       { header: "Contact Number", key: "contactNumber" },
@@ -31,6 +23,8 @@ const TABLE_CONFIG = {
 
   store: {
     text: "Store",
+    searchKeys: ["storeName", "storeContactNumber", "storeEmail"],
+    viewRoute: (id) => `/admin/current-store/${id}`,
     columns: [
       { header: "Store Name", key: "storeName" },
       { header: "Contact Number", key: "storeContactNumber" },
@@ -41,41 +35,88 @@ const TABLE_CONFIG = {
 
   activeService: {
     text: "Active Services",
+    searchKeys: ["category", "serviceFor", "store.storeName"],
+    viewRoute: (id) => `/admin/current-service/${id}`,
     columns: [
       { header: "Category", key: "category" },
       { header: "Service For", key: "serviceFor" },
-      { header: "In House", key: "inHouse" },
-      { header: "Store", key: "store.name" },
+      {
+        header: "In House",
+        key: "inHouse",
+        render: (value) => (value ? "Yes" : "No"),
+      },
+      { header: "Store", key: "store.storeName" },
+      { header: "Actions", key: "actions" },
     ],
   },
 
-  inActiveService: {
+  inactive_services: {
     text: "Inactive Services",
+    searchKeys: ["category", "serviceFor", "store.storeName"],
+    viewRoute: (id) => `/admin/current-service/${id}`,
     columns: [
       { header: "Category", key: "category" },
       { header: "Service For", key: "serviceFor" },
-      { header: "In House", key: "inHouse" },
-      { header: "Store", key: "store.name" },
+      {
+        header: "In House",
+        key: "inHouse",
+        render: (value) => (value ? "Yes" : "No"),
+      },
+      { header: "Store", key: "store.storeName" },
+      { header: "Actions", key: "actions" },
     ],
   },
 
   pricing: {
     text: "Subscriptions",
+    searchKeys: ["planName", "planFor"],
+    viewRoute: (id) => `/admin/current-subscription/${id}`,
     columns: [
       { header: "Plan", key: "planName" },
       { header: "For", key: "planFor" },
-      { header: "Price", key: "price" },
-      { header: "Status", key: "isActive" },
+      {
+        header: "Price",
+        key: "price",
+        render: (value) => `₹${value}`,
+      },
+      {
+        header: "Status",
+        key: "isActive",
+        render: (value) => (value ? "Active" : "Inactive"),
+      },
+      { header: "Actions", key: "actions" },
     ],
   },
 
   booking: {
     text: "Bookings",
+    searchKeys: ["service.name", "bookingAmount"],
+    viewRoute: (id) => `/admin/current-booking/${id}`,
     columns: [
       { header: "Service", key: "service.name" },
-      { header: "Date", key: "dateForBooking" },
+      {
+        header: "Date",
+        key: "dateForBooking",
+        render: (value) => new Date(value).toLocaleDateString("en-IN"),
+      },
       { header: "Payment", key: "payment" },
-      { header: "Amount", key: "bookingAmount" },
+      {
+        header: "Amount",
+        key: "bookingAmount",
+        render: (value) => `₹${value}`,
+      },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+  adminsQuery: {
+    text: "Admins",
+    searchKeys: ["name", "contactNumber", "employeeId"],
+    viewRoute: (id) => `/admin/current-admin/${id}`,
+    columns: [
+      { header: "Name", key: "name" },
+      { header: "Contact number", key: "contactNumber" },
+      { header: "Employee ID", key: "employeeId" },
+      { header: "Actions", key: "actions" },
     ],
   },
 };
@@ -85,20 +126,28 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
 
   const [search, setSearch] = useState("");
 
+  const getNestedValue = (obj, path) =>
+    path.split(".").reduce((acc, key) => acc?.[key], obj);
+
   const filterData = useMemo(() => {
     if (!search.trim()) return TableData;
 
     const q = search.toLowerCase();
-    return TableData.filter((c) =>
-      `${c?.name}${c?.contactNumber}${c?.email}`.toLowerCase().includes(q),
+
+    return TableData.filter((row) =>
+      TableHeader.searchKeys.some((key) =>
+        String(getNestedValue(row, key) ?? "")
+          .toLowerCase()
+          .includes(q),
+      ),
     );
-  }, [search, TableData]);
+  }, [search, TableData, TableHeader]);
 
   return (
     <div className="h-full">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-2xl font-bold">
-          {TableHeader.text} (
+          {TableHeader?.text} (
           <span className="text-sm">{filterData?.length}</span>)
         </h2>
 
@@ -129,17 +178,28 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
             {filterData?.length ? (
               filterData.map((row) => (
                 <tr key={row._id} className="hover:bg-gray-50 border-b">
-                  {TableHeader.columns.map((col) => (
-                    <td key={col.header} className="px-5 py-3">
-                      {col.key === "actions" ? (
-                        <button className="text-blue-600">View</button>
-                      ) : (
-                        (col.key
-                          .split(".")
-                          .reduce((obj, key) => obj?.[key], row) ?? "-")
-                      )}
-                    </td>
-                  ))}
+                  {TableHeader?.columns.map((col) => {
+                    if (col.key === "actions") {
+                      return (
+                        <td key={col.header} className="px-5 py-3">
+                          <Link
+                            to={TableHeader.viewRoute(row._id)}
+                            className="text-blue-600 hover:underline font-medium"
+                          >
+                            View
+                          </Link>
+                        </td>
+                      );
+                    }
+
+                    const value = getNestedValue(row, col.key);
+
+                    return (
+                      <td key={col.header} className="px-5 py-3">
+                        {col.render ? col.render(value, row) : (value ?? "-")}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             ) : (
