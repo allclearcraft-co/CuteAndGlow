@@ -14,7 +14,7 @@ import { VerifyAdmin } from "../middlewares/admin.middleware.js";
 const router = Router();
 
 //public routes
-router.route("/register").post(createAdmin);
+router.route("/register/new").post(createAdmin);
 router.route("/login").post(adminLogin);
 // router.route("/login").post(loginCustomer);
 router.route("/auth/re-login").post(reLoginToken);
