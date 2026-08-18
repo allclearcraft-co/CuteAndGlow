@@ -5,12 +5,14 @@ const Footer = () => {
   const quickLinks = [
     { name: "Female Services", path: "/services/location/female/category" },
     { name: "Male Services", path: "/services/location/male/category" },
-    { name: "Admin", path: "/admin/dashboard" },
+    { name: "Admin", path: "/admin/login" },
   ];
   const usefulLinks = [
-    { name: "Store", path: `/auth/${"login"}/${"store"}` },
-    { name: "Professional", path: `/auth/${"login"}/${"professional"}` },
-  
+    { name: "Store (Login / Register)", path: `/auth/${"login"}/${"store"}` },
+    {
+      name: "Professional (Login / Register)",
+      path: `/auth/${"login"}/${"professional"}`,
+    },
   ];
 
   return (
