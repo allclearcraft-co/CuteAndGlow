@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { useState } from "react";
 import EmptyState from "../Services/components/EmptyState";
 import LoadingSkeleton from "../Services/components/LoadingSkeleton";
+import MobileServiceTags from "./MobileNavigator";
 
 function Home() {
   const navigate = useNavigate();
@@ -55,10 +56,15 @@ function Home() {
 
   return (
     <div className="h-full pb-10 flex flex-col gap-10 relative">
-      <Landing />
+      <div className="hidden lg:block">
+        <Landing />
+      </div>
+      <div className="lg:hidden">
+        <MobileServiceTags />
+      </div>
       <div className="flex flex-col justify-center items-center gap-5 px-2 w-full">
         <h1 className="font-medium text-3xl w-full text-center heading">
-          Explore Our Services
+          Featured Services
         </h1>
         {loading ? (
           <LoadingSkeleton />
@@ -69,7 +75,6 @@ function Home() {
             <ServiceGrid services={data} />
           </>
         )}
-        {/* <ServiceGrid services={data} /> */}
         <Button
           LabelName="Explore More"
           onClick={() => navigate("/services/all")}

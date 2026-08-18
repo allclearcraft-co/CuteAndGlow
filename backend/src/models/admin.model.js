@@ -5,18 +5,21 @@ import jwt from "jsonwebtoken";
 const adminSchema = new mongoose.Schema(
   {
     // initial details
+    creatorAdmin: { type: mongoose.Schema.Types.ObjectId, ref: "Admin" },
     name: { type: String, required: true },
     contactNumber: { type: String, required: true },
     email: { type: String },
-    password: { type: String, required: true, select: false },
+    password: { type: String, required: true },
 
     employeeId: { type: String, required: true },
     role: {
       type: String,
-      enum: ["admin", "subAdmin"],
+      enum: ["admin", "subAdmin", "sales", "marketing"],
       default: "subAdmin",
       required: true,
     },
+    restrictedAccess: { type: Boolean, default: true },
+    sectionList: [{ type: String }],
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: true },
   },

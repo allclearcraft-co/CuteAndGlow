@@ -189,29 +189,28 @@ export const adminDashboardSection = [
     count: 0,
   },
   {
-    query: "activeService",
+    query: "active_services",
     label: "Active Service",
     count: 0,
   },
   {
-    query: "inActiveService",
+    query: "inactive_services",
     label: "In Active Service",
     count: 0,
   },
   {
-    query: "pricing",
-    label: "Pricing",
+    query: "subscription",
+    label: "Subscriptions",
     count: 0,
   },
   {
-    query: "booking",
+    query: "bookings",
     label: "Booking",
     count: 0,
   },
   {
-    query: "registerAdmin",
-    label: "Register Admin",
+    query: "adminsQuery",
+    label: "Admins",
     count: 0,
   },
 ];
-

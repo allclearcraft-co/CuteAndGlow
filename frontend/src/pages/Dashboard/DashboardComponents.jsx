@@ -896,7 +896,6 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
 };
 
 const Booking = ({ data, role, userId, handleReload, callData }) => {
-
   useEffect(() => {
     callData();
   }, []);
@@ -916,7 +915,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
       {/* Cards */}
       {Array.isArray(data) ? (
         <div className="space-y-5">
-          {data?.map((booking,index) => (
+          {data?.map((booking, index) => (
             <div
               key={index}
               className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
@@ -1267,8 +1266,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
           "get",
         );
         setStoreStaffList(response.data.data);
-      } catch (err) {
-      }
+      } catch (err) {}
     };
 
     getAllStoreStaff();
@@ -1964,7 +1962,6 @@ const Images = ({ data, role }) => {
 
       alertSuccess(response.data.message);
     } catch (err) {
-
       alertError(err.response.data);
     }
   };

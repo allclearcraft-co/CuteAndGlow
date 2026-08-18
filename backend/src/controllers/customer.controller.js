@@ -12,6 +12,7 @@ import sendEmail from "../services/mail.service.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
 import { StoreStaff } from "../models/storeStaff.model.js";
+import { Subscription } from "../models/subscription.model.js";
 
 const registerCustomer = asyncHandler(async (req, res) => {
   const { contactNumber, name, email } = req.body;
@@ -528,12 +529,19 @@ const dashboardData = asyncHandler(async (req, res) => {
         defaultAddress: true,
       });
 
+      const subscriptions = await Subscription.find({
+        planFor: "customer",
+        isActive: true,
+      }).select("-admin");
+      if (!subscriptions) throw new ApiError(400, "No subscription found");
+
       return res.status(200).json(
         new ApiResponse(
           200,
           {
             customer: customerInfo,
             defaultAddress,
+            subscriptions,
           },
           "Dashboard data fetched successfully",
         ),
@@ -695,6 +703,7 @@ const getCustomerById = asyncHandler(async (req, res) => {
   if (!customerId) throw new ApiError(400, "Invalid request");
 
   const customer = await Customer.findById(customerId).populate("address");
+  console.log(customer);
   if (!customer)
     throw new ApiError(
       400,

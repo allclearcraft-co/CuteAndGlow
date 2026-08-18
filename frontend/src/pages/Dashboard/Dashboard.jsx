@@ -25,8 +25,9 @@ import { FetchData } from "../../utils/FetchFromApi";
 import Button from "../../components/Button";
 import { DashboardSectionList } from "../../constants/Constants.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import { clearUser } from "../../redux/slice/authSlice.js";
+import { clearUser, updateUser } from "../../redux/slice/authSlice.js";
 import { useToast } from "../../components/hooks/ToastContext.jsx";
+import RegistrationFeeModal from "../../components/ui/RegistrationFeePopup.jsx";
 
 function Dashboard() {
   const role = localStorage.getItem("role");
@@ -55,10 +56,6 @@ function Dashboard() {
     }
   };
 
-  // useEffect(() => {
-  //   fetchDashboardData({ query: "overview" });
-  // }, [user]);
-
   const mobileNavItems = DashboardSectionList.filter((item) =>
     item.roles.includes(role),
   ).slice(0, 4);
@@ -74,8 +71,37 @@ function Dashboard() {
     navigate("/");
   };
 
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const [checkingPayment, setCheckingPayment] = useState(true);
+  useEffect(() => {
+    if (!user || role !== "Store") return;
+    console.log(user);
+    setShowRegistrationModal(!user.isRegistrationFeePaid);
+    setCheckingPayment(false);
+  }, [user, role]);
+
+  const markRegistrationFeePaid = async () => {
+    try {
+      const userRole = role.toLowerCase();
+      const response = await FetchData(
+        `${userRole}/update/registration-fee-paid/true/${userId}`,
+        "post",
+      );
+      console.log(response);
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  };
+
+  const handleRegistrationSuccess = async () => {
+    markRegistrationFeePaid();
+    // dispatch(updateUser(response.data.data));
+    fetchDashboardData({ query: "overview" });
+
+    setShowRegistrationModal(false);
+  };
   return user ? (
-    <div className="relative p-2 flex w-full items-start h-[90vh]">
+    <div className={`relative p-2 flex w-full items-start h-[90vh] `}>
       <aside className="hidden md:flex sticky w-[25vw] h-full bg-[#8B2954] rounded-xl flex-col items-start justify-between text-white py-6 px-5">
         <div className="flex flex-col gap-2">
           {DashboardSectionList.map((d, index) => (
@@ -247,6 +273,16 @@ function Dashboard() {
           )}
         </main>
       </div>
+      <div>
+        {showRegistrationModal && (
+          <div>
+            <RegistrationFeeModal
+              store={user}
+              onSuccess={handleRegistrationSuccess}
+            />
+          </div>
+        )}
+      </div>
     </div>
   ) : (
     <div className="h-[80vh] flex flex-col justify-center items-center w-full ">
@@ -261,10 +297,6 @@ function Dashboard() {
           </h1>
         }
       />
-      {/* <button
-        onClick={() => navigate("/")}
-        className="bg- text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
-      ></button> */}
     </div>
   );
 }

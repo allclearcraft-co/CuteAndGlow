@@ -22,13 +22,6 @@ const Header = () => {
 
   const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.clear();
-    dispatch(clearUser());
-    alertInfo("You are logged out successfully");
-    navigate("/");
-  };
-
   const [isScrolled, setIsScrolled] = useState(false);
   // const location = useLocation();
 

@@ -5,34 +5,145 @@ import { Subscription } from "../models/subscription.model.js";
 import { Customer } from "../models/customer.model.js";
 import { Store } from "../models/store.model.js";
 import { Professional } from "../models/professional.model.js";
+import { Admin } from "../models/admin.model.js";
 
 const createSubscription = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
+
+  const admin = await Admin.findById(adminId);
+  if (!admin) throw new ApiError(404, "Admin not found.");
+
   const {
-    planFor,
     planName,
+    planFor,
+    customModel,
+    customModelFor,
+    tagline,
+
+    validity,
+    renewalType,
+
     mrp,
     discount,
     sellingPrice,
-    validity,
-    customModelFor,
+    planPrice,
+
+    support,
+
+    photos,
+    videos,
+    unlimitedPhotos,
+    unlimitedVideos,
+
+    bookingEnabled,
+    advancedBooking,
+
+    featured,
+    verifiedBadge,
+
+    franchiseEnabled,
+    enquiryButton,
+
+    staffAttendance,
+    inventory,
+    commissionTracking,
+    analytics,
+
+    socialPromotion,
+    couponManager,
+    smsWhatsapp,
+    reviews,
   } = req.body;
 
-  if (!planFor || !planName || !mrp || !discount || !sellingPrice || !validity)
-    throw new ApiError(400, "All fields are required !");
+  if (!planName || !planFor || !mrp || !sellingPrice || !validity) {
+    throw new ApiError(400, "Required fields are missing.");
+  }
 
-  const { features, faqs } = JSON.parse(req.body.parsingData);
+  let features = [];
+  let faqs = [];
+
+  if (req.body.parsingData) {
+    const parsed = JSON.parse(req.body.parsingData);
+    features = parsed.features || [];
+    faqs = parsed.faqs || [];
+  }
+
   const newSubscription = await Subscription.create({
-    admin,
+    admin: adminId,
+
     planName,
     planFor,
+
+    customModel:
+      customModel === "true" || planFor === "custom" || !!customModelFor,
+
     customModelFor,
-    customModel: customModelFor ? true : false,
+
+    tagline,
+    planPrice,
+
+    validity: {
+      months: Number(validity),
+      renewalType: renewalType || "yearly",
+    },
+
+    price: {
+      mrp: Number(mrp),
+      discount: Number(discount || 0),
+      sellingPrice: Number(sellingPrice),
+    },
+
+    support: support || "basic",
+
+    mediaLimit: {
+      photos: Number(photos || 0),
+      videos: Number(videos || 0),
+      unlimitedPhotos: unlimitedPhotos === "true",
+      unlimitedVideos: unlimitedVideos === "true",
+    },
+
+    booking: {
+      enabled: bookingEnabled === "true",
+      advancedBooking: advancedBooking === "true",
+    },
+
+    visibility: {
+      featured: featured === "true",
+      verifiedBadge: verifiedBadge === "true",
+    },
+
+    franchise: {
+      enabled: franchiseEnabled === "true",
+      enquiryButton: enquiryButton === "true",
+    },
+
+    managementTools: {
+      staffAttendance: staffAttendance === "true",
+      inventory: inventory === "true",
+      commissionTracking: commissionTracking === "true",
+      analytics: analytics === "true",
+    },
+
+    marketing: {
+      socialPromotion: socialPromotion === "true",
+      couponManager: couponManager === "true",
+      smsWhatsapp: smsWhatsapp === "true",
+      reviews: reviews === "true",
+    },
+
     features,
-    price: { mrp: mrp, discount: discount, sellingPrice: sellingPrice },
-    validity,
-    faqs: faqs,
+    faqs,
   });
+
+  return res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        newSubscription,
+        "Subscription created successfully.",
+      ),
+    );
 });
 
 const getSubscriptionByMadeFor = asyncHandler(async (req, res) => {
@@ -40,7 +151,7 @@ const getSubscriptionByMadeFor = asyncHandler(async (req, res) => {
   if (!query) throw new ApiError(400, "Invalid request");
 
   const subscription = await Subscription.find({
-    planFor: query,
+    planFor: query.toLowerCase(),
     isActive: true,
   }).select("-admin");
   if (!subscription) throw new ApiError(400, "No subscriptions found !");

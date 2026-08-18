@@ -8,52 +8,147 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { truncateString } from "../../utils/utility-functions";
 
-const customerHeaders = [{
-  text: "Customer",
-  header: ["Name", "Contact Number", "Email", "Actions"],
-}]
-const professionalHeaders = [
-  {
-    text: "Professional",
-    header: ["Name", "Contact Number", "Email", "Actions"],
+const TABLE_CONFIG = {
+  customer: {
+    text: "Customer",
+    searchKeys: ["name", "contactNumber", "email"],
+    viewRoute: (id) => `/admin/current-customer/${id}`,
+    columns: [
+      { header: "Name", key: "name" },
+      { header: "Contact Number", key: "contactNumber" },
+      { header: "Email", key: "email" },
+      { header: "Actions", key: "actions" },
+    ],
   },
-];
-const storeHeaders = [
-  {
+
+  store: {
     text: "Store",
-    header: ["Name", "Contact Number", "Email", "Actions", "Store name"],
+    searchKeys: ["storeName", "storeContactNumber", "storeEmail"],
+    viewRoute: (id) => `/admin/current-store/${id}`,
+    columns: [
+      { header: "Store Name", key: "storeName" },
+      { header: "Contact Number", key: "storeContactNumber" },
+      { header: "Email", key: "storeEmail" },
+      { header: "Actions", key: "actions" },
+    ],
   },
-];
-console.log(customerHeaders)
 
-const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
-  const role = userRole.toLowerCase();
+  activeService: {
+    text: "Active Services",
+    searchKeys: ["category", "serviceFor", "store.storeName"],
+    viewRoute: (id) => `/admin/current-service/${id}`,
+    columns: [
+      { header: "Category", key: "category" },
+      { header: "Service For", key: "serviceFor" },
+      {
+        header: "In House",
+        key: "inHouse",
+        render: (value) => (value ? "Yes" : "No"),
+      },
+      { header: "Store", key: "store.storeName" },
+      { header: "Actions", key: "actions" },
+    ],
+  },
 
-  const TableHeader =
-    role === "customer"
-      ? customerHeaders
-      : role === "professional"
-        ? professionalHeaders
-        : role === "store"
-          ? storeHeaders
-          : "";
+  inactive_services: {
+    text: "Inactive Services",
+    searchKeys: ["category", "serviceFor", "store.storeName"],
+    viewRoute: (id) => `/admin/current-service/${id}`,
+    columns: [
+      { header: "Category", key: "category" },
+      { header: "Service For", key: "serviceFor" },
+      {
+        header: "In House",
+        key: "inHouse",
+        render: (value) => (value ? "Yes" : "No"),
+      },
+      { header: "Store", key: "store.storeName" },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+
+  pricing: {
+    text: "Subscriptions",
+    searchKeys: ["planName", "planFor"],
+    viewRoute: (id) => `/admin/current-subscription/${id}`,
+    columns: [
+      { header: "Plan", key: "planName" },
+      { header: "For", key: "planFor" },
+      {
+        header: "Price",
+        key: "price.mrp",
+        render: (value) => `₹${value}`,
+      },
+      {
+        header: "Status",
+        key: "isActive",
+        render: (value) => (value ? "Active" : "Inactive"),
+      },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+
+  booking: {
+    text: "Bookings",
+    searchKeys: ["service.name", "bookingAmount"],
+    viewRoute: (id) => `/admin/current-booking/${id}`,
+    columns: [
+      { header: "Service", key: "service.name" },
+      {
+        header: "Date",
+        key: "dateForBooking",
+        render: (value) => new Date(value).toLocaleDateString("en-IN"),
+      },
+      { header: "Payment", key: "payment" },
+      {
+        header: "Amount",
+        key: "bookingAmount",
+        render: (value) => `₹${value}`,
+      },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+  adminsQuery: {
+    text: "Admins",
+    searchKeys: ["name", "contactNumber", "employeeId"],
+    viewRoute: (id) => `/admin/current-admin/${id}`,
+    columns: [
+      { header: "Name", key: "name" },
+      { header: "Contact number", key: "contactNumber" },
+      { header: "Employee ID", key: "employeeId" },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+};
+
+const DashboardTable = ({ TableData, tableRole = "", Text }) => {
+  const TableHeader = TABLE_CONFIG[tableRole];
 
   const [search, setSearch] = useState("");
+
+  const getNestedValue = (obj, path) =>
+    path.split(".").reduce((acc, key) => acc?.[key], obj);
 
   const filterData = useMemo(() => {
     if (!search.trim()) return TableData;
 
     const q = search.toLowerCase();
-    return TableData.filter((c) =>
-      `${c?.name}${c?.contactNumber}${c?.email}`.toLowerCase().includes(q),
+
+    return TableData.filter((row) =>
+      TableHeader.searchKeys.some((key) =>
+        String(getNestedValue(row, key) ?? "")
+          .toLowerCase()
+          .includes(q),
+      ),
     );
-  }, [search, TableData]);
+  }, [search, TableData, TableHeader]);
 
   return (
-    <div>
+    <div className="h-full">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-2xl font-bold">
-          {TableHeader.text} (<span className="text-sm">{filterData?.length}</span>)
+          {TableHeader?.text} (
+          <span className="text-sm">{filterData?.length}</span>)
         </h2>
 
         <div className="w-96">
@@ -67,34 +162,52 @@ const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
         </div>
       </div>
 
-      <div className="w-full mt-1 h-[500px] overflow-scroll">
+      <div className="w-full mt-1 h-[70vh] overflow-scroll">
         <table className="w-full text-sm text-left bg-white rounded-xl shadow-sm overflow-hidden">
           <thead className="bg-gray-100 text-gray-600">
             <tr>
-              {TableHeader[0].header?.map((header, index) => (
-                <th key={index} className="px-5 py-3 font-medium">
-                  {header}
+              {TableHeader?.columns.map((col) => (
+                <th key={col.header} className="px-5 py-3 font-medium">
+                  {col.header}
                 </th>
               ))}
             </tr>
           </thead>
 
           <tbody>
-            {filterData?.length > 0 ? (
-              filterData?.map((data) => (
-                <tr key={data._id} className="hover:bg-gray-50 border-b">
-                  <td className="px-5 py-3">{data?.name}</td>
-                  <td className="px-5 py-3">{data?.state?.name}</td>
-                  <td className="px-5 py-3">{data?.state?.code}</td>
-                  <td className="px-5 py-3">
-                    Long: {data?.location?.coordinates[0]} | Lat:{" "}
-                    {data?.location?.coordinates[1]}
-                  </td>
+            {filterData?.length ? (
+              filterData.map((row) => (
+                <tr key={row._id} className="hover:bg-gray-50 border-b">
+                  {TableHeader?.columns.map((col) => {
+                    if (col.key === "actions") {
+                      return (
+                        <td key={col.header} className="px-5 py-3">
+                          <Link
+                            to={TableHeader.viewRoute(row._id)}
+                            className="text-blue-600 hover:underline font-medium"
+                          >
+                            View
+                          </Link>
+                        </td>
+                      );
+                    }
+
+                    const value = getNestedValue(row, col.key);
+
+                    return (
+                      <td key={col.header} className="px-5 py-3 capitalize">
+                        {col.render ? col.render(value, row) : (value ?? "-")}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="text-center py-6 text-gray-500">
+                <td
+                  colSpan={TableHeader?.columns.length}
+                  className="text-center py-6 text-gray-500"
+                >
                   No Data found.
                 </td>
               </tr>
@@ -106,4 +219,4 @@ const DashboardTables = ({ TableData, userRole = "Customer", Text }) => {
   );
 };
 
-export default DashboardTables;
+export default DashboardTable;

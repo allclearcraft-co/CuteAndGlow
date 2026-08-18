@@ -17,6 +17,7 @@ import ServiceBooking from "./pages/ServiceBooking/ServiceBooking";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import TermsAndConditions from "./pages/CMS/TermsAndConditions";
 import Policy from "./pages/CMS/Policy";
+import AdminAuth from "./pages/Auth/AdminAuth";
 
 function App() {
   const location = useLocation();
@@ -40,11 +41,14 @@ function App() {
         if (!role || !refreshToken) {
           throw new Error("Missing auth data");
         }
-
         const endpointMap = {
           Customer: "customer/auth/re-login",
           Store: "store/auth/re-login",
           Professional: "professional/auth/re-login",
+          admin: "admin/auth/re-login",
+          subAdmin: "admin/auth/re-login",
+          sales: "admin/auth/re-login",
+          marketing: "admin/auth/re-login",
         };
         const endpoint = endpointMap[role];
         if (!endpoint) {
@@ -89,16 +93,24 @@ function App() {
           />
 
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
           <Route
             path="/terms-and-conditions"
             element={<TermsAndConditions />}
           />
           <Route path="/policy" element={<Policy />} />
+
+          {/* =========================ADMIN ================================== */}
+          {/* <Route path="/admin/authentication/login" element={<AdminAuth />} />  */}
+          <Route path="/admin/login" element={<AdminAuth />} />
+          <Route
+            path="/admin/reset/password"
+            element={<AdminAuth resetPassword={true} />}
+          />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </div>
       {!hideFooter && <Footer />}
-    
     </div>
   );
 }

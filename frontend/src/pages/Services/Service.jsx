@@ -15,7 +15,7 @@ const Service = () => {
   const [filters, setFilters] = useState({
     page: 1,
     limit: 20,
-    category: "",
+    category: localStorage.getItem("homeClickedCategory") || "",
     serviceFor: "",
     search: "",
     sortBy: "latest",
@@ -34,7 +34,6 @@ const Service = () => {
         `services/get/service?${params.toString()}`,
         "get",
       );
-      console.log(response);
       setServices(response.data.data.services);
       setPagination(response.data.data.pagination);
     } catch (err) {
