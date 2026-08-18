@@ -7,7 +7,7 @@ import { addUser, clearUser } from "../../redux/slice/authSlice";
 import { motion } from "framer-motion";
 import { adminDashboardSection } from "../../constants/constants";
 import { useToast } from "../../components/hooks/ToastContext";
-import LoginSvg from "../../assets/login.svg";
+import LoginSvg from "../../assets/Login.svg";
 import { useNavigate } from "react-router-dom";
 import { BsChevronRight } from "react-icons/bs";
 
