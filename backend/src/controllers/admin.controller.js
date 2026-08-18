@@ -8,67 +8,102 @@ import { Store } from "../models/store.model.js";
 import { Services } from "../models/service.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
+import jwt from "jsonwebtoken";
 
 const createAdmin = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
-  const { name, contactNumber, email, password, employeeId, adminRole } =
-    req.body;
-  if (
-    !name ||
-    !contactNumber ||
-    !email ||
-    !password ||
-    !employeeId ||
-    !adminRole
-  )
-    throw new ApiError(400, "Fill the required details !");
 
+  const {
+    name,
+    contactNumber,
+    email,
+    password,
+    employeeId,
+    role,
+    sectionList = [],
+  } = req.body;
+
+  console.log(
+    name,
+    contactNumber,
+    email,
+    password,
+    employeeId,
+    role,
+    sectionList,
+  );
+
+  // // Verify creator admin exists
+  // const creatorAdmin = await Admin.findById(adminId);
+  // if (!creatorAdmin) throw new ApiError(404, "Admin not found.");
+
+  // Required fields
+  if (!name || !contactNumber || !email || !password || !employeeId || !role) {
+    throw new ApiError(400, "Fill the required details.");
+  }
+
+  // Validations
   if (!validatePhone(contactNumber))
-    throw new ApiError(400, "Invalid Contact number");
-  if (name.length > 50)
-    throw new ApiError(400, "Name length is too long, please try short forms");
-  const existingAdmin = await Admin.find({
-    contactNumber: contactNumber,
-    email: email,
-    employeeId: employeeId,
-  });
-  if (existingAdmin) {
-    throw new ApiError(400, "Admin already exists.");
-  }
-  if (!existingAdmin) {
-    const newAdmin = await Admin.create({
-      name: name,
-      contactNumber,
-      email,
-      password,
-      employeeId,
-      role: adminRole,
-    });
+    throw new ApiError(400, "Invalid contact number.");
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, newAdmin, "Created successfully !"));
+  if (name.length > 50) throw new ApiError(400, "Name is too long.");
+
+  // Duplicate check
+  const existingAdmin = await Admin.findOne({
+    $or: [
+      { contactNumber },
+      { email: email.toLowerCase() },
+      { employeeId: employeeId.toUpperCase() },
+    ],
+  });
+
+  if (existingAdmin) {
+    if (existingAdmin.contactNumber === contactNumber)
+      throw new ApiError(400, "Contact number already exists.");
+
+    if (existingAdmin.email === email.toLowerCase())
+      throw new ApiError(400, "Email already exists.");
+
+    if (existingAdmin.employeeId === employeeId.toUpperCase())
+      throw new ApiError(400, "Employee ID already exists.");
   }
+
+  const isAdmin = role.toLowerCase() === "admin";
+
+  const newAdmin = await Admin.create({
+    name,
+    contactNumber,
+    email: email.toLowerCase(),
+    password,
+    employeeId: employeeId.toUpperCase(),
+    role,
+    sectionList: isAdmin ? [] : sectionList, // Only restricted roles store permissions
+    restrictedAccess: !isAdmin, // Admin = false, Others = true
+  });
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, newAdmin, "Admin created successfully."));
 });
 
 const adminLogin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  const admin = await Admin.findOne({ email });
-  if (!admin) throw new ApiError(401, "Invalid credentials");
+  const user = await Admin.findOne({ email });
+  if (!user) throw new ApiError(401, "Invalid credentials");
 
-  const isValid = await admin.isPasswordCorrect(password);
+  const isValid = await user.comparePassword(password);
   if (!isValid) throw new ApiError(401, "Invalid credentials");
 
-  const accessToken = admin.generateAccessToken();
-  const refreshToken = admin.generateRefreshToken();
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
 
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        { admin, tokens: { accessToken, refreshToken } },
+        { user, tokens: { accessToken, refreshToken } },
         "Logged in successful !",
       ),
     );
@@ -250,8 +285,8 @@ const dashboardData = asyncHandler(async (req, res) => {
 
     case "active_services": {
       const services = await Services.find({ isActive: true })
+        .populate({ path: "store", select: "storeName" })
         .select("category serviceFor inHouse")
-        .populate({ path: "store", select: "name" })
         .sort({
           createdAt: -1,
         });
@@ -284,9 +319,45 @@ const dashboardData = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, bookings, "Data fetched successfully"));
     }
 
+    case "adminsQuery": {
+      const admin = await Admin.find().populate("creatorAdmin");
+      if (!admin) throw new ApiError(400, "No admins found");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, admin, "Data fetched successfully !"));
+    }
+
     default:
       throw new ApiError(400, "Invalid session or query");
   }
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { email, employeeId, contactNumber, password, confirmPassword } =
+    req.body;
+  if (!email || !employeeId || !contactNumber || !password || !confirmPassword)
+    throw new ApiError(400, "Fill all the details");
+
+  const user = await Admin.findOne({
+    email: email.toLowerCase(),
+    employeeId: employeeId.toUpperCase(),
+    contactNumber: contactNumber,
+  });
+  if (user) {
+    user.password = confirmPassword;
+    await user.save();
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        user,
+        "Otp has been sent to your contact number and email",
+      ),
+    );
 });
 
 export {
