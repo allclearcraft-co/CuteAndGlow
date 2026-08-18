@@ -209,8 +209,8 @@ export const adminDashboardSection = [
     count: 0,
   },
   {
-    query: "registerAdmin",
-    label: "Register Admin",
+    query: "adminsQuery",
+    label: "Admins",
     count: 0,
   },
 ];
