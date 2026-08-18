@@ -76,7 +76,7 @@ const TABLE_CONFIG = {
       { header: "For", key: "planFor" },
       {
         header: "Price",
-        key: "price",
+        key: "price.mrp",
         render: (value) => `₹${value}`,
       },
       {
@@ -195,7 +195,7 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
                     const value = getNestedValue(row, col.key);
 
                     return (
-                      <td key={col.header} className="px-5 py-3">
+                      <td key={col.header} className="px-5 py-3 capitalize">
                         {col.render ? col.render(value, row) : (value ?? "-")}
                       </td>
                     );
