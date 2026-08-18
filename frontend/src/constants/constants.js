@@ -199,7 +199,7 @@ export const adminDashboardSection = [
     count: 0,
   },
   {
-    query: "pricing",
+    query: "subscription",
     label: "Subscriptions",
     count: 0,
   },
@@ -214,4 +214,3 @@ export const adminDashboardSection = [
     count: 0,
   },
 ];
-

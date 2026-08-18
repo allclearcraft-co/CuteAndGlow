@@ -56,8 +56,6 @@ function AdminDashboard() {
     navigate("/");
   };
 
-  console.log(user);
-
   const filteredSections =
     user?.restrictedAccess === true
       ? adminDashboardSection.filter((section) =>
@@ -126,7 +124,7 @@ function AdminDashboard() {
           {activeSection === "inactive_services" && (
             <DashboardTable tableRole="inactive_services" TableData={data} />
           )}
-          {activeSection === "pricing" && (
+          {activeSection === "subscription" && (
             <div className="w-full">
               {/* popup for adding pricing model  */}
               <div className="border px-4 rounded-xl border-[#8B2954]">
@@ -139,7 +137,10 @@ function AdminDashboard() {
                 </button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
-                    <SubscriptionModelForm onClose={() => setIsOpen(!isOpen)} />
+                    <SubscriptionModelForm
+                      onClose={() => setIsOpen(!isOpen)}
+                      adminId={user?._id}
+                    />
                   )}
                 </AnimatePresence>
               </div>
