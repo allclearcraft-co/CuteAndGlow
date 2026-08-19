@@ -214,3 +214,32 @@ export const adminDashboardSection = [
     count: 0,
   },
 ];
+
+export const homeBanners = [
+  {
+    id: 1,
+    image:
+      "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=1600",
+    title: "50% OFF on First Visit",
+    subtitle: "Limited Time Offer",
+    description: "Book your first salon appointment and save instantly.",
+    link: "/services/all?offer=first-visit",
+  },
+  {
+    id: 2,
+    image:
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1600",
+    title: "Bridal Makeup Packages",
+    subtitle: "Wedding Special",
+    description: "Premium bridal artists with HD and Airbrush makeup.",
+    link: "/services/all?category=Bridal%20%26%20Event%20Makeup",
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600",
+    title: "Luxury Hair Spa",
+    subtitle: "Hair Care",
+    description: "Professional hair spa treatments starting at ₹499.",
+    link: "/services/all?category=Hair%20Styling%20%26%20Treatments",
+  },
+];

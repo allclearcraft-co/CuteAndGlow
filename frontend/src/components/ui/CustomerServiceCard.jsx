@@ -10,7 +10,7 @@ const CustomerServiceCard = ({ service }) => {
   const navigate = useNavigate();
   return (
     <>
-      <div className=" group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
+      <div className="w-[90vw] lg:w-[30vw] group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
         {/* IMAGE */}
 
         <div
