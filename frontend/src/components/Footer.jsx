@@ -30,7 +30,7 @@ const Footer = () => {
               />
             </a>
             <h2>
-              <p>Cute & Glow</p>
+              <p className="logo_style">Cute & Glow</p>
               <p className="text-sm text-pink-100 leading-6 max-w-sm flex flex-col items-start">
                 <strong>Brand unit of</strong> CLEAR CRAFT PRIVATE LIMITED
               </p>
