@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -14,6 +15,7 @@ import {
 } from "../validators/KYC.validator.js";
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
 import { Store } from "../models/store.model.js";
+import { StoreStaff } from "../models/storeStaff.model.js";
 
 const registerStore = asyncHandler(async (req, res) => {
   const { name, contactNumber, email } = req.body;
@@ -28,16 +30,16 @@ const registerStore = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Name length is too long, please try short forms");
 
   const existingTempUser = await Store.findOne({
-    contactNumber: contactNumber,
+    storeContactNumber: contactNumber,
     isTemporaryRegistered: true,
   });
   if (existingTempUser) {
     const deleteUser = await Store.findOneAndDelete({
-      contactNumber: contactNumber,
+      storeContactNumber: contactNumber,
     });
   }
   const existingUser = await Store.findOne({
-    contactNumber: contactNumber,
+    storeContactNumber: contactNumber,
     isTemporaryRegistered: false,
   });
   if (existingUser)
@@ -77,12 +79,16 @@ const registerStore = asyncHandler(async (req, res) => {
 
 const loginStore = asyncHandler(async (req, res) => {
   const { contactNumber } = req.body;
+
   if (!contactNumber) throw new ApiError(400, "Invalid request");
   if (!validatePhone(contactNumber))
     throw new ApiError(400, "Invalid contact number");
 
-  const user = await Store.findOne({ storeContactNumber: contactNumber });
-  if (!user) throw new ApiError(404, "Invalid user");
+  const storeUser = await Store.findOne({
+    storeContactNumber: contactNumber,
+    isTemporaryRegistered: false,
+  });
+  if (!storeUser) throw new ApiError(404, "Invalid storeUser");
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   if (!otp) throw new ApiError(500, "Internal server error");
@@ -91,13 +97,22 @@ const loginStore = asyncHandler(async (req, res) => {
   const fiveMinutes = 5 * 60 * 1000;
   const expiresAt = new Date(currentDate.getTime() + fiveMinutes);
 
-  user.otp = otp;
-  user.otpExpiry = expiresAt;
-  await user.save();
+  storeUser.otp = otp;
+  storeUser.otpExpiry = expiresAt;
+  await storeUser.save();
+
+  // const user = contactNumber,
+  //   storeName;
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { otpStatus, otp }, "OTP sent successfully !"));
+    .json(
+      new ApiResponse(
+        200,
+        { user: { contactNumber }, otpStatus, otp },
+        "OTP sent successfully !",
+      ),
+    );
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -105,6 +120,7 @@ const otpVerification = asyncHandler(async (req, res) => {
 
   if (verificationType === "registerVerification") {
     const { otp } = req.body;
+    console.log(otp);
     const { storeId } = req.params;
 
     const user = await Store.findById(storeId);
@@ -113,9 +129,7 @@ const otpVerification = asyncHandler(async (req, res) => {
     const now = new Date();
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
-
-    const matchOTP = user.otp === otp ? true : false;
-    if (!matchOTP === false) throw new ApiError(403, "Invalid OTP");
+    if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
     user.otp = null;
     user.otpExpiry = null;
@@ -143,15 +157,14 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (!validatePhone(contactNumber))
       throw new ApiError(400, "Invalid contact number");
 
-    const user = await Store.findOne({ contactNumber });
+    const user = await Store.findOne({ storeContactNumber: contactNumber });
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
 
-    const matchOTP = user.otp === otp;
-    if (!matchOTP) throw new ApiError(403, "Invalid OTP");
+    if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
     user.otp = null;
     user.otpExpiry = null;
@@ -462,6 +475,257 @@ const submitKYCVerification = asyncHandler(async (req, res) => {
     );
 });
 
+const reLoginToken = asyncHandler(async (req, res) => {
+  const token = req.body.refreshToken;
+  if (!token) throw new ApiError(401, "Unauthorized request");
+
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+  const user = await Store.findById(decoded._id);
+  if (!user) throw new ApiError(401, "Invalid refresh token");
+
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      user,
+      tokens: { accessToken, refreshToken },
+    }),
+  );
+});
+
+const dashboardData = asyncHandler(async (req, res) => {
+  const { storeId, query = "overview" } = req.params;
+
+  const store = await Store.findById(storeId);
+
+  if (!store) {
+    throw new ApiError(404, "store not found");
+  }
+
+  switch (query) {
+    case "overview": {
+      const storeInfo = await Store.findById(storeId).select(
+        "storeName storeContactNumber storeEmail createdAt bookings isRegistrationFeePaid",
+      );
+
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            store: storeInfo,
+          },
+          "Dashboard data fetched successfully",
+        ),
+      );
+    }
+
+    case "address": {
+      const addresses = await Address.find({ store: storeId });
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, addresses, "Addresses fetched successfully"),
+        );
+    }
+
+    case "bankDetails": {
+      const bankDetails = await BankDetails.findOne({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            bankDetails,
+            "Bank details fetched successfully",
+          ),
+        );
+    }
+
+    case "storeStaff": {
+      const storeStaff = await StoreStaff.find({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, storeStaff, "Bank details fetched successfully"),
+        );
+    }
+
+    case "services": {
+      const service = await Services.find({
+        store: storeId,
+      }).populate({ path: "executive", select: "name" });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Details fetched successfully"));
+    }
+
+    case "service-bookings": {
+      const bookings = await ServiceBookings.find({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
+
+    default:
+      throw new ApiError(400, "Invalid dashboard query");
+  }
+});
+
+const addStoreStaff = asyncHandler(async (req, res) => {
+  const {
+    name,
+    contactNumber,
+    email,
+    designation,
+    experience,
+    specialization,
+    otherServices,
+    flatNumber,
+    floor,
+    block,
+    societyName,
+    street1,
+    street2,
+    area,
+    locality,
+    sector,
+    city,
+    state,
+    country,
+    pincode,
+  } = req.body;
+
+  const { storeId } = req.params;
+
+  const store = await Store.findById(storeId).populate("address");
+  if (!store) {
+    throw new ApiError(404, "Store not found");
+  }
+
+  if (!name?.trim()) throw new ApiError(400, "Please enter staff name");
+  if (name.length > 50)
+    throw new ApiError(
+      400,
+      "Name length is too long, please use a shorter name",
+    );
+
+  if (!contactNumber) throw new ApiError(400, "Contact number is required");
+  if (!validatePhone(contactNumber))
+    throw new ApiError(400, "Invalid contact number");
+
+  if (!email) throw new ApiError(400, "Email is required");
+  // if (!validateEmail(email)) throw new ApiError(400, "Invalid email address");
+
+  const alreadyExists = await StoreStaff.findOne({
+    $or: [{ contactNumber }, { email: email.toLowerCase() }],
+  });
+
+  if (alreadyExists) {
+    throw new ApiError(
+      409,
+      "A staff member already exists with this contact number or email",
+    );
+  }
+  const storeAddress = await Address.findOne({ store: storeId });
+  const storeLongitude = storeAddress.location.coordinates[1];
+  const storeLatitude = storeAddress.location.coordinates[0];
+
+  const address = await Address.create({
+    flatNumber,
+    floor,
+    block,
+    societyName,
+    street1,
+    street2,
+    area,
+    locality,
+    sector,
+    city,
+    state,
+    country,
+    pincode,
+    location: { coordinates: [storeLatitude, storeLongitude] },
+  });
+
+  let profileImage = {};
+
+  if (req.file) {
+    const uploadedImage = await UploadImages(req.file.filename, {
+      folderStructure: "storeStaff/profilePicture",
+    });
+
+    profileImage = {
+      url: uploadedImage.url,
+      fileId: uploadedImage.fileId,
+    };
+  }
+
+  const staff = await StoreStaff.create({
+    store: storeId,
+    name: name.trim(),
+    contactNumber,
+    email: email.toLowerCase(),
+    designation,
+    experience,
+    specialization,
+    otherServices: otherServices
+      ? Array.isArray(otherServices)
+        ? otherServices
+        : otherServices.split(",").map((s) => s.trim())
+      : [],
+    address: address._id,
+    profileImage,
+  });
+
+  address.storeStaff = staff;
+  store.storeStaffs = staff;
+  await address.save();
+  await store.save();
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, staff, "Store staff added successfully."));
+});
+
+const getStaffForService = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+
+  const staffs = await StoreStaff.find({
+    store: storeId,
+    isActive: true,
+  }).select("name specialization designation");
+  if (!staffs) throw new ApiError(400, "No data found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, staffs, "Data fetched successfully !"));
+});
+
+const registrationFeePaid = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  const store = await Store.findByIdAndUpdate(storeId, {
+    isRegistrationFeePaid: true,
+  });
+  if (!store) throw new ApiError(400, "Something went wrong");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, store, "Data updated successfully !"));
+});
+
 export {
   registerStore,
   loginStore,
@@ -471,4 +735,9 @@ export {
   addBankDetails,
   updateProfile,
   submitKYCVerification,
+  reLoginToken,
+  addStoreStaff,
+  getStaffForService,
+  registrationFeePaid,
+  dashboardData,
 };

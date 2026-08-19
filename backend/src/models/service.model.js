@@ -6,6 +6,7 @@ const serviceSchema = new mongoose.Schema(
     store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
     executive: { type: mongoose.Schema.Types.ObjectId, ref: "StoreStaff" },
     professional: { type: mongoose.Schema.Types.ObjectId, ref: "Professional" },
+    category: String,
     products: [
       {
         productType: { type: String, required: true, trim: true },
@@ -14,8 +15,8 @@ const serviceSchema = new mongoose.Schema(
     ],
     serviceInclusion: [{ type: String, trim: true }],
     serviceExclusion: [{ type: String, trim: true }],
-    duration: { type: String, required: true },
-    prepTime: { type: String, default: 0, required: true },
+    duration: { type: Number, required: true },
+    prepTime: { type: Number, default: 0, required: true },
     isPrepTime: { type: Boolean, default: true },
     timeIncludingPrepTime: { type: Boolean, default: false },
     onSite: { type: Boolean, default: true },
@@ -25,7 +26,7 @@ const serviceSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Both"],
       default: "Both",
     },
-    charges: { type: String, default: "0", required: true, trim: true },
+    charges: { type: Number, default: 0, required: true },
     bookingDays: {
       type: String,
       enum: [
@@ -40,7 +41,7 @@ const serviceSchema = new mongoose.Schema(
       ],
       default: "Whole week",
     },
-    bookingAcceptingHours: { from: { type: Date }, till: { type: Date } },
+    bookingAcceptingHours: { from: { type: String }, till: { type: String } },
     coverImage: [{ url: String, fileId: String }],
     serviceArea: {
       type: String,
@@ -50,6 +51,15 @@ const serviceSchema = new mongoose.Schema(
     // requirements from customer
     serviceRequirements: [{ type: String }],
     isActive: { type: Boolean, default: true },
+    // sponsor: {
+    //   type: String,
+    //   enum: ["first", "second", "third", "fourth", "fifth", "none"],
+    //   default: "none",
+    // },
+    sponsor: {
+      enabled: { type: Boolean, default: false },
+      priority: { type: Number, default: 999, min: 1 },
+    },
   },
   { timestamps: true },
 );

@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -98,7 +99,13 @@ const loginProfessional = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { otpStatus, otp }, "OTP sent successfully !"));
+    .json(
+      new ApiResponse(
+        200,
+        { user: { contactNumber }, otpStatus, otp },
+        "OTP sent successfully !",
+      ),
+    );
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -108,15 +115,14 @@ const otpVerification = asyncHandler(async (req, res) => {
     const { otp } = req.body;
     const { professionalId } = req.params;
 
-    const user = await Customer.findById(professionalId);
+    const user = await Professional.findById(professionalId);
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
 
-    const matchOTP = user.otp === otp ? true : false;
-    if (!matchOTP === false) throw new ApiError(403, "Invalid OTP");
+    if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
     user.otp = null;
     user.otpExpiry = null;
@@ -144,15 +150,14 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (!validatePhone(contactNumber))
       throw new ApiError(400, "Invalid contact number");
 
-    const user = await Professional.findOne(contactNumber);
+    const user = await Professional.findOne({ contactNumber: contactNumber });
     if (!user) throw new ApiError(401, "Unauthorized access");
 
     const now = new Date();
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
 
-    const matchOTP = user.otp === otp;
-    if (!matchOTP) throw new ApiError(403, "Invalid OTP");
+    if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
     user.otp = null;
     user.otpExpiry = null;
@@ -471,18 +476,18 @@ const dashboardData = asyncHandler(async (req, res) => {
       "name contactNumber email gender alternateContactNumber about specialization serviceType paymentOptions images",
     );
     if (!professional) throw new ApiError(400, "User not found");
-    const defaultAddress = await Address.findOne({
-      professional: professionalId,
-      defaultAddress: true,
-    });
-    if (!defaultAddress) throw new ApiError(400, "No default address found");
+    // const defaultAddress = await Address.findOne({
+    //   professional: professionalId,
+    //   defaultAddress: true,
+    // });
+    // if (!defaultAddress) throw new ApiError(400, "No default address found");
 
     return res
       .status(200)
       .json(
         new ApiResponse(
           200,
-          { professional, defaultAddress },
+          { professional },
           "Dashboard data fetched successfully !",
         ),
       );
@@ -631,6 +636,26 @@ const submitKYCVerification = asyncHandler(async (req, res) => {
     );
 });
 
+const reLoginToken = asyncHandler(async (req, res) => {
+  const token = req.body.refreshToken;
+  if (!token) throw new ApiError(401, "Unauthorized request");
+
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+  const user = await Professional.findById(decoded._id);
+  if (!user) throw new ApiError(401, "Invalid refresh token");
+
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      user,
+      tokens: { accessToken, refreshToken },
+    }),
+  );
+});
+
 export {
   registerProfessional,
   loginProfessional,
@@ -646,4 +671,5 @@ export {
   getAllProfessionals,
   submitKYCVerification,
   dashboardData,
+  reLoginToken,
 };

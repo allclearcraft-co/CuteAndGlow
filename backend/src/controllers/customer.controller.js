@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -6,6 +7,12 @@ import { Address } from "../models/address.model.js";
 import { BankDetails } from "../models/bankDetails.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { validatePhone } from "../validators/contactNumber.validator.js";
+import otpTemplate from "../template/otp.mail.template.js";
+import sendEmail from "../services/mail.service.js";
+import welcomeTemplate from "../template/welcome.mail.template.js";
+import { validateBankDetails } from "../validators/bankDetails.validator.js";
+import { StoreStaff } from "../models/storeStaff.model.js";
+import { Subscription } from "../models/subscription.model.js";
 
 const registerCustomer = asyncHandler(async (req, res) => {
   const { contactNumber, name, email } = req.body;
@@ -58,6 +65,12 @@ const registerCustomer = asyncHandler(async (req, res) => {
   if (!user)
     throw new ApiError(400, "Registration incomplete. Please try again later");
 
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
+
   return res
     .status(200)
     .json(
@@ -91,7 +104,13 @@ const loginCustomer = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { otpStatus, otp }, "OTP sent successfully !"));
+    .json(
+      new ApiResponse(
+        200,
+        { user: { contactNumber }, otpStatus, otp },
+        "OTP sent successfully !",
+      ),
+    );
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -110,8 +129,7 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
 
-    const matchOTP = user.otp === otp;
-    if (!matchOTP) throw new ApiError(403, "Invalid OTP");
+    if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
     user.otp = null;
     user.otpExpiry = null;
@@ -120,6 +138,12 @@ const otpVerification = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
+    await sendEmail({
+      to: user?.email,
+      subject: "Welcome",
+      html: welcomeTemplate(user?.name),
+    });
 
     return res
       .status(200)
@@ -139,17 +163,16 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (!validatePhone(contactNumber))
       throw new ApiError(400, "Invalid contact number");
 
-    const user = await Customer.findOne({ contactNumber });
+    const user = await Customer.findOne({ contactNumber: contactNumber });
     if (!user) throw new ApiError(401, "Unauthorized access");
-    if (!user.otp || !user.otpExpiry)
-      throw new ApiError(400, "Please restart the registration process again");
 
     const now = new Date();
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
+    console.log(otp, user.otp);
+    console.log(user);
 
-    const matchOTP = user.otp === otp;
-    if (!matchOTP) throw new ApiError(403, "Invalid OTP");
+    if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
     user.otp = null;
     user.otpExpiry = null;
@@ -173,6 +196,8 @@ const updateGender = asyncHandler(async (req, res) => {
   const { customerId } = req.params;
   const { gender } = req.body;
   if (!gender) throw new ApiError(403, "Something went wrong");
+  if (gender === "select" || gender === "Select")
+    throw new ApiError(400, "Please select a gender");
 
   const user = await Customer.findByIdAndUpdate(customerId, { gender: gender });
   if (!user)
@@ -284,6 +309,10 @@ const addAddress = asyncHandler(async (req, res) => {
   if (!newAddress)
     throw new ApiError(400, "Something went wrong, please try again later");
 
+  const customer = await Customer.findByIdAndUpdate(customerId, {
+    address: newAddress,
+  });
+
   return res
     .status(200)
     .json(new ApiResponse(200, newAddress, "Added successfully !"));
@@ -291,16 +320,41 @@ const addAddress = asyncHandler(async (req, res) => {
 
 const markAddressDefault = asyncHandler(async (req, res) => {
   const { addressId, customerId } = req.params;
-  if (!addressId || !customerId)
+  console.log(addressId, customerId);
+
+  if (!addressId || !customerId) {
     throw new ApiError(400, "Something went wrong please try again later");
+  }
 
-  const removeDefault = await Address.find({ customer: customerId });
-  removeDefault.defaultAddress = false;
-  await removeDefault.save();
+  // Remove default from all addresses
+  await Address.updateMany(
+    { customer: customerId },
+    { $set: { defaultAddress: false } },
+  );
 
-  const address = await Address.findByIdAndUpdate(addressId, {
-    defaultAddress: true,
-  });
+  // Mark selected address as default
+  const address = await Address.findByIdAndUpdate(
+    addressId,
+    { defaultAddress: true },
+    { new: true },
+  );
+
+  if (!address) {
+    throw new ApiError(400, "Unable to process request");
+  }
+
+  // Update customer's default address reference
+  const customer = await Customer.findByIdAndUpdate(
+    customerId,
+    {
+      address: address, // <-- assuming this field exists
+    },
+    { new: true },
+  );
+
+  if (!customer) {
+    throw new ApiError(400, "Unable to mark as default");
+  }
 
   return res.status(200).json(new ApiResponse(200, {}, "Marked as default"));
 });
@@ -420,6 +474,10 @@ const addBankDetails = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Something went wrong, please try again later !");
   await bank.save();
 
+  const user = await Customer.findByIdAndUpdate(customerId, {
+    bankingDetails: bank,
+  });
+
   return res.status(200).json(new ApiResponse(200, {}, "Added successfully !"));
 });
 
@@ -434,103 +492,239 @@ const addUPIid = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, "Added successfully !"));
 });
 
+const deleteBankDetails = asyncHandler(async (req, res) => {
+  const { bankId, customerId } = req.params;
+  if (!bankId || !customerId)
+    throw new ApiError(400, "Something went wrong please try again later");
+
+  const user = await Customer.findById(customerId);
+  if (!user) throw new ApiError(400, "Invalid request");
+  user.bankingDetails = null;
+  await user.save();
+
+  const bank = await BankDetails.findByIdAndDelete(bankId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Deleted successfully !"));
+});
+
 const dashboardData = asyncHandler(async (req, res) => {
-  const { customerId, query } = req.params;
+  const { customerId, query = "overview" } = req.params;
 
   const customer = await Customer.findById(customerId);
-  if (!customer) throw new ApiError(401, "Invalid request !");
 
-  if (!query || query === "overview") {
-    const customer = await Customer.findById(customerId).select(
-      "name contactNumber email gender alternateContactNumber",
-    );
-    if (!customer) throw new ApiError(400, "User not found");
-    const defaultAddress = await Address.findOne({
-      customer: customerId,
-      defaultAddress: true,
-    });
-    if (!defaultAddress) throw new ApiError(400, "No default address found");
+  if (!customer) {
+    throw new ApiError(404, "Customer not found");
+  }
 
-    return res
-      .status(200)
-      .json(
+  switch (query) {
+    case "overview": {
+      const customerInfo = await Customer.findById(customerId).select(
+        "name contactNumber email gender alternateContactNumber createdAt bookings",
+      );
+
+      const defaultAddress = await Address.findOne({
+        customer: customerId,
+        defaultAddress: true,
+      });
+
+      const subscriptions = await Subscription.find({
+        planFor: "customer",
+        isActive: true,
+      }).select("-admin");
+      if (!subscriptions) throw new ApiError(400, "No subscription found");
+
+      return res.status(200).json(
         new ApiResponse(
           200,
-          { customer, defaultAddress },
-          "Dashboard data fetched successfully !",
+          {
+            customer: customerInfo,
+            defaultAddress,
+            subscriptions,
+          },
+          "Dashboard data fetched successfully",
         ),
       );
-  }
-  if (query === "address") {
-    const address = await Address.find({ customer: customerId });
-    if (!address) throw new ApiError(404, "No data found");
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, address, "Data fetched successfully !"));
-  }
-  if (query === "bankDetails") {
-    const bankDetails = await BankDetails.findOne({ customer: customerId });
-    if (!bankDetails) throw new ApiError(404, "No data found");
+    case "bookings": {
+      const bookings = await ServiceBookings.find({
+        customer: customerId,
+      }).populate({ path: "service", select: "name duration executive" });
+      console.log("Executive Id", bookings?.service?.executive);
+      // const executive = await StoreStaff.findById(bookings?.service?.executive);
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, bankDetails, "Data fetched successfully !"));
-  }
-  if (query === "service-bookings") {
-    const bookings = await ServiceBookings.find({ customer: customerId });
-    if (!bookings) throw new ApiError(404, "No data found");
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, bookings, "Data fetched successfully !"));
-  }
-  if (query === "fav-store") {
-    const favStore = customer.favStore.populate({
-      path: "favStore",
-      select: "storeName logo address storeContactNumber",
-    });
-    if (!favStore) throw new ApiError(404, "No data found");
+    case "address": {
+      const addresses = await Address.find({ customer: customerId });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, favStore, "Data fetched successfully !"));
-  }
-  if (query === "fav-professional") {
-    const favProfessional = customer.favProfessional.populate({
-      path: "favProfessional",
-      select: "name contactNumber images isVerified",
-    });
-    if (!favProfessional) throw new ApiError(404, "No data found");
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, addresses, "Addresses fetched successfully"),
+        );
+    }
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, favProfessional, "Data fetched successfully !"),
-      );
-  }
-  if (query === "quick-services") {
-    const quickService = customer.quickServices.populate({
-      path: "quickServices",
-      select: "name coverImage charges serviceFor",
-    });
-    if (!quickService) throw new ApiError(404, "No data found");
+    case "bankDetails": {
+      const bankDetails = await BankDetails.findOne({
+        customer: customerId,
+      });
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, quickService, "Data fetched successfully !"));
-  }
-  if (query === "wishlist") {
-    const wishlist = customer.wishListServices.populate({
-      path: "wishListServices",
-      select: "name coverImage charges serviceFor",
-    });
-    if (!wishlist) throw new ApiError(404, "No data found");
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            bankDetails,
+            "Bank details fetched successfully",
+          ),
+        );
+    }
 
-    return res
-      .status(200)
-      .json(new ApiResponse(200, wishlist, "Data fetched successfully !"));
+    case "service-bookings": {
+      const bookings = await ServiceBookings.find({
+        customer: customerId,
+      });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
+
+    case "fav-store": {
+      const favStore = await Customer.findById(customerId)
+        .populate({
+          path: "favStore",
+          select: "storeName logo address storeContactNumber",
+        })
+        .select("favStore");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            favStore?.favStore || [],
+            "Favourite stores fetched successfully",
+          ),
+        );
+    }
+
+    case "fav-professional": {
+      const favProfessional = await Customer.findById(customerId)
+        .populate({
+          path: "favProfessional",
+          select: "name contactNumber images isVerified",
+        })
+        .select("favProfessional");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            favProfessional?.favProfessional || [],
+            "Favourite professionals fetched successfully",
+          ),
+        );
+    }
+
+    case "quick-services": {
+      const quickServices = await Customer.findById(customerId)
+        .populate({
+          path: "quickServices",
+          select: "name coverImage charges serviceFor",
+        })
+        .select("quickServices");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            quickServices?.quickServices || [],
+            "Quick services fetched successfully",
+          ),
+        );
+    }
+
+    case "wishlist": {
+      const wishlist = await Customer.findById(customerId)
+        .populate({
+          path: "wishListServices",
+          select: "name coverImage charges serviceFor",
+        })
+        .select("wishListServices");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            wishlist?.wishListServices || [],
+            "Wishlist fetched successfully",
+          ),
+        );
+    }
+
+    default:
+      throw new ApiError(400, "Invalid dashboard query");
   }
+});
+
+const reLoginToken = asyncHandler(async (req, res) => {
+  const token = req.body.refreshToken;
+  if (!token) throw new ApiError(401, "Unauthorized request");
+
+  const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+  const user = await Customer.findById(decoded._id);
+  if (!user) throw new ApiError(401, "Invalid refresh token");
+
+  const accessToken = user.generateAccessToken();
+  const refreshToken = user.generateRefreshToken();
+
+  return res.status(200).json(
+    new ApiResponse(200, {
+      user,
+      tokens: { accessToken, refreshToken },
+    }),
+  );
+});
+
+const getCustomerById = asyncHandler(async (req, res) => {
+  const { customerId } = req.params;
+  console.log(customerId);
+  if (!customerId) throw new ApiError(400, "Invalid request");
+
+  const customer = await Customer.findById(customerId).populate("address");
+  console.log(customer);
+  if (!customer)
+    throw new ApiError(
+      400,
+      "Unable to authenticate user, please try again later or reload",
+    );
+
+  const address = await Address.find({
+    customer: customerId,
+    defaultAddress: false,
+  });
+  if (!address) throw new ApiError(400, "Address not found");
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { customer, address },
+        "Data fetched successfully !",
+      ),
+    );
 });
 
 export {
@@ -546,5 +740,8 @@ export {
   deleteAddress,
   addBankDetails,
   addUPIid,
+  deleteBankDetails,
+  getCustomerById,
   dashboardData,
+  reLoginToken,
 };

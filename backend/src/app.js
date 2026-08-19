@@ -36,8 +36,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json({ limit: "5mb" }));
-app.use(express.text({ limit: "5mb", type: "text/*" }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.text({ limit: "10mb", type: "text/*" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.use(cookieParser());
@@ -56,11 +56,21 @@ app.use((req, res, next) => {
 
 // now importing routes and using them
 import customerRoutes from "./routes/customer.route.js";
-import professionalRoutes from "./routes/customer.route.js";
-import storeRoutes from "./routes/customer.route.js";
+import professionalRoutes from "./routes/professional.route.js";
+import storeRoutes from "./routes/store.route.js";
+import serviceRoutes from "./routes/service.route.js";
+import serviceBookingRoutes from "./routes/serviceBooking.route.js";
+import adminRoutes from "./routes/admin.route.js";
+import paymentRoutes from "./routes/payment.route.js";
+import subscriptionRoutes from "./routes/subscription.route.js";
 
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/professional", professionalRoutes);
 app.use("/api/v1/store", storeRoutes);
+app.use("/api/v1/services", serviceRoutes);
+app.use("/api/v1/service-booking", serviceBookingRoutes);
+app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/payment", paymentRoutes);
+app.use("/api/v1/subscription", subscriptionRoutes);
 
 export { app };
