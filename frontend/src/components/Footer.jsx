@@ -5,12 +5,15 @@ const Footer = () => {
   const quickLinks = [
     { name: "Female Services", path: "/services/location/female/category" },
     { name: "Male Services", path: "/services/location/male/category" },
-    { name: "Admin", path: "/admin/login" },
+    { name: "Admin", path: "/admin/login", css: "hidden lg:block" },
   ];
   const usefulLinks = [
-    { name: "Store (Login / Register)", path: `/auth/${"login"}/${"store"}` },
     {
-      name: "Professional (Login / Register)",
+      name: "Studio / Parlor / Salon Registration",
+      path: `/auth/${"login"}/${"store"}`,
+    },
+    {
+      name: "Beauty Professional Registration",
       path: `/auth/${"login"}/${"professional"}`,
     },
   ];
@@ -53,7 +56,7 @@ const Footer = () => {
                 <a
                   key={item.name}
                   href={item.path}
-                  className="hover:text-pink-200 transition duration-300"
+                  className={`hover:text-pink-200 transition duration-300 ${item.css}`}
                 >
                   {item.name}
                 </a>
@@ -71,7 +74,7 @@ const Footer = () => {
                 <a
                   key={item.name}
                   href={item.path}
-                  className="hover:text-pink-200 transition duration-300"
+                  className="hover:text-pink-200 transition duration-300 hover:underline"
                 >
                   {item.name}
                 </a>
