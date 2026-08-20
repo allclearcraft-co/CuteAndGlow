@@ -131,6 +131,7 @@ const CurrentStore = ({ data }) => {
 
   return (
     <div className="space-y-6  h-full w-full p-10 mb-20">
+      <h1 className="text-2xl heading">Current store</h1>
       <div className="w-full h-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full border-collapse">
           <tbody>
@@ -146,14 +147,13 @@ const CurrentStore = ({ data }) => {
 
                 {/* Value */}
                 <td className="w-1/2 px-5 py-4 text-sm font-semibold text-gray-800">
-                  {item.Value || "N/A"}
+                  {item.value || "N/A"}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <div></div>
     </div>
   );
 };

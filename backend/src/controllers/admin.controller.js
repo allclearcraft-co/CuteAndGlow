@@ -360,6 +360,73 @@ const resetPassword = asyncHandler(async (req, res) => {
     );
 });
 
+const getCurrentRequestData = asyncHandler(async (req, res) => {
+  const { query, keyId, adminId } = req.params;
+  if (!query || !keyId || !adminId) throw new ApiError(400, "Invalid request");
+
+  const admin = await Admin.findById(adminId);
+  if (!admin) {
+    throw new ApiError(400, "Invalid admin");
+    return;
+  }
+
+  switch (query) {
+    case "customer": {
+      const customer = await Customer.findById(keyId).populate("address");
+      if (!customer) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, customer, "Data fetched successfully !"));
+    }
+
+    case "store": {
+      const store = await Store.findById(keyId).populate(
+        "address storeStaffs services bookings",
+      );
+      if (!store) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, store, "Data fetched successfully !"));
+    }
+
+    case "service": {
+      const service = await Services.findById(keyId)
+        .populate({
+          path: "store",
+          select: "storeName storeContactNumber storeContactNumber owner",
+        })
+        .populate({
+          path: "executive",
+          select: "name contactNumber email specialization",
+        })
+        .populate({
+          path: "professional",
+          select: "name contactNumber email gender",
+        });
+      if (!service) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Data fetched successfully !"));
+    }
+
+    case "subscription": {
+      const subscription = await Subscription.findById(keyId).populate("admin");
+      if (!subscription) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, subscription, "Data fetched successfully !"),
+        );
+    }
+    default:
+      throw new ApiError(400, "Invalid session or query");
+  }
+});
+
 export {
   createAdmin,
   getAllAdmins,
@@ -368,4 +435,5 @@ export {
   reLoginToken,
   dashboardData,
   adminLogin,
+  getCurrentRequestData,
 };

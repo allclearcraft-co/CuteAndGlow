@@ -2,6 +2,7 @@ import React from "react";
 import Button from "../../components/Button";
 
 const CurrentServices = ({ data }) => {
+  console.log(data);
   const TableData = [
     {
       id: 1,
@@ -23,16 +24,16 @@ const CurrentServices = ({ data }) => {
       label: "Category",
       value: data?.category,
     },
-    {
-      id: 5,
-      label: "Products",
-      value: (
-        <div>
-          <h1>{data?.products?.productType}</h1>
-          <h1>{data?.products?.brand}</h1>
-        </div>
-      ),
-    },
+    // {
+    //   id: 5,
+    //   label: "Products",
+    //   value: (
+    //     <div>
+    //       <h1>{data?.products?.productType}</h1>
+    //       <h1>{data?.products?.brand}</h1>
+    //     </div>
+    //   ),
+    // },
     {
       id: 6,
       label: "Service Inclusion ",
@@ -108,43 +109,86 @@ const CurrentServices = ({ data }) => {
       label: "Service Requirements",
       value: data?.serviceRequirements,
     },
-    {
-      id: 21,
-      label: "Is Active",
-      value: (
-        <div>
-          {data?.isActive ? (
-            <div className="w-fit h-4 bg-green-300 p-4 text-center rounded-full flex items-center justify-center">
-              <button>IsActive</button>
-            </div>
-          ) : (
-            <div className="w-fit h-4 py-4 px-4 rounded-full bg-red-300 flex items-center justify-center">
-              <button>InActive</button>
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
-      id: 22,
-      label: "Enabled",
-      value: (
-        <div>
-          {data?.enabled ? (
-            <div className="w-fit h-4 bg-green-300 p-4 text-center rounded-full flex items-center justify-center">
-              <button>Enable</button>
-            </div>
-          ) : (
-            <div className="w-fit h-4 py-4 px-4 rounded-full bg-red-300 flex items-center justify-center">
-              <button>disable</button>
-            </div>
-          )}
-        </div>
-      ),
-    },
+    // {
+    //   id: 21,
+    //   label: "Is Active",
+    //   value: (
+    //     <div>
+    //       {data?.isActive ? (
+    //         <div className="w-fit h-4 bg-green-300 p-4 text-center rounded-full flex items-center justify-center">
+    //           <button>IsActive</button>
+    //         </div>
+    //       ) : (
+    //         <div className="w-fit h-4 py-4 px-4 rounded-full bg-red-300 flex items-center justify-center">
+    //           <button>InActive</button>
+    //         </div>
+    //       )}
+    //     </div>
+    //   ),
+    // },
+    // {
+    //   id: 22,
+    //   label: "Enabled",
+    //   value: (
+    //     <div>
+    //       {data?.enabled ? (
+    //         <div className="w-fit h-4 bg-green-300 p-4 text-center rounded-full flex items-center justify-center">
+    //           <button>Enable</button>
+    //         </div>
+    //       ) : (
+    //         <div className="w-fit h-4 py-4 px-4 rounded-full bg-red-300 flex items-center justify-center">
+    //           <button>disable</button>
+    //         </div>
+    //       )}
+    //     </div>
+    //   ),
+    // },
   ];
+
+  const formatValue = (value) => {
+    if (value === null || value === undefined || value === "") return "N/A";
+
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+
+    if (typeof value === "string" || typeof value === "number") return value;
+
+    if (Array.isArray(value)) {
+      if (value.length === 0) return "N/A";
+
+      return (
+        <ul className="list-disc list-inside space-y-1">
+          {value.map((item, index) => (
+            <li key={index}>
+              {typeof item === "object" ? JSON.stringify(item) : item}
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    if (typeof value === "object") {
+      // Populated MongoDB documents
+      if (value.storeName) return value.storeName;
+      if (value.name) return value.name;
+
+      return (
+        <div className="space-y-1">
+          {Object.entries(value).map(([key, val]) => (
+            <div key={key}>
+              <span className="font-medium capitalize">{key}: </span>
+              <span>{String(val)}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    return String(value);
+  };
+
   return (
     <div className="space-y-6  h-full w-full p-10 mb-20">
+      <h1 className="text-2xl heading">Current Service</h1>
       <div className="w-full h-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full border-collapse">
           <tbody>
@@ -160,7 +204,7 @@ const CurrentServices = ({ data }) => {
 
                 {/* Value */}
                 <td className="w-1/2 px-5 py-4 text-sm font-semibold text-gray-800">
-                  {item.value || "N/A"}
+                  {formatValue(item.value)}
                 </td>
               </tr>
             ))}
