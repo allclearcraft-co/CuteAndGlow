@@ -18,6 +18,9 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import TermsAndConditions from "./pages/CMS/TermsAndConditions";
 import Policy from "./pages/CMS/Policy";
 import AdminAuth from "./pages/Auth/AdminAuth";
+// import CurrentSubscription from "./pages/Current User/CurrentSubscription";
+// import CurrentAdmin from "./pages/Current User/CurrentAdmin";
+// import CurrentBooking from "./pages/Current User/CurrentBooking";
 // import CurrentCustomer from "./pages/Current User/CurrentCustomer";
 // import CurrentStore from "./pages/Current User/CurrentStore";
 // import CurrentProfessional from "./pages/Current User/CurrentProfessional";
@@ -83,8 +86,7 @@ function App() {
       <Header />
       <ScrollToTop />
       <div className="pt-20">
-      {/* <CurrentServices/> */}
-
+       
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth/:type/:userType" element={<Authentication />} />

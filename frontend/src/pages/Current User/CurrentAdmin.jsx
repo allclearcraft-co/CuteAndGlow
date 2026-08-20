@@ -1,42 +1,36 @@
 import React from "react";
-import Button from "../../components/Button";
 
-const CurrentServices = ({ data }) => {
+const CurrentAdmin = ({ data }) => {
   const TableData = [
     {
       id: 1,
+      label: "Creator Admin",
+      value: data?.creatorAdmin,
+    },
+    {
+      id: 2,
       label: "Name",
       value: data?.name,
     },
     {
-      id: 2,
-      label: "Store",
-      value: data?.store,
-    },
-    {
       id: 3,
-      label: "Professional",
-      value: data?.professional,
+      label: "Contact Number ",
+      value: data?.contactNumber,
     },
     {
       id: 4,
-      label: "Category",
-      value: data?.category,
+      label: "Email",
+      value: data?.email,
     },
     {
       id: 5,
-      label: "Products",
-      value: (
-        <div>
-          <h1>{data?.products?.productType}</h1>
-          <h1>{data?.products?.brand}</h1>
-        </div>
-      ),
+      label: "Password",
+      value: data?.password,
     },
     {
       id: 6,
-      label: "Service Inclusion ",
-      value: data?.serviceInclusion,
+      label: " Employee Id ",
+      value: data?.employeeId,
     },
     {
       id: 7,
@@ -45,71 +39,22 @@ const CurrentServices = ({ data }) => {
     },
     {
       id: 8,
-      label: "Duration ",
-      value: data?.duration,
+      label: "Role ",
+      value: data?.role,
     },
     {
       id: 9,
-      label: "Preparation Time",
-      value: data?.prepTime,
+      label: " Restricted Access",
+      value: data?.restrictedAccess,
     },
     {
       id: 10,
-      label: "Is Preparation Time ",
-      value: data?.isPrepTime,
+      label: "section List ",
+      value: data?.sectionList,
     },
+
     {
-      id: 11,
-      label: "Time Including Preparation Time ",
-      value: data?.timeIncludingPrepTime,
-    },
-    {
-      id: 12,
-      label: "Service Type",
-      value: data?.serviceType,
-    },
-    {
-      id: 13,
-      label: "OnSite",
-      value: data?.onSite,
-    },
-    {
-      id: 14,
-      label: "In House",
-      value: data?.inHouse,
-    },
-    {
-      id: 15,
-      label: "Service For",
-      value: data?.serviceFor,
-    },
-    {
-      id: 16,
-      label: "Charges",
-      value: data?.charges,
-    },
-    {
-      id: 17,
-      label: "Booking Days",
-      value: data?.bookingDays,
-    },
-    {
-      id: 18,
-      label: "Booking Accepting Hours",
-      value: data?.bookingAcceptingHours,
-    },
-    {
-      id: 19,
-      label: "Service Area",
-      value: data?.serviceArea,
-    },
-    {
-      id: 20,
-      label: "Service Requirements",
-      value: data?.serviceRequirements,
-    },
-    {
-      id: 21,
+      id: 10,
       label: "Is Active",
       value: (
         <div>
@@ -127,16 +72,16 @@ const CurrentServices = ({ data }) => {
     },
     {
       id: 22,
-      label: "Enabled",
+      label: "Is Verified",
       value: (
         <div>
-          {data?.enabled ? (
+          {data?.isVerified ? (
             <div className="w-fit h-4 bg-green-300 p-4 text-center rounded-full flex items-center justify-center">
-              <button>Enable</button>
+              <button>Verified</button>
             </div>
           ) : (
             <div className="w-fit h-4 py-4 px-4 rounded-full bg-red-300 flex items-center justify-center">
-              <button>disable</button>
+              <button>Un Verified</button>
             </div>
           )}
         </div>
@@ -171,4 +116,4 @@ const CurrentServices = ({ data }) => {
   );
 };
 
-export default CurrentServices;
+export default CurrentAdmin;
