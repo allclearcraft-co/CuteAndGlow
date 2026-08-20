@@ -91,6 +91,55 @@ const SubscriptionModelForm = ({ onClose, adminId }) => {
         JSON.stringify({
           features,
           faqs,
+
+          validity: {
+            months: formData.get("validityMonths"),
+            renewalType: formData.get("renewalType"),
+          },
+
+          price: {
+            mrp: Number(formData.get("mrp")),
+            discount: Number(formData.get("discount")),
+            sellingPrice: Number(formData.get("sellingPrice")),
+          },
+
+          support: formData.get("support"),
+
+          mediaLimit: {
+            photos: Number(formData.get("photos")),
+            videos: Number(formData.get("videos")),
+            unlimitedPhotos: formData.get("unlimitedPhotos") === "on",
+            unlimitedVideos: formData.get("unlimitedVideos") === "on",
+          },
+
+          booking: {
+            enabled: formData.get("bookingEnabled") === "on",
+            advancedBooking: formData.get("advancedBooking") === "on",
+          },
+
+          visibility: {
+            featured: formData.get("featured") === "on",
+            verifiedBadge: formData.get("verifiedBadge") === "on",
+          },
+
+          franchise: {
+            enabled: formData.get("franchiseEnabled") === "on",
+            enquiryButton: formData.get("enquiryButton") === "on",
+          },
+
+          managementTools: {
+            staffAttendance: formData.get("staffAttendance") === "on",
+            inventory: formData.get("inventory") === "on",
+            commissionTracking: formData.get("commissionTracking") === "on",
+            analytics: formData.get("analytics") === "on",
+          },
+
+          marketing: {
+            socialPromotion: formData.get("socialPromotion") === "on",
+            couponManager: formData.get("couponManager") === "on",
+            smsWhatsapp: formData.get("smsWhatsapp") === "on",
+            reviews: formData.get("reviews") === "on",
+          },
         }),
       );
 
@@ -333,16 +382,158 @@ const SubscriptionModelForm = ({ onClose, adminId }) => {
               className="w-5 h-5 accent-[#8B2954]"
             />
           </div>
-          {/* <select name="renewalType">
-            <option value="oneTime">One Time</option>
-            <option value="monthly">Monthly</option>
-            <option value="yearly">Yearly</option>
-          </select>
-          <select name="support">
-            <option value="basic">Basic</option>
-            <option value="priority">Priority</option>
-            <option value="dedicated">Dedicated</option>
-          </select> */}
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Validity & Support</h2>
+
+            <div className="grid grid-cols-3 gap-4">
+              <InputBox
+                label="Validity (Months)"
+                name="validityMonths"
+                type="number"
+                placeholder="12"
+              />
+
+              <div>
+                <label className="block text-sm mb-2">Renewal Type</label>
+                <select
+                  name="renewalType"
+                  className="w-full px-4 py-2 border rounded-lg bg-neutral-50"
+                >
+                  <option value="oneTime">One Time</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm mb-2">Support</label>
+                <select
+                  name="support"
+                  className="w-full px-4 py-2 border rounded-lg bg-neutral-50"
+                >
+                  <option value="basic">Basic</option>
+                  <option value="priority">Priority</option>
+                  <option value="dedicated">Dedicated</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Media Limits</h2>
+
+            <div className="grid grid-cols-4 gap-4">
+              <InputBox label="Photos" name="photos" type="number" />
+              <InputBox label="Videos" name="videos" type="number" />
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="unlimitedPhotos" />
+                Unlimited Photos
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="unlimitedVideos" />
+                Unlimited Videos
+              </label>
+            </div>
+          </div>
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Booking Features</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="bookingEnabled" />
+                Online Booking
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="advancedBooking" />
+                Advanced Booking
+              </label>
+            </div>
+          </div>
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Visibility</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="featured" />
+                Featured Listing
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="verifiedBadge" />
+                Verified Badge
+              </label>
+            </div>
+          </div>
+
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Franchise</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="franchiseEnabled" />
+                Franchise Enabled
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="enquiryButton" />
+                Franchise Enquiry Button
+              </label>
+            </div>
+          </div>
+
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Management Tools</h2>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="staffAttendance" />
+                Staff Attendance
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="inventory" />
+                Inventory
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="commissionTracking" />
+                Commission Tracking
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="analytics" />
+                Analytics Dashboard
+              </label>
+            </div>
+          </div>
+
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Marketing</h2>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="socialPromotion" />
+                Social Promotion
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="couponManager" />
+                Coupon Manager
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="smsWhatsapp" />
+                SMS & WhatsApp
+              </label>
+
+              <label className="flex items-center gap-2">
+                <input type="checkbox" name="reviews" />
+                Reviews & Ratings
+              </label>
+            </div>
+          </div>
           <Button LabelName="Submit" type="submit" />
         </form>
       </div>
