@@ -20,41 +20,41 @@ const componentMap = {
 };
 
 const CurrentDataShowcase = () => {
-  const { keyId, currentDataQuery } = useParams();
-  const { alertError } = useToast();
-  const user = useSelector((state) => state.auth.user);
-  const adminId = user?._id;
+	const { keyId, currentDataQuery } = useParams();
+	const { alertError } = useToast();
+	const user = useSelector((state) => state.auth.user);
+	const adminId = user?._id;
 
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+	const [data, setData] = useState(null);
+	const [loading, setLoading] = useState(true);
 
-  const CurrentComponent = componentMap[currentDataQuery];
+	const CurrentComponent = componentMap[currentDataQuery];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				setLoading(true);
 
-        const response = await FetchData(
-          `admin/get/data/current/${currentDataQuery}/${keyId}/${adminId}`,
-          "get",
-        );
-        setData(response.data.data);
-      } catch (err) {
-        // alertError(err.response?.data);
-      } finally {
-        setLoading(false);
-      }
-    };
+				const response = await FetchData(
+					`admin/get/data/current/${currentDataQuery}/${keyId}/${adminId}`,
+					"get",
+				);
+				setData(response.data.data);
+			} catch (err) {
+				// alertError(err.response?.data);
+			} finally {
+				setLoading(false);
+			}
+		};
 
-    fetchData();
-  }, [user, keyId, adminId, currentDataQuery]);
+		fetchData();
+	}, [user, keyId, adminId, currentDataQuery]);
 
-  if (loading) return <ServiceDetailsSkeleton />;
+	if (loading) return <ServiceDetailsSkeleton />;
 
-  if (!CurrentComponent) return <div>Invalid page</div>;
+	if (!CurrentComponent) return <div>Invalid page</div>;
 
-  return <CurrentComponent data={data} />;
+	return <CurrentComponent data={data} />;
 };
 
 export default CurrentDataShowcase;
