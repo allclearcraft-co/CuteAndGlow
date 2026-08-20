@@ -7,70 +7,224 @@ const CurrentCustomer = ({ data }) => {
     {
       id: 1,
       Label: "Name",
-      Value: data?.name,
+      Value: data?.name || "N/A",
     },
+
     {
       id: 2,
       Label: "Contact Number",
-      Value: data?.contactNumber,
+      Value: data?.contactNumber || "N/A",
     },
+
     {
       id: 3,
-      Label: "Alternate Contact Number",
-      Value: (
-        <div>
-          {data?.alternateContactNumber ? data?.alternateContactNumber : "NA"}
-        </div>
-      ),
+      Label: "Email",
+      Value: data?.email || "N/A",
     },
+
     {
       id: 4,
-      Label: "Email",
-      Value: data?.email,
+      Label: "Gender",
+      Value: data?.gender || "N/A",
     },
 
     {
       id: 5,
-      Label: "Profile Image",
-      Value: data?.profileImage,
+      Label: "Role",
+      Value: data?.role || "N/A",
     },
 
     {
       id: 6,
-      Label: "IsActive",
+      Label: "Account Status",
       Value: (
-        <div>
-          {data?.isActive ? (
-            <div className="w-fit h-4 bg-green-300 p-4 text-center rounded-full flex items-center justify-center">
-              <p className="text-sm">Active</p>
-            </div>
-          ) : (
-            <div className="w-fit h-4 py-4 px-4 rounded-full bg-red-300 flex items-center justify-center">
-              <p className="text-sm">In Active</p>
-            </div>
-          )}
-        </div>
+        <span
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+            data?.isActive
+              ? "bg-green-100 text-green-700"
+              : "bg-red-100 text-red-700"
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full mr-2 ${
+              data?.isActive ? "bg-green-500" : "bg-red-500"
+            }`}
+          />
+
+          {data?.isActive ? "Active" : "Inactive"}
+        </span>
       ),
     },
-    {
-      id: 6,
-      Label: "Gender",
-      Value: data?.gender
-    },
+
     {
       id: 7,
-      Label: "Profile Image",
+      Label: "Profile Status",
       Value: (
-        <div className="h-36 w-36  rounded-full ">
+        <span
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+            data?.isProfileComplete
+              ? "bg-green-100 text-green-700"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+        >
+          {data?.isProfileComplete ? "Profile Completed" : "Profile Incomplete"}
+        </span>
+      ),
+    },
+
+    {
+      id: 8,
+      Label: "Registration Status",
+      Value: (
+        <span
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+            data?.isTemporaryRegistered
+              ? "bg-blue-100 text-blue-700"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {data?.isTemporaryRegistered
+            ? "Temporary Registered"
+            : "Regular Account"}
+        </span>
+      ),
+    },
+
+    {
+      id: 9,
+      Label: "Subscription",
+      Value: (
+        <span
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+            data?.subscription?.subscriptionPurchased
+              ? "bg-purple-100 text-purple-700"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {data?.subscription?.subscriptionPurchased
+            ? "Subscribed"
+            : "Not Subscribed"}
+        </span>
+      ),
+    },
+
+    {
+      id: 10,
+      Label: "Currently Under Booking",
+      Value: (
+        <span
+          className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
+            data?.currentlyUnderBooking
+              ? "bg-orange-100 text-orange-700"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {data?.currentlyUnderBooking
+            ? "Currently Booking"
+            : "No Active Booking"}
+        </span>
+      ),
+    },
+
+    {
+      id: 11,
+      Label: "Total Bookings",
+      Value: data?.bookings?.length || 0,
+    },
+
+    {
+      id: 12,
+      Label: "Favorite Stores",
+      Value: data?.favStore?.length || 0,
+    },
+
+    {
+      id: 13,
+      Label: "Favorite Professionals",
+      Value: data?.favProfessional?.length || 0,
+    },
+
+    {
+      id: 14,
+      Label: "Quick Services",
+      Value: data?.quickServices?.length || 0,
+    },
+
+    {
+      id: 15,
+      Label: "Wishlist Services",
+      Value: data?.wishListServices?.length || 0,
+    },
+
+    {
+      id: 16,
+      Label: "Banking Details",
+      Value: data?.bankingDetails?.length
+        ? `${data.bankingDetails.length} Added`
+        : "Not Added",
+    },
+
+    {
+      id: 17,
+      Label: "Address",
+      Value: data?.address?.length ? (
+        <div className="space-y-1">
+          <p>{data.address[0]?.address || "N/A"}</p>
+          <p className="text-xs text-gray-500">
+            {data.address[0]?.city || ""}
+            {data.address[0]?.state ? `, ${data.address[0].state}` : ""}
+            {data.address[0]?.pincode ? ` - ${data.address[0].pincode}` : ""}
+          </p>
+        </div>
+      ) : (
+        "No Address Added"
+      ),
+    },
+
+    {
+      id: 18,
+      Label: "Customer Since",
+      Value: data?.createdAt
+        ? new Date(data.createdAt).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "N/A",
+    },
+
+    {
+      id: 19,
+      Label: "Last Updated",
+      Value: data?.updatedAt
+        ? new Date(data.updatedAt).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "N/A",
+    },
+    {
+      id: 20,
+      Label: "Profile Image",
+      Value: data?.profileImage?.url ? (
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200">
           <img
-            src={data?.profileImage?.url}
-            alt=""
+            src={data.profileImage.url}
+            alt={data?.name || "Customer"}
             className="w-full h-full object-cover"
           />
+        </div>
+      ) : (
+        <div className="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+          <span className="text-xl font-bold text-purple-600">
+            {data?.name?.charAt(0)?.toUpperCase() || "U"}
+          </span>
         </div>
       ),
     },
   ];
+  
 
   return (
     <div className="space-y-6  h-full w-full p-10 mb-20">
