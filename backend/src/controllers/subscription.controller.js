@@ -13,59 +13,37 @@ const createSubscription = asyncHandler(async (req, res) => {
   const admin = await Admin.findById(adminId);
   if (!admin) throw new ApiError(404, "Admin not found.");
 
-  const {
-    planName,
-    planFor,
-    customModel,
-    customModelFor,
-    tagline,
+  const { planName, planFor, customModel, customModelFor, tagline, isActive } =
+    req.body;
 
-    validity,
-    renewalType,
-
-    mrp,
-    discount,
-    sellingPrice,
-    planPrice,
-
-    support,
-
-    photos,
-    videos,
-    unlimitedPhotos,
-    unlimitedVideos,
-
-    bookingEnabled,
-    advancedBooking,
-
-    featured,
-    verifiedBadge,
-
-    franchiseEnabled,
-    enquiryButton,
-
-    staffAttendance,
-    inventory,
-    commissionTracking,
-    analytics,
-
-    socialPromotion,
-    couponManager,
-    smsWhatsapp,
-    reviews,
-  } = req.body;
-
-  if (!planName || !planFor || !mrp || !sellingPrice || !validity) {
-    throw new ApiError(400, "Required fields are missing.");
+  if (!req.body.parsingData) {
+    throw new ApiError(400, "Subscription data is missing.");
   }
 
-  let features = [];
-  let faqs = [];
+  const parsed = JSON.parse(req.body.parsingData);
 
-  if (req.body.parsingData) {
-    const parsed = JSON.parse(req.body.parsingData);
-    features = parsed.features || [];
-    faqs = parsed.faqs || [];
+  const {
+    validity = {},
+    price = {},
+    support = "basic",
+    mediaLimit = {},
+    booking = {},
+    visibility = {},
+    franchise = {},
+    managementTools = {},
+    marketing = {},
+    features = [],
+    faqs = [],
+  } = parsed;
+
+  if (
+    !planName ||
+    !planFor ||
+    !price.mrp ||
+    !price.sellingPrice ||
+    !validity.months
+  ) {
+    throw new ApiError(400, "Required fields are missing.");
   }
 
   const newSubscription = await Subscription.create({
@@ -75,64 +53,64 @@ const createSubscription = asyncHandler(async (req, res) => {
     planFor,
 
     customModel:
-      customModel === "true" || planFor === "custom" || !!customModelFor,
+      customModel === "true" || planFor === "custom" || Boolean(customModelFor),
 
     customModelFor,
-
     tagline,
-    planPrice,
 
     validity: {
-      months: Number(validity),
-      renewalType: renewalType || "yearly",
+      months: Number(validity.months),
+      renewalType: validity.renewalType || "yearly",
     },
 
     price: {
-      mrp: Number(mrp),
-      discount: Number(discount || 0),
-      sellingPrice: Number(sellingPrice),
+      mrp: Number(price.mrp),
+      discount: Number(price.discount || 0),
+      sellingPrice: Number(price.sellingPrice),
     },
 
-    support: support || "basic",
+    support,
 
     mediaLimit: {
-      photos: Number(photos || 0),
-      videos: Number(videos || 0),
-      unlimitedPhotos: unlimitedPhotos === "true",
-      unlimitedVideos: unlimitedVideos === "true",
+      photos: Number(mediaLimit.photos || 0),
+      videos: Number(mediaLimit.videos || 0),
+      unlimitedPhotos: Boolean(mediaLimit.unlimitedPhotos),
+      unlimitedVideos: Boolean(mediaLimit.unlimitedVideos),
     },
 
     booking: {
-      enabled: bookingEnabled === "true",
-      advancedBooking: advancedBooking === "true",
+      enabled: Boolean(booking.enabled),
+      advancedBooking: Boolean(booking.advancedBooking),
     },
 
     visibility: {
-      featured: featured === "true",
-      verifiedBadge: verifiedBadge === "true",
+      featured: Boolean(visibility.featured),
+      verifiedBadge: Boolean(visibility.verifiedBadge),
     },
 
     franchise: {
-      enabled: franchiseEnabled === "true",
-      enquiryButton: enquiryButton === "true",
+      enabled: Boolean(franchise.enabled),
+      enquiryButton: Boolean(franchise.enquiryButton),
     },
 
     managementTools: {
-      staffAttendance: staffAttendance === "true",
-      inventory: inventory === "true",
-      commissionTracking: commissionTracking === "true",
-      analytics: analytics === "true",
+      staffAttendance: Boolean(managementTools.staffAttendance),
+      inventory: Boolean(managementTools.inventory),
+      commissionTracking: Boolean(managementTools.commissionTracking),
+      analytics: Boolean(managementTools.analytics),
     },
 
     marketing: {
-      socialPromotion: socialPromotion === "true",
-      couponManager: couponManager === "true",
-      smsWhatsapp: smsWhatsapp === "true",
-      reviews: reviews === "true",
+      socialPromotion: Boolean(marketing.socialPromotion),
+      couponManager: Boolean(marketing.couponManager),
+      smsWhatsapp: Boolean(marketing.smsWhatsapp),
+      reviews: Boolean(marketing.reviews),
     },
 
     features,
     faqs,
+
+    isActive: isActive === "true",
   });
 
   return res

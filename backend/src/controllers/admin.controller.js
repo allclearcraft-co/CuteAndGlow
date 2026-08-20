@@ -382,7 +382,7 @@ const getCurrentRequestData = asyncHandler(async (req, res) => {
 
     case "store": {
       const store = await Store.findById(keyId).populate(
-        "address storeStaff services bookings",
+        "address storeStaffs services bookings",
       );
       if (!store) throw new ApiError(400, "Unable to fetch data");
 
@@ -435,4 +435,5 @@ export {
   reLoginToken,
   dashboardData,
   adminLogin,
+  getCurrentRequestData,
 };
