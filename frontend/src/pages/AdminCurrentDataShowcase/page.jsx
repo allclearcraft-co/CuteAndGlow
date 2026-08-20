@@ -8,13 +8,15 @@ import CurrentCustomer from "./CurrentCustomer";
 import CurrentStore from "./CurrentStore";
 import CurrentProfessional from "./CurrentProfessional";
 import CurrentService from "./CurrentServices";
+import CurrentSubscription from "./CurrentSubscription";
 import { useSelector } from "react-redux";
 
 const componentMap = {
-	customer: CurrentCustomer,
-	store: CurrentStore,
-	professional: CurrentProfessional,
-	service: CurrentService,
+  customer: CurrentCustomer,
+  store: CurrentStore,
+  professional: CurrentProfessional,
+  service: CurrentService,
+  subscription: CurrentSubscription,
 };
 
 const CurrentDataShowcase = () => {

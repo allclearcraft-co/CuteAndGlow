@@ -320,7 +320,9 @@ const dashboardData = asyncHandler(async (req, res) => {
     }
 
     case "adminsQuery": {
-      const admin = await Admin.find().populate("creatorAdmin");
+      const admin = await Admin.find()
+        .populate("creatorAdmin")
+        .sort({ createdAt: -1 });
       if (!admin) throw new ApiError(400, "No admins found");
 
       return res
