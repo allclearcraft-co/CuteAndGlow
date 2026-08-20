@@ -7,6 +7,7 @@ import {
   markAsActiveVerified,
   dashboardData,
   adminLogin,
+  getCurrentRequestData,
 } from "../controllers/admin.controller.js";
 
 import { VerifyAdmin } from "../middlewares/admin.middleware.js";
@@ -19,6 +20,9 @@ router.route("/login").post(adminLogin);
 // router.route("/login").post(loginCustomer);
 router.route("/auth/re-login").post(reLoginToken);
 router.route("/get/data/dashboard-data/:query").get(dashboardData);
+router
+  .route("/get/data/current/:query/:keyId/:adminId")
+  .get(getCurrentRequestData);
 
 //private routes
 // router
