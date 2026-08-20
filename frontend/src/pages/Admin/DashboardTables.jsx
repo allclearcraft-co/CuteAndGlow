@@ -12,7 +12,7 @@ const TABLE_CONFIG = {
   customer: {
     text: "Customer",
     searchKeys: ["name", "contactNumber", "email"],
-    viewRoute: (id) => `/admin/current-customer/${id}`,
+    viewRoute: (id) => `/admin/current/${"customer"}/${id}`,
     columns: [
       { header: "Name", key: "name" },
       { header: "Contact Number", key: "contactNumber" },
@@ -24,7 +24,7 @@ const TABLE_CONFIG = {
   store: {
     text: "Store",
     searchKeys: ["storeName", "storeContactNumber", "storeEmail"],
-    viewRoute: (id) => `/admin/current-store/${id}`,
+    viewRoute: (id) => `/admin/current/${"store"}/${id}`,
     columns: [
       { header: "Store Name", key: "storeName" },
       { header: "Contact Number", key: "storeContactNumber" },
@@ -36,7 +36,7 @@ const TABLE_CONFIG = {
   activeService: {
     text: "Active Services",
     searchKeys: ["category", "serviceFor", "store.storeName"],
-    viewRoute: (id) => `/admin/current-service/${id}`,
+    viewRoute: (id) => `/admin/current/${"service"}/${id}`,
     columns: [
       { header: "Category", key: "category" },
       { header: "Service For", key: "serviceFor" },
@@ -53,7 +53,7 @@ const TABLE_CONFIG = {
   inactive_services: {
     text: "Inactive Services",
     searchKeys: ["category", "serviceFor", "store.storeName"],
-    viewRoute: (id) => `/admin/current-service/${id}`,
+    viewRoute: (id) => `/admin/current/${"service"}/${id}`,
     columns: [
       { header: "Category", key: "category" },
       { header: "Service For", key: "serviceFor" },
@@ -70,7 +70,7 @@ const TABLE_CONFIG = {
   pricing: {
     text: "Subscriptions",
     searchKeys: ["planName", "planFor"],
-    viewRoute: (id) => `/admin/current-subscription/${id}`,
+    viewRoute: (id) => `/admin/current/${"subscription"}/${id}`,
     columns: [
       { header: "Plan", key: "planName" },
       { header: "For", key: "planFor" },
@@ -91,7 +91,7 @@ const TABLE_CONFIG = {
   booking: {
     text: "Bookings",
     searchKeys: ["service.name", "bookingAmount"],
-    viewRoute: (id) => `/admin/current-booking/${id}`,
+    viewRoute: (id) => `/admin/current/${"booking"}/${id}`,
     columns: [
       { header: "Service", key: "service.name" },
       {
@@ -111,7 +111,7 @@ const TABLE_CONFIG = {
   adminsQuery: {
     text: "Admins",
     searchKeys: ["name", "contactNumber", "employeeId"],
-    viewRoute: (id) => `/admin/current-admin/${id}`,
+    viewRoute: (id) => `/admin/current/${"admin"}/${id}`,
     columns: [
       { header: "Name", key: "name" },
       { header: "Contact number", key: "contactNumber" },
