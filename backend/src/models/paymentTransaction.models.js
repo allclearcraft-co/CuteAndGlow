@@ -31,7 +31,7 @@ const paymentTransactionSchema = new mongoose.Schema(
 
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "UserSchema",
+      ref: "Store",
       required: true,
       index: true,
     },

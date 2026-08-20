@@ -9,6 +9,10 @@ import {
   updateProfile,
   submitKYCVerification,
   reLoginToken,
+  dashboardData,
+  addStoreStaff,
+  getStaffForService,
+  registrationFeePaid,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -30,6 +34,9 @@ router
 router
   .route("/update/add-bank-details/:storeId")
   .post(VerifyStore, addBankDetails);
+router
+  .route("/update/registration-fee-paid/true/:storeId")
+  .post(VerifyStore, registrationFeePaid);
 router.route("/update/submit-kyc/:storeId").post(
   upload.fields([
     { name: "aadharFront", maxCount: 1 },
@@ -40,5 +47,17 @@ router.route("/update/submit-kyc/:storeId").post(
   VerifyStore,
   submitKYCVerification,
 );
+
+// store staff routes
+router
+  .route("/update/add-store-staff/:storeId")
+  .post(VerifyStore, upload.single("profileImage"), addStoreStaff);
+router
+  .route("/get/staff-for-service/store-staff/:storeId")
+  .get(VerifyStore, getStaffForService);
+
+router
+  .route("/get/dashboard/data/:storeId/:query")
+  .get(VerifyStore, dashboardData);
 
 export default router;

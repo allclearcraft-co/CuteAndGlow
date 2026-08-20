@@ -4,6 +4,7 @@ import { MdFaceRetouchingNatural } from "react-icons/md";
 import { FaFemale, FaMale } from "react-icons/fa";
 import { FaCut, FaUserTie } from "react-icons/fa";
 import { GiBeard } from "react-icons/gi";
+import { FaUserAlt } from "react-icons/fa";
 
 export const femaleServices = [
   {
@@ -80,18 +81,21 @@ export const maleServices = [
 export const customerRegistrationInputs = [
   {
     label: "Name",
+    storeLabel: "Store Name",
     placeholder: "Enter your name",
     name: "name",
     type: "text",
   },
   {
     label: "Contact Number",
+    storeLabel: "Store Number",
     placeholder: "Enter your contact number",
     name: "contactNumber",
     type: "text",
   },
   {
     label: "Email",
+    storeLabel: "Store Email",
     placeholder: "Enter your email",
     name: "email",
     type: "email",
@@ -162,5 +166,80 @@ export const activeBookings = [
     location: "Harmu Road, Ranchi",
     status: "Professional On The Way",
     phone: "+91 9876543210",
+  },
+];
+
+export const adminDashboardSection = [
+  {
+    query: "customer",
+    label: "Customer",
+    count: 0,
+    icon: FaUserAlt,
+  },
+  {
+    query: "store",
+    label: "Store",
+    icon: FaUserAlt,
+    count: 0,
+  },
+  {
+    query: "professional",
+    label: "Professional",
+    icon: FaUserAlt,
+    count: 0,
+  },
+  {
+    query: "active_services",
+    label: "Active Service",
+    count: 0,
+  },
+  {
+    query: "inactive_services",
+    label: "In Active Service",
+    count: 0,
+  },
+  {
+    query: "subscription",
+    label: "Subscriptions",
+    count: 0,
+  },
+  {
+    query: "bookings",
+    label: "Booking",
+    count: 0,
+  },
+  {
+    query: "adminsQuery",
+    label: "Admins",
+    count: 0,
+  },
+];
+
+export const homeBanners = [
+  {
+    id: 1,
+    image:
+      "https://images.unsplash.com/photo-1522337660859-02fbefca4702?w=1600",
+    title: "50% OFF on First Visit",
+    subtitle: "Limited Time Offer",
+    description: "Book your first salon appointment and save instantly.",
+    link: "/services/all?offer=first-visit",
+  },
+  {
+    id: 2,
+    image:
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1600",
+    title: "Bridal Makeup Packages",
+    subtitle: "Wedding Special",
+    description: "Premium bridal artists with HD and Airbrush makeup.",
+    link: "/services/all?category=Bridal%20%26%20Event%20Makeup",
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600",
+    title: "Luxury Hair Spa",
+    subtitle: "Hair Care",
+    description: "Professional hair spa treatments starting at ₹499.",
+    link: "/services/all?category=Hair%20Styling%20%26%20Treatments",
   },
 ];

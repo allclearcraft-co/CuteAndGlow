@@ -5,10 +5,17 @@ const Footer = () => {
   const quickLinks = [
     { name: "Female Services", path: "/services/location/female/category" },
     { name: "Male Services", path: "/services/location/male/category" },
+    { name: "Admin", path: "/admin/login", css: "hidden lg:block" },
   ];
   const usefulLinks = [
-    { name: "Store", path: `/auth/${"login"}/${"store"}` },
-    { name: "Professional", path: `/auth/${"login"}/${"professional"}` },
+    {
+      name: "Studio / Parlor / Salon Registration",
+      path: `/auth/${"login"}/${"store"}`,
+    },
+    {
+      name: "Beauty Professional Registration",
+      path: `/auth/${"login"}/${"professional"}`,
+    },
   ];
 
   return (
@@ -25,6 +32,12 @@ const Footer = () => {
                 className="h-16"
               />
             </a>
+            <h2>
+              <p className="logo_style">Cute & Glow</p>
+              <p className="text-sm text-pink-100 leading-6 max-w-sm flex flex-col items-start">
+                <strong>Brand unit of</strong> CLEAR CRAFT PRIVATE LIMITED
+              </p>
+            </h2>
 
             <p className="text-sm text-pink-100 leading-6 max-w-sm">
               Experience luxury beauty and wellness services designed to
@@ -43,7 +56,7 @@ const Footer = () => {
                 <a
                   key={item.name}
                   href={item.path}
-                  className="hover:text-pink-200 transition duration-300"
+                  className={`hover:text-pink-200 transition duration-300 ${item.css}`}
                 >
                   {item.name}
                 </a>
@@ -61,7 +74,7 @@ const Footer = () => {
                 <a
                   key={item.name}
                   href={item.path}
-                  className="hover:text-pink-200 transition duration-300"
+                  className="hover:text-pink-200 transition duration-300 hover:underline"
                 >
                   {item.name}
                 </a>
@@ -115,11 +128,11 @@ const Footer = () => {
             <a href="#" className="hover:text-white">
               Contact Us
             </a>
-            <a href="#" className="hover:text-white">
-              Privacy Policy
+            <a href="/policy" className="hover:text-white">
+              Policy
             </a>
 
-            <a href="#" className="hover:text-white">
+            <a href="/terms-and-conditions" className="hover:text-white">
               Terms & Conditions
             </a>
           </div>

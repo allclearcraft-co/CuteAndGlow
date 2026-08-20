@@ -6,16 +6,24 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
 import Authentication from "./pages/Auth/Authentication";
-import Service from "./pages/Services/Service";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ScrollToTop from "./components/hooks/ScrollToTop";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser, clearUser, stopAuthLoading } from "./redux/slice/authSlice";
 import { FetchData } from "./utils/FetchFromApi";
+import Service from "./pages/Services/Service";
+import CurrentService from "./pages/CurrentService/CurrentService";
+import ServiceBooking from "./pages/ServiceBooking/ServiceBooking";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import TermsAndConditions from "./pages/CMS/TermsAndConditions";
+import Policy from "./pages/CMS/Policy";
+import AdminAuth from "./pages/Auth/AdminAuth";
+import CurrentDataShowcase from "./pages/AdminCurrentDataShowcase/page";
 
 function App() {
   const location = useLocation();
-  const hideFooter = location.pathname === "/dashboard";
+  const hideFooterRoutes = ["/dashboard", "/admin/dashboard"];
+  const hideFooter = hideFooterRoutes.includes(location.pathname);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const isHome = location.pathname === "/";
@@ -34,11 +42,14 @@ function App() {
         if (!role || !refreshToken) {
           throw new Error("Missing auth data");
         }
-
         const endpointMap = {
           Customer: "customer/auth/re-login",
           Store: "store/auth/re-login",
           Professional: "professional/auth/re-login",
+          admin: "admin/auth/re-login",
+          subAdmin: "admin/auth/re-login",
+          sales: "admin/auth/re-login",
+          marketing: "admin/auth/re-login",
         };
         const endpoint = endpointMap[role];
         if (!endpoint) {
@@ -69,19 +80,40 @@ function App() {
       <Header />
       <ScrollToTop />
       <div className="pt-20">
+        {/* <CurrentServices/> */}
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/auth/:type/:userType" element={<Authentication />} />
-          <Route
-            path={"/services/:location/:gender/:category"}
-            element={<Service />}
-          />
-          <Route
-            path="/services/location/female/category"
-            element={<Service />}
-          />
           <Route path="/services/all" element={<Service />} />
+          <Route
+            path="/services/:serviceId/current-service"
+            element={<CurrentService />}
+          />
+          <Route
+            path="/services/book-service/:serviceName/:serviceId/:userId"
+            element={<ServiceBooking />}
+          />
+
           <Route path="/dashboard" element={<Dashboard />} />
+
+          <Route
+            path="/terms-and-conditions"
+            element={<TermsAndConditions />}
+          />
+          <Route path="/policy" element={<Policy />} />
+
+          {/* =========================ADMIN ================================== */}
+          <Route path="/admin/login" element={<AdminAuth />} />
+          <Route
+            path="/admin/current/:currentDataQuery/:keyId"
+            element={<CurrentDataShowcase />}
+          />
+          <Route
+            path="/admin/reset/password"
+            element={<AdminAuth resetPassword={true} />}
+          />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </div>
       {!hideFooter && <Footer />}

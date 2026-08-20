@@ -7,6 +7,9 @@ import { ToastProvider } from "./components/hooks/ToastContext.jsx";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 
+import "leaflet/dist/leaflet.css";
+import "./leafletConfig";
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>

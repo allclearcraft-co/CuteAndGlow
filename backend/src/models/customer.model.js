@@ -14,6 +14,7 @@ const customerSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Prefer not to say"],
       default: "Prefer not to say",
     },
+    profileImage: { url: String, fileId: String },
     alternateContactNumber: { type: String },
     address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }],
     defaultAddress: String,
@@ -50,6 +51,14 @@ const customerSchema = new mongoose.Schema(
     isTemporaryRegistered: { type: Boolean, default: true },
 
     // make it "true" when the user starts the registering process. if the user holds back button or reloads the tab delete the temporary registration. when he is smart and closes the browser... this will be marked as "true" earlier and when he tries to register or login again... we will verify this step once again.
+    subscription: {
+      subscriptionModel: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Subscription",
+      },
+      subscriptionPurchased: { type: Boolean, default: false },
+      subscriptionValidity: Date,
+    },
   },
   { timestamps: true },
 );
@@ -58,7 +67,7 @@ customerSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     { _id: this._id, role: "Customer" },
     process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: "20m" },
+    { expiresIn: "1d" },
   );
 };
 

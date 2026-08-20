@@ -14,16 +14,21 @@ import {
   dashboardData,
   loginCustomer,
   reLoginToken,
+  deleteBankDetails,
+  getCustomerById,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
 
 const router = Router();
 
+//public routes
 router.route("/register").post(registerCustomer);
 router.route("/login").post(loginCustomer);
 router.route("/auth/re-login").post(reLoginToken);
+router.route("/get/customer/data/:customerId").get(getCustomerById);
 
+//private routes
 router
   .route("/otp/authentication/:verificationType/:customerId")
   .post(otpVerification);
@@ -39,7 +44,7 @@ router
   .post(VerifyCustomer, addAddress);
 router
   .route("/update/add-address/:customerId/:addressId")
-  .post(VerifyCustomer, markAddressDefault);
+  .post(markAddressDefault); // i have removed the middleware of customer from this route fix it and make it work here
 router
   .route("/update/modify-address/:customerId/:addressId")
   .post(VerifyCustomer, updateAddress);
@@ -49,6 +54,9 @@ router
 router
   .route("/update/add-bank-details/:customerId")
   .post(VerifyCustomer, addBankDetails);
+router
+  .route("/update/delete-bank-details/:bankId/:customerId")
+  .delete(VerifyCustomer, deleteBankDetails);
 router
   .route("/update/add-upi-details/:customerId")
   .post(VerifyCustomer, addUPIid);

@@ -15,6 +15,7 @@ import {
 } from "../validators/KYC.validator.js";
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
 import { Store } from "../models/store.model.js";
+import { StoreStaff } from "../models/storeStaff.model.js";
 
 const registerStore = asyncHandler(async (req, res) => {
   const { name, contactNumber, email } = req.body;
@@ -494,6 +495,237 @@ const reLoginToken = asyncHandler(async (req, res) => {
   );
 });
 
+const dashboardData = asyncHandler(async (req, res) => {
+  const { storeId, query = "overview" } = req.params;
+
+  const store = await Store.findById(storeId);
+
+  if (!store) {
+    throw new ApiError(404, "store not found");
+  }
+
+  switch (query) {
+    case "overview": {
+      const storeInfo = await Store.findById(storeId).select(
+        "storeName storeContactNumber storeEmail createdAt bookings isRegistrationFeePaid",
+      );
+
+      return res.status(200).json(
+        new ApiResponse(
+          200,
+          {
+            store: storeInfo,
+          },
+          "Dashboard data fetched successfully",
+        ),
+      );
+    }
+
+    case "address": {
+      const addresses = await Address.find({ store: storeId });
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, addresses, "Addresses fetched successfully"),
+        );
+    }
+
+    case "bankDetails": {
+      const bankDetails = await BankDetails.findOne({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            bankDetails,
+            "Bank details fetched successfully",
+          ),
+        );
+    }
+
+    case "storeStaff": {
+      const storeStaff = await StoreStaff.find({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, storeStaff, "Bank details fetched successfully"),
+        );
+    }
+
+    case "services": {
+      const service = await Services.find({
+        store: storeId,
+      }).populate({ path: "executive", select: "name" });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Details fetched successfully"));
+    }
+
+    case "service-bookings": {
+      const bookings = await ServiceBookings.find({
+        store: storeId,
+      });
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
+
+    default:
+      throw new ApiError(400, "Invalid dashboard query");
+  }
+});
+
+const addStoreStaff = asyncHandler(async (req, res) => {
+  const {
+    name,
+    contactNumber,
+    email,
+    designation,
+    experience,
+    specialization,
+    otherServices,
+    flatNumber,
+    floor,
+    block,
+    societyName,
+    street1,
+    street2,
+    area,
+    locality,
+    sector,
+    city,
+    state,
+    country,
+    pincode,
+  } = req.body;
+
+  const { storeId } = req.params;
+
+  const store = await Store.findById(storeId).populate("address");
+  if (!store) {
+    throw new ApiError(404, "Store not found");
+  }
+
+  if (!name?.trim()) throw new ApiError(400, "Please enter staff name");
+  if (name.length > 50)
+    throw new ApiError(
+      400,
+      "Name length is too long, please use a shorter name",
+    );
+
+  if (!contactNumber) throw new ApiError(400, "Contact number is required");
+  if (!validatePhone(contactNumber))
+    throw new ApiError(400, "Invalid contact number");
+
+  if (!email) throw new ApiError(400, "Email is required");
+  // if (!validateEmail(email)) throw new ApiError(400, "Invalid email address");
+
+  const alreadyExists = await StoreStaff.findOne({
+    $or: [{ contactNumber }, { email: email.toLowerCase() }],
+  });
+
+  if (alreadyExists) {
+    throw new ApiError(
+      409,
+      "A staff member already exists with this contact number or email",
+    );
+  }
+  const storeAddress = await Address.findOne({ store: storeId });
+  const storeLongitude = storeAddress.location.coordinates[1];
+  const storeLatitude = storeAddress.location.coordinates[0];
+
+  const address = await Address.create({
+    flatNumber,
+    floor,
+    block,
+    societyName,
+    street1,
+    street2,
+    area,
+    locality,
+    sector,
+    city,
+    state,
+    country,
+    pincode,
+    location: { coordinates: [storeLatitude, storeLongitude] },
+  });
+
+  let profileImage = {};
+
+  if (req.file) {
+    const uploadedImage = await UploadImages(req.file.filename, {
+      folderStructure: "storeStaff/profilePicture",
+    });
+
+    profileImage = {
+      url: uploadedImage.url,
+      fileId: uploadedImage.fileId,
+    };
+  }
+
+  const staff = await StoreStaff.create({
+    store: storeId,
+    name: name.trim(),
+    contactNumber,
+    email: email.toLowerCase(),
+    designation,
+    experience,
+    specialization,
+    otherServices: otherServices
+      ? Array.isArray(otherServices)
+        ? otherServices
+        : otherServices.split(",").map((s) => s.trim())
+      : [],
+    address: address._id,
+    profileImage,
+  });
+
+  address.storeStaff = staff;
+  store.storeStaffs = staff;
+  await address.save();
+  await store.save();
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, staff, "Store staff added successfully."));
+});
+
+const getStaffForService = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+
+  const staffs = await StoreStaff.find({
+    store: storeId,
+    isActive: true,
+  }).select("name specialization designation");
+  if (!staffs) throw new ApiError(400, "No data found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, staffs, "Data fetched successfully !"));
+});
+
+const registrationFeePaid = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  const store = await Store.findByIdAndUpdate(storeId, {
+    isRegistrationFeePaid: true,
+  });
+  if (!store) throw new ApiError(400, "Something went wrong");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, store, "Data updated successfully !"));
+});
+
 export {
   registerStore,
   loginStore,
@@ -504,4 +736,8 @@ export {
   updateProfile,
   submitKYCVerification,
   reLoginToken,
+  addStoreStaff,
+  getStaffForService,
+  registrationFeePaid,
+  dashboardData,
 };

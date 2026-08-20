@@ -1,41 +1,87 @@
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { FetchData } from "../../utils/FetchFromApi";
+import EmptyState from "./components/EmptyState";
+import ServiceFilters from "./components/ServiceFilters";
+import ServiceGrid from "./components/ServiceGrid";
+import Pagination from "./components/Pagination";
+import LoadingSkeleton from "./components/LoadingSkeleton";
 
-import ServiceCard from "./ServiceCard";
-import CategoryMenu from "./CategoryMenu";
-import ServiceGrid from "./ServiceGrid";
+const Service = () => {
+  const [services, setServices] = useState([]);
+  const [pagination, setPagination] = useState({});
 
-import { categories as DemoCategory } from "../../constants/service";
-import { services as DemoService } from "../../constants/service";
+  const [loading, setLoading] = useState(true);
 
-const Services = () => {
-  const { location, gender, category } = useParams();
-  const currentLocation = location?.toLowerCase();
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 20,
+    category: localStorage.getItem("homeClickedCategory") || "",
+    serviceFor: "",
+    search: "",
+    sortBy: "latest",
+  });
 
-  // Categories for selected gender
-  //   const filteredCategories = categories.filter(
-  //     (item) => item.gender === gender,
-  //   );
+  const getBookingServices = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== "" && value !== undefined && value !== null) {
+          params.append(key, value);
+        }
+      });
+      const response = await FetchData(
+        `services/get/service?${params.toString()}`,
+        "get",
+      );
+      setServices(response.data.data.services);
+      setPagination(response.data.data.pagination);
+    } catch (err) {
+      console.log(err.response?.data || err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Services for selected gender + category
-  //   const filteredServices = services.filter((item) => item.gender === gender);
+  useEffect(() => {
+    getBookingServices();
+  }, [filters]);
 
   return (
-    <div className="mx-auto w-full md:w-[80vw] flex flex-col gap-5 justify-center">
-      <h1 className="capitalize text-4xl font-medium w-full text-center">
-        Services we offer
-      </h1>
-      <div className="flex sm:flex-wrap">
-        <CategoryMenu
-          categories={DemoCategory}
-          selectedCategory={category}
-          location={location}
-          gender={gender}
-        />
-      </div>
+    <section className="w-full py-10">
+      <div className="max-w-[1600px] mx-auto px-4 md:px-8">
+        <ServiceFilters filters={filters} setFilters={setFilters} />
 
-      <ServiceGrid services={DemoService} />
-    </div>
+        {/* Result Counter */}
+
+        {!loading && (
+          <div className="flex justify-between items-center my-8">
+            <h2 className="heading text-xl md:text-2xl">Browse Services</h2>
+
+            <span className="paragraph text-neutral-500">
+              {pagination.total || services.length} Services Found
+            </span>
+          </div>
+        )}
+
+        {loading ? (
+          <LoadingSkeleton />
+        ) : services.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            <ServiceGrid services={services} />
+
+            <Pagination
+              pagination={pagination}
+              filters={filters}
+              setFilters={setFilters}
+            />
+          </>
+        )}
+      </div>
+    </section>
   );
 };
 
-export default Services;
+export default Service;

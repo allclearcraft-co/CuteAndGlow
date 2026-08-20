@@ -58,15 +58,15 @@ function Landing() {
               openExploreServices();
             }}
           />
-          <Button
+          {/* <Button
             LabelName="Explore Services"
             onClick={() => {
               openExploreServices();
             }}
-          />
+          /> */}
         </div>
       </div>
-      <Popup isOpen={isOpen} onClose={closePopup}>
+      <Popup isOpen={isOpen} onClose={closePopup} center={true}>
         {appointmentType === "self" ? <AppointmentForm /> : <ExploreServices />}
       </Popup>
     </div>

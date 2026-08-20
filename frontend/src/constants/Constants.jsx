@@ -44,6 +44,12 @@ export const DashboardSectionList = [
     roles: ["Customer", "Store", "Professional"],
   },
   {
+    label: "Bookings",
+    icon: <GoVerified />,
+    query: "bookings",
+    roles: ["Customer", "Store", "Professional"],
+  },
+  {
     label: "Address",
     icon: <FaMapMarkerAlt />,
     query: "address",
@@ -76,13 +82,13 @@ export const DashboardSectionList = [
   {
     label: "Store Staff",
     icon: <FaUser />,
-    query: "store_staff",
+    query: "storeStaff",
     roles: ["Store"],
   },
   {
-    label: "Own Services ",
+    label: "Services",
     icon: <FaUser />,
-    query: "own_services",
+    query: "services",
     roles: ["Store", "Professional"],
   },
   {
