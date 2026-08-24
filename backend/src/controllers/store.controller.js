@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Address } from "../models/address.model.js";
 import { BankDetails } from "../models/bankDetails.model.js";
 import { validatePhone } from "../validators/contactNumber.validator.js";
-import { UploadImages } from "../utils/imageKit.io.js";
+import { DeleteImage, UploadImages } from "../utils/imageKit.io.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { Services } from "../models/service.model.js";
 import {
@@ -16,6 +16,9 @@ import {
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
 import { Store } from "../models/store.model.js";
 import { StoreStaff } from "../models/storeStaff.model.js";
+import { Subscription } from "../models/subscription.model.js";
+import sendEmail from "../services/mail.service.js";
+import otpTemplate from "../template/otp.mail.template.js";
 
 const registerStore = asyncHandler(async (req, res) => {
   const { name, contactNumber, email } = req.body;
@@ -60,6 +63,12 @@ const registerStore = asyncHandler(async (req, res) => {
     otpExpiry: expiresAt,
   });
 
+  await sendEmail({
+    to: user?.storeEmail,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.storeName, otp),
+  });
+
   const user = await Store.findOne({
     storeContactNumber: contactNumber,
   }).select("name contactNumber email");
@@ -71,7 +80,7 @@ const registerStore = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user, otpStatus, otp },
+        { user, otpStatus },
         "Otp has been sent to your contact number",
       ),
     );
@@ -101,15 +110,18 @@ const loginStore = asyncHandler(async (req, res) => {
   storeUser.otpExpiry = expiresAt;
   await storeUser.save();
 
-  // const user = contactNumber,
-  //   storeName;
+  await sendEmail({
+    to: storeUser?.storeEmail,
+    subject: "OTP Verification",
+    html: otpTemplate(storeUser?.storeName, otp),
+  });
 
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        { user: { contactNumber }, otpStatus, otp },
+        { user: { contactNumber }, otpStatus },
         "OTP sent successfully !",
       ),
     );
@@ -524,7 +536,7 @@ const dashboardData = asyncHandler(async (req, res) => {
   switch (query) {
     case "overview": {
       const storeInfo = await Store.findById(storeId).select(
-        "storeName storeContactNumber storeEmail createdAt bookings isRegistrationFeePaid",
+        "storeName storeContactNumber storeEmail createdAt bookings isRegistrationFeePaid serviceType paymentOptions storeTimings images subscription",
       );
 
       return res.status(200).json(
@@ -573,6 +585,18 @@ const dashboardData = asyncHandler(async (req, res) => {
         .status(200)
         .json(
           new ApiResponse(200, storeStaff, "Bank details fetched successfully"),
+        );
+    }
+
+    case "images": {
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(
+            200,
+            store.images || {},
+            "Images fetched successfully",
+          ),
         );
     }
 
@@ -630,6 +654,18 @@ const addStoreStaff = asyncHandler(async (req, res) => {
   const store = await Store.findById(storeId).populate("address");
   if (!store) {
     throw new ApiError(404, "Store not found");
+  }
+
+  const plan = await Subscription.findById(
+    store.subscription?.subscriptionModel,
+  );
+  if (
+    !store.subscription?.subscriptionPurchased ||
+    !store.subscription?.subscriptionValidity ||
+    store.subscription.subscriptionValidity <= new Date() ||
+    !plan?.isActive
+  ) {
+    throw new ApiError(403, "Purchase an active subscription to add staff");
   }
 
   if (!name?.trim()) throw new ApiError(400, "Please enter staff name");
@@ -708,7 +744,7 @@ const addStoreStaff = asyncHandler(async (req, res) => {
   });
 
   address.storeStaff = staff;
-  store.storeStaffs = staff;
+  store.storeStaffs.push(staff._id);
   await address.save();
   await store.save();
 
@@ -743,6 +779,82 @@ const registrationFeePaid = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, store, "Data updated successfully !"));
 });
 
+const addGalleryImages = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  const store = await Store.findById(storeId);
+  if (!store) throw new ApiError(404, "Store not found");
+
+  const plan = await Subscription.findById(
+    store.subscription?.subscriptionModel,
+  );
+  if (
+    !store.subscription?.subscriptionPurchased ||
+    !store.subscription?.subscriptionValidity ||
+    store.subscription.subscriptionValidity <= new Date() ||
+    !plan?.isActive
+  ) {
+    throw new ApiError(403, "Purchase an active subscription to upload images");
+  }
+
+  const files = req.files || [];
+  if (!files.length)
+    throw new ApiError(400, "Please select at least one image");
+
+  const currentGallery = store.images?.gallery || [];
+  const photoLimit = plan.mediaLimit?.photos || 0;
+  if (
+    !plan.mediaLimit?.unlimitedPhotos &&
+    currentGallery.length + files.length > photoLimit
+  ) {
+    throw new ApiError(
+      403,
+      `This plan allows ${photoLimit} gallery image${photoLimit === 1 ? "" : "s"}`,
+    );
+  }
+
+  const safeName = store.storeName.toLowerCase().replace(/[^a-z0-9-_]+/g, "-");
+  const uploadedImages = [];
+  for (const file of files) {
+    const uploaded = await UploadImages(file.filename, {
+      folderStructure: `store/gallery-images/${safeName}-${storeId}`,
+    });
+    uploadedImages.push({ url: uploaded.url, fileId: uploaded.fileId });
+  }
+
+  store.images = {
+    ...(store.images?.toObject?.() || store.images || {}),
+    gallery: [...currentGallery, ...uploadedImages],
+  };
+  await store.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, store.images, "Gallery updated successfully"));
+});
+
+const deleteGalleryImage = asyncHandler(async (req, res) => {
+  const { storeId, fileId } = req.params;
+  const store = await Store.findById(storeId);
+  if (!store) throw new ApiError(404, "Store not found");
+
+  const imageExists = (store.images?.gallery || []).some(
+    (image) => image.fileId === fileId,
+  );
+  if (!imageExists) throw new ApiError(404, "Gallery image not found");
+
+  await DeleteImage(fileId);
+  store.images.gallery = store.images.gallery.filter(
+    (image) => image.fileId !== fileId,
+  );
+  await store.save();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, store.images, "Gallery image deleted successfully"),
+    );
+});
+
 export {
   registerStore,
   loginStore,
@@ -754,6 +866,8 @@ export {
   submitKYCVerification,
   reLoginToken,
   addStoreStaff,
+  addGalleryImages,
+  deleteGalleryImage,
   getStaffForService,
   registrationFeePaid,
   dashboardData,

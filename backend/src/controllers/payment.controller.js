@@ -1,4 +1,4 @@
-import {asyncHandler} from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
@@ -32,6 +32,7 @@ import {
   runPaymentSuccessHandler,
   runPaymentFailedHandler,
 } from "../services/paymentModuleHandlers.service.js";
+import { Subscription } from "../models/subscription.model.js";
 
 /**
  * CREATE PAYMENT
@@ -47,10 +48,7 @@ const createPayment = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (!module || !moduleId || !user || !amount) {
-    throw new ApiError(
-      400,
-      "module, moduleId, user and amount are required",
-    );
+    throw new ApiError(400, "module, moduleId, user and amount are required");
   }
 
   if (!Object.values(PAYMENT_MODULES).includes(module)) {
@@ -60,6 +58,20 @@ const createPayment = asyncHandler(async (req, res) => {
   const numericAmount = Number(amount);
   if (Number.isNaN(numericAmount) || numericAmount <= 0) {
     throw new ApiError(400, "Invalid amount");
+  }
+
+  if (module === PAYMENT_MODULES.SUBSCRIPTION) {
+    const subscription = await Subscription.findOne({
+      _id: moduleId,
+      planFor: "store",
+      isActive: true,
+    });
+    if (!subscription || user.toString() !== req.user._id.toString()) {
+      throw new ApiError(400, "Invalid subscription purchase request");
+    }
+    if (numericAmount !== subscription.price.sellingPrice) {
+      throw new ApiError(400, "Invalid subscription amount");
+    }
   }
 
   const transaction = await createTransaction({
@@ -178,12 +190,15 @@ const verifyPayment = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Transaction not found");
   }
 
+  const transactionUserId = transaction.user?._id || transaction.user;
+  if (transactionUserId.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "You can only verify your own payment");
+  }
+
   if (transaction.paymentStatus === PAYMENT_STATUS.CAPTURED) {
     return res
       .status(200)
-      .json(
-        new ApiResponse(200, transaction, "Payment already verified"),
-      );
+      .json(new ApiResponse(200, transaction, "Payment already verified"));
   }
 
   if (transaction.gatewayOrderId !== razorpay_order_id) {
@@ -244,7 +259,10 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
     await runPaymentFailedHandler(transaction);
 
-    throw new ApiError(400, `Payment is not successful. Status: ${payment.status}`);
+    throw new ApiError(
+      400,
+      `Payment is not successful. Status: ${payment.status}`,
+    );
   }
 
   const updatedTransaction = await markPaymentSuccess(transaction._id, {
@@ -307,7 +325,9 @@ const paymentWebhook = asyncHandler(async (req, res) => {
   const orderEntity = payload?.payload?.order?.entity;
 
   if (!paymentEntity && !orderEntity) {
-    return res.status(200).json({ success: true, message: "No action required" });
+    return res
+      .status(200)
+      .json({ success: true, message: "No action required" });
   }
 
   let transaction = null;
@@ -343,10 +363,7 @@ const paymentWebhook = asyncHandler(async (req, res) => {
   /**
    * Handle success events
    */
-  if (
-    event === "payment.captured" ||
-    event === "payment.authorized"
-  ) {
+  if (event === "payment.captured" || event === "payment.authorized") {
     if (transaction.paymentStatus !== PAYMENT_STATUS.CAPTURED) {
       const updatedTransaction = await markPaymentSuccess(transaction._id, {
         paymentId: paymentEntity.id,
@@ -386,10 +403,7 @@ const paymentWebhook = asyncHandler(async (req, res) => {
   /**
    * Handle refund events
    */
-  if (
-    event === "refund.processed" ||
-    event === "payment.refunded"
-  ) {
+  if (event === "refund.processed" || event === "payment.refunded") {
     await markPaymentRefunded(
       transaction._id,
       "Payment refunded via webhook",
