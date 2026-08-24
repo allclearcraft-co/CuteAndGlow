@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   FaEnvelope,
   FaPhoneAlt,
@@ -34,9 +34,11 @@ import {
   FaMale,
   FaMarsDouble,
   FaRegUser,
+  FaTimes,
+  FaCamera,
+  FaCloudUploadAlt,
+  FaImage,
 } from "react-icons/fa";
-import { FaCloudUploadAlt, FaImage, FaCamera } from "react-icons/fa";
-import { useState } from "react";
 import { bookings, activeBookings } from "../../constants/constants";
 import NonGenderSvg from "../../assets/non-gender-user.svg";
 import { FetchData } from "../../utils/FetchFromApi";
@@ -49,16 +51,123 @@ import AddressMap from "../../components/ui/AddressMap";
 import { MdOutlineVerified } from "react-icons/md";
 import StoreServiceCard from "../../components/ui/StoreServiceCard";
 
-const Overview = ({ data, role, callData }) => {
+const Overview = ({ data, role, userId, callData }) => {
+  const [subscription, setSubscription] = useState([]);
+  const [showProfilePopup, setShowProfilePopup] = useState(false);
+  const [profileForm, setProfileForm] = useState({});
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const { alertSuccess, alertError } = useToast();
+
+  const getSubscription = async () => {
+    try {
+      const response = await FetchData(
+        `subscription/get/subscription/${role}`,
+        "get",
+      );
+      console.log(response);
+      setSubscription(response.data.data);
+    } catch (err) {
+      console.log(err.response);
+    }
+  };
+
   useEffect(() => {
     callData();
+    getSubscription();
   }, []);
+
   const displayData =
     role === "Customer"
       ? data?.customer
       : role === "Store"
         ? data?.store
         : data?.professional;
+
+  const openProfilePopup = () => {
+    if (role === "Customer") {
+      setProfileForm({
+        name: displayData?.name || "",
+        contactNumber: displayData?.contactNumber || "",
+        email: displayData?.email || "",
+        gender: displayData?.gender || "Prefer not to say",
+        alternateContactNumber: displayData?.alternateContactNumber || "",
+      });
+    }
+
+    if (role === "Store") {
+      setProfileForm({
+        storeName: displayData?.storeName || "",
+        storeContactNumber: displayData?.storeContactNumber || "",
+        storeEmail: displayData?.storeEmail || "",
+        serviceType: displayData?.serviceType || "Both (In house and On site)",
+        inStorePayment: displayData?.paymentOptions?.inStore || "",
+        onSitePayment: displayData?.paymentOptions?.onSite || "",
+        openFrom: displayData?.storeTimings?.openFrom
+          ? new Date(displayData.storeTimings.openFrom)
+              .toISOString()
+              .slice(11, 16)
+          : "",
+        openTill: displayData?.storeTimings?.openTill
+          ? new Date(displayData.storeTimings.openTill)
+              .toISOString()
+              .slice(11, 16)
+          : "",
+      });
+    }
+
+    if (role === "Professional") {
+      setProfileForm({
+        name: displayData?.name || "",
+        contactNumber: displayData?.contactNumber || "",
+        email: displayData?.email || "",
+        gender: displayData?.gender || "Prefer not to say",
+        alternateContactNumber: displayData?.alternateContactNumber || "",
+        about: displayData?.about || "",
+        specialization: displayData?.specialization?.join(", ") || "",
+        serviceType: displayData?.serviceType || "Both (In house and On Site)",
+        paymentOptions: displayData?.paymentOptions || "Both",
+      });
+    }
+
+    setShowProfilePopup(true);
+  };
+
+  const saveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      const payload =
+        role === "Customer"
+          ? profileForm
+          : role === "Store"
+            ? {
+                storeName: profileForm.storeName,
+                storeContactNumber: profileForm.storeContactNumber,
+                storeEmail: profileForm.storeEmail,
+                serviceType: profileForm.serviceType,
+                paymentOptions: {
+                  inStore: profileForm.inStorePayment || undefined,
+                  onSite: profileForm.onSitePayment || undefined,
+                },
+                storeTimings: {
+                  openFrom: profileForm.openFrom,
+                  openTill: profileForm.openTill,
+                },
+              }
+            : profileForm;
+      const response = await FetchData(
+        `${role.toLowerCase()}/update/profile/${userId}`,
+        "post",
+        payload,
+      );
+      alertSuccess(response.data.message);
+      setShowProfilePopup(false);
+      await callData();
+    } catch (err) {
+      alertError(err.response?.data?.message || "Unable to update profile");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   return (
     <div className="space-y-6 w-full">
@@ -74,7 +183,10 @@ const Overview = ({ data, role, callData }) => {
             Welcome back! Here's a quick overview of your account.
           </p>
         </div>
-        <button className="flex justify-center items-center gap-2 bg-[#8B2954] text-white px-5 py-3 rounded-xl hover:bg-[#742247] transition duration-300">
+        <button
+          onClick={openProfilePopup}
+          className="flex justify-center items-center gap-2 bg-[#8B2954] text-white px-5 py-3 rounded-xl hover:bg-[#742247] transition duration-300"
+        >
           <FaUserEdit />
           Update Profile
         </button>
@@ -247,6 +359,614 @@ const Overview = ({ data, role, callData }) => {
           </div> */}
         </div>
       </div>
+      {/* Update Profile Popup */}
+      {showProfilePopup && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 sm:p-5">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+            {/* Popup Header */}
+            <div className="bg-[#8B2954] text-white px-5 py-4 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-semibold">
+                  Update Profile
+                </h2>
+
+                <p className="text-white/80 text-sm mt-1">
+                  Update your {role?.toLowerCase()} details
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowProfilePopup(false)}
+                className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex justify-center items-center transition"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Popup Body */}
+            <div className="overflow-y-auto p-5 sm:p-6">
+              {/* =====================================================
+            CUSTOMER
+        ===================================================== */}
+              {role === "Customer" && (
+                <div className="space-y-5">
+                  {/* Profile Image */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <img
+                        src={displayData?.profileImage?.url || NonGenderSvg}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-pink-100"
+                      />
+
+                      <button
+                        type="button"
+                        className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#8B2954] text-white flex justify-center items-center"
+                      >
+                        <FaCamera className="text-sm" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-2">Profile image</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Name
+                      </label>
+
+                      <input
+                        type="text"
+                        value={profileForm.name || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            name: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Contact */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Contact Number
+                      </label>
+
+                      <input
+                        type="tel"
+                        value={profileForm.contactNumber || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            contactNumber: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+
+                      <input
+                        type="email"
+                        value={profileForm.email || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            email: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Gender */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Gender
+                      </label>
+
+                      <select
+                        value={profileForm.gender || "Prefer not to say"}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            gender: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Prefer not to say">
+                          Prefer not to say
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Alternate Contact */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Alternate Contact Number
+                      </label>
+
+                      <input
+                        type="tel"
+                        value={profileForm.alternateContactNumber || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            alternateContactNumber: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =====================================================
+            STORE
+        ===================================================== */}
+              {role === "Store" && (
+                <div className="space-y-5">
+                  {/* Logo */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <img
+                        src={displayData?.images?.logo?.url || NonGenderSvg}
+                        alt="Store Logo"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-pink-100"
+                      />
+
+                      <button
+                        type="button"
+                        className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#8B2954] text-white flex justify-center items-center"
+                      >
+                        <FaCamera className="text-sm" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-2">Store logo</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Store Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Store Name
+                      </label>
+
+                      <input
+                        type="text"
+                        value={profileForm.storeName || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            storeName: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Contact */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Contact Number
+                      </label>
+
+                      <input
+                        type="tel"
+                        value={profileForm.storeContactNumber || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            storeContactNumber: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Store Email
+                      </label>
+
+                      <input
+                        type="email"
+                        value={profileForm.storeEmail || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            storeEmail: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Service Type */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Service Type
+                      </label>
+
+                      <select
+                        value={profileForm.serviceType || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            serviceType: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="In House">In House</option>
+
+                        <option value="On Site">On Site</option>
+
+                        <option value="Both (In house and On site)">
+                          Both (In house and On site)
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* In Store Payment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        In-Store Payment
+                      </label>
+
+                      <select
+                        value={profileForm.inStorePayment || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            inStorePayment: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="">Select payment option</option>
+
+                        <option value="Online (Cards / UPI)">
+                          Online (Cards / UPI)
+                        </option>
+
+                        <option value="Cash">Cash</option>
+
+                        <option value="Both">Both</option>
+                      </select>
+                    </div>
+
+                    {/* On Site Payment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        On-Site Payment
+                      </label>
+
+                      <select
+                        value={profileForm.onSitePayment || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            onSitePayment: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="">Select payment option</option>
+
+                        <option value="UPI">UPI</option>
+
+                        <option value="Cash">Cash</option>
+
+                        <option value="Both">Both</option>
+                      </select>
+                    </div>
+
+                    {/* Opening */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Opening Time
+                      </label>
+
+                      <input
+                        type="time"
+                        value={profileForm.openFrom || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            openFrom: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Closing */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Closing Time
+                      </label>
+
+                      <input
+                        type="time"
+                        value={profileForm.openTill || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            openTill: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =====================================================
+            PROFESSIONAL
+        ===================================================== */}
+              {role === "Professional" && (
+                <div className="space-y-5">
+                  {/* Profile Image */}
+                  <div className="flex flex-col items-center">
+                    <div className="relative">
+                      <img
+                        src={
+                          displayData?.images?.profileImage?.url || NonGenderSvg
+                        }
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-pink-100"
+                      />
+
+                      <button
+                        type="button"
+                        className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#8B2954] text-white flex justify-center items-center"
+                      >
+                        <FaCamera className="text-sm" />
+                      </button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 mt-2">Profile image</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Name
+                      </label>
+
+                      <input
+                        type="text"
+                        value={profileForm.name || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            name: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Contact */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Contact Number
+                      </label>
+
+                      <input
+                        type="tel"
+                        value={profileForm.contactNumber || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            contactNumber: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email
+                      </label>
+
+                      <input
+                        type="email"
+                        value={profileForm.email || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            email: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* Gender */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Gender
+                      </label>
+
+                      <select
+                        value={profileForm.gender || "Prefer not to say"}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            gender: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Prefer not to say">
+                          Prefer not to say
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Alternate Contact */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Alternate Contact Number
+                      </label>
+
+                      <input
+                        type="tel"
+                        value={profileForm.alternateContactNumber || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            alternateContactNumber: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+                    </div>
+
+                    {/* About */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        About
+                      </label>
+
+                      <textarea
+                        rows={4}
+                        value={profileForm.about || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            about: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] resize-none"
+                        placeholder="Tell customers about yourself..."
+                      />
+                    </div>
+
+                    {/* Specialization */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Specialization
+                      </label>
+
+                      <input
+                        type="text"
+                        value={profileForm.specialization || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            specialization: e.target.value,
+                          })
+                        }
+                        placeholder="Hair Coloring, Bridal Makeup, Facial"
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954]"
+                      />
+
+                      <p className="text-xs text-gray-400 mt-1">
+                        Separate multiple specializations with commas.
+                      </p>
+                    </div>
+
+                    {/* Service Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Service Type
+                      </label>
+
+                      <select
+                        value={profileForm.serviceType || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            serviceType: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="In House">In House</option>
+
+                        <option value="On Site">On Site</option>
+
+                        <option value="Both (In house and On site)">
+                          Both (In house and On site)
+                        </option>
+                      </select>
+                    </div>
+
+                    {/* Payment */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Payment Options
+                      </label>
+
+                      <select
+                        value={profileForm.paymentOptions || ""}
+                        onChange={(e) =>
+                          setProfileForm({
+                            ...profileForm,
+                            paymentOptions: e.target.value,
+                          })
+                        }
+                        className="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-[#8B2954] bg-white"
+                      >
+                        <option value="Cash">Cash</option>
+
+                        <option value="Online (UPI)">Online (UPI)</option>
+
+                        <option value="Both">Both</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Popup Footer */}
+            <div className="border-t border-gray-200 px-5 py-4 flex flex-col-reverse sm:flex-row justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowProfilePopup(false)}
+                className="w-full sm:w-auto px-5 py-3 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-100 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={saveProfile}
+                disabled={isSavingProfile}
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#8B2954] text-white hover:bg-[#742247] transition"
+              >
+                {isSavingProfile ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -299,7 +1019,7 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -320,10 +1040,10 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
       </div>
 
       {Array.isArray(data) ? (
-        <div>
+        <div className="grid lg:grid-cols-3 gap-5 pb-40 md:pb-20 lg:pb-0">
           {data?.map((d, index) => (
-            <div key={index} className="grid md:grid-cols-2 gap-2">
-              <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition w-fit">
+            <div key={index} className="">
+              <div className="h-full bg-white rounded-2xl shadow-md border border-gray-200 p-3 hover:shadow-lg transition w-full md:text-xs">
                 {/* Top */}
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
@@ -344,13 +1064,13 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                   <FaMapMarkerAlt className="text-[#8B2954] text-xl" />
                 </div>
                 {/* Details */}
-                <div className="mt-5 space-y-2">
+                <div className="mt-5">
                   <h3 className="font-semibold text-gray-800">
                     {d?.contactDetails?.name} | {d?.contactDetails?.contact}
                   </h3>
                   <p className="text-gray-500 heading">Your Address: </p>
                 </div>
-                <p className="text-gray-600 leading-6">
+                <p className="text-gray-600 leading-5">
                   {d?.flatNumber} {d?.floor} {d?.block}, {d?.societyName} <br />{" "}
                   {d?.street1} {d?.street2 ? d?.street2 : ""} <br />
                   {d?.area}, near {d.locality} <br />{" "}
@@ -901,7 +1621,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
   }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full">
       {/* Header */}
 
       <div>
@@ -914,7 +1634,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
 
       {/* Cards */}
       {Array.isArray(data) ? (
-        <div className="space-y-5">
+        <div className="space-y-5 pb-40 md:pb-20 lg:pb-0">
           {data?.map((booking, index) => (
             <div
               key={index}
@@ -959,16 +1679,16 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                 </div>
 
                 {/* <div className="flex items-center gap-3">
-                <FaUserTie className="text-[#8B2954]" />
-                {booking.professional}
-              </div>
+                  <FaUserTie className="text-[#8B2954]" />
+                  {booking.professional}
+                </div> */}
 
-              <div className="flex items-center gap-3">
-                <FaMapMarkerAlt className="text-[#8B2954]" />
-                {booking.location}
-              </div> */}
+                <div className="flex items-center gap-3 heading">
+                  <FaMapMarkerAlt className="text-[#8B2954]" />
+                  {booking?.address?.city}, {booking?.address?.state}
+                </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 heading">
                   <FaRupeeSign className="text-[#8B2954]" />{" "}
                   {booking?.bookingAmount || "--"}
                 </div>
@@ -1352,7 +2072,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
         )}
       </div>
       <Popup isOpen={showForm} onClose={() => setShowForm(false)}>
-        <div className="flex justify-start items-start h-screen w-full overflow-scroll">
+        <div className="flex justify-start items-start h-screen w-full overflow-scroll pb-40">
           {" "}
           <form
             ref={formRef}
@@ -1506,7 +2226,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div>
                 <div className="flex justify-between mb-5">
                   <h2 className="text-2xl font-semibold text-[#8B2954]">
-                    Service Inclusion
+                    Service Inclusion{" "}
+                    <span className="text-base text-black">(Optional)</span>
                   </h2>
 
                   <button
@@ -1521,6 +2242,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 {serviceInclusion.map((item, index) => (
                   <div key={index} className="flex gap-3 mb-3">
                     <InputBox
+                      required={false}
                       label={`Point ${index + 1}`}
                       name={`serviceInclusion-${index}`}
                       value={item}
@@ -1546,7 +2268,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div>
                 <div className="flex justify-between mb-5">
                   <h2 className="text-2xl font-semibold text-[#8B2954]">
-                    Service Exclusion
+                    Service Exclusion <span className="text-base text-black">(Optional)</span>
                   </h2>
 
                   <button
@@ -1561,6 +2283,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 {serviceExclusion.map((item, index) => (
                   <div key={index} className="flex gap-3 mb-3">
                     <InputBox
+                      required={false}
                       label={`Point ${index + 1}`}
                       value={item}
                       onChange={(e) => handleExclusion(index, e.target.value)}
@@ -1585,7 +2308,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div>
                 <div className="flex justify-between mb-5">
                   <h2 className="text-2xl font-semibold text-[#8B2954]">
-                    Customer Requirements
+                    Customer Requirements <span className="text-base text-black">(Optional)</span>
                   </h2>
 
                   <button
@@ -1600,6 +2323,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 {serviceRequirements.map((item, index) => (
                   <div key={index} className="flex gap-3 mb-3">
                     <InputBox
+                      required={false}
                       label={`Requirement ${index + 1}`}
                       value={item}
                       onChange={(e) => handleRequirement(index, e.target.value)}
