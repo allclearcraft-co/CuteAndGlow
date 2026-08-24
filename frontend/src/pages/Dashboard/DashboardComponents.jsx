@@ -60,6 +60,7 @@ const Overview = ({ data, role, userId, callData }) => {
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [profileForm, setProfileForm] = useState({});
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [purchasingPlanId, setPurchasingPlanId] = useState(null);
   const { alertSuccess, alertError } = useToast();
 
   const getSubscription = async () => {
@@ -173,8 +174,58 @@ const Overview = ({ data, role, userId, callData }) => {
     }
   };
 
+  const purchasePlan = async (plan) => {
+    if (!window.Razorpay || role !== "Store") {
+      alertError(
+        "Subscription payments are currently available for stores only",
+      );
+      return;
+    }
+
+    setPurchasingPlanId(plan._id);
+    try {
+      const response = await FetchData("payment/create", "post", {
+        module: "Subscription",
+        moduleId: plan._id,
+        user: userId,
+        amount: plan.price.sellingPrice,
+      });
+      const { transaction, razorpay } = response.data.data;
+      const checkout = new window.Razorpay({
+        key: razorpay.key,
+        amount: razorpay.amount,
+        currency: razorpay.currency,
+        name: "Cute & Glow",
+        description: `${plan.planName} subscription`,
+        order_id: razorpay.orderId,
+        handler: async (paymentResponse) => {
+          try {
+            await FetchData("payment/verify", "post", {
+              transactionId: transaction._id,
+              ...paymentResponse,
+            });
+            alertSuccess("Subscription purchased successfully");
+            await callData();
+          } catch (err) {
+            alertError(
+              err.response?.data?.message || "Payment verification failed",
+            );
+          } finally {
+            setPurchasingPlanId(null);
+          }
+        },
+        modal: { ondismiss: () => setPurchasingPlanId(null) },
+        theme: { color: "#8B2954" },
+      });
+      checkout.open();
+    } catch (err) {
+      setPurchasingPlanId(null);
+      alertError(err.response?.data?.message || "Unable to start payment");
+    }
+  };
+
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full pb-40 md:pb-20 lg:pb-0">
       {/* Header */}
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -973,6 +1024,303 @@ const Overview = ({ data, role, userId, callData }) => {
           </div>
         </div>
       )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 place-items-stretch gap-4 px-5">
+        {subscription?.map((i, index) => (
+          <div
+            key={i?._id || index}
+            className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition"
+          >
+            {/* ================= HEADER ================= */}
+            <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
+              <h1 className="text-3xl uppercase font-semibold">
+                {i?.planName}
+              </h1>
+
+              <p className="font-light text-sm mt-1">{i?.tagline}</p>
+
+              <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
+                {i?.planFor}
+              </span>
+            </div>
+
+            {/* ================= BODY ================= */}
+            <div className="px-5 py-6 flex flex-col w-full gap-6">
+              {/* ================= PRICE ================= */}
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex justify-center items-end gap-2">
+                  <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
+                    <FaRupeeSign />
+                    {i?.price?.sellingPrice}
+                  </span>
+
+                  {i?.price?.discount > 0 && (
+                    <span className="text-sm line-through text-gray-400 flex items-center">
+                      <FaRupeeSign />
+                      {i?.price?.mrp}
+                    </span>
+                  )}
+
+                  {i?.price?.discount > 0 && (
+                    <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
+                      {i?.price?.discount}% OFF
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-gray-500">
+                  ₹{i?.price?.sellingPrice} / month
+                </p>
+
+                <p className="text-sm font-semibold text-[#8B2954]">
+                  Valid for {i?.validity?.months} months
+                </p>
+
+                <p className="text-xs text-gray-500 capitalize">
+                  Renewal: {i?.validity?.renewalType}
+                </p>
+              </div>
+
+              {/* ================= FEATURES ================= */}
+              <div>
+                <h2 className="font-semibold text-lg mb-2">Plan Features</h2>
+
+                <div className="space-y-1 text-sm">
+                  {i?.features?.map((feature, featureIndex) => (
+                    <div key={featureIndex} className="flex items-start gap-2">
+                      <span className="text-[#8B2954] font-bold">✓</span>
+
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ================= BOOKING ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold mb-2">Booking</h2>
+
+                <div className="text-sm space-y-1">
+                  <p>
+                    <strong>Status:</strong>{" "}
+                    {i?.booking?.enabled ? "Enabled" : "Disabled"}
+                  </p>
+
+                  <p>
+                    <strong>Advanced Booking:</strong>{" "}
+                    {i?.booking?.advancedBooking
+                      ? "Available"
+                      : "Not Available"}
+                  </p>
+                </div>
+              </div>
+
+              {/* ================= MANAGEMENT TOOLS ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold mb-2">Management Tools</h2>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <span
+                    className={
+                      i?.managementTools?.analytics
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Analytics
+                  </span>
+
+                  <span
+                    className={
+                      i?.managementTools?.inventory
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Inventory
+                  </span>
+
+                  <span
+                    className={
+                      i?.managementTools?.staffAttendance
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Staff Attendance
+                  </span>
+
+                  <span
+                    className={
+                      i?.managementTools?.commissionTracking
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Commission Tracking
+                  </span>
+                </div>
+              </div>
+
+              {/* ================= MARKETING ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold mb-2">Marketing</h2>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <span
+                    className={
+                      i?.marketing?.couponManager
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Coupon Manager
+                  </span>
+
+                  <span
+                    className={
+                      i?.marketing?.reviews ? "text-green-600" : "text-gray-400"
+                    }
+                  >
+                    ● Reviews
+                  </span>
+
+                  <span
+                    className={
+                      i?.marketing?.smsWhatsapp
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● SMS / WhatsApp
+                  </span>
+
+                  <span
+                    className={
+                      i?.marketing?.socialPromotion
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Social Promotion
+                  </span>
+                </div>
+              </div>
+
+              {/* ================= MEDIA LIMIT ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold mb-2">Media Limits</h2>
+
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <p>
+                    <strong>Photos:</strong>{" "}
+                    {i?.mediaLimit?.unlimitedPhotos
+                      ? "Unlimited"
+                      : i?.mediaLimit?.photos}
+                  </p>
+
+                  <p>
+                    <strong>Videos:</strong>{" "}
+                    {i?.mediaLimit?.unlimitedVideos
+                      ? "Unlimited"
+                      : i?.mediaLimit?.videos}
+                  </p>
+                </div>
+              </div>
+
+              {/* ================= FRANCHISE ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold mb-2">Franchise</h2>
+
+                <div className="text-sm space-y-1">
+                  <p>
+                    <strong>Enabled:</strong>{" "}
+                    {i?.franchise?.enabled ? "Yes" : "No"}
+                  </p>
+
+                  <p>
+                    <strong>Enquiry Button:</strong>{" "}
+                    {i?.franchise?.enquiryButton ? "Yes" : "No"}
+                  </p>
+                </div>
+              </div>
+
+              {/* ================= VISIBILITY ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold mb-2">Visibility</h2>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <span
+                    className={
+                      i?.visibility?.featured
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Featured
+                  </span>
+
+                  <span
+                    className={
+                      i?.visibility?.verifiedBadge
+                        ? "text-green-600"
+                        : "text-gray-400"
+                    }
+                  >
+                    ● Verified Badge
+                  </span>
+                </div>
+              </div>
+
+              {/* ================= SUPPORT ================= */}
+              <div className="border-t pt-4 flex justify-between items-center">
+                <span className="font-semibold">Support</span>
+
+                <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
+                  {i?.support}
+                </span>
+              </div>
+
+              {/* ================= FAQ ================= */}
+              <div className="border-t pt-4">
+                <h2 className="font-semibold text-lg mb-3">FAQs</h2>
+
+                <div className="space-y-3">
+                  {i?.faqs?.map((faq, faqIndex) => (
+                    <div key={faq?._id || faqIndex} className="text-xs">
+                      <p className="font-semibold">
+                        {faqIndex + 1}. {faq?.question}
+                      </p>
+
+                      <p className="text-gray-600 mt-1">{faq?.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ================= FOOTER ================= */}
+            <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
+              <div className="text-white text-sm text-center">
+                {i?.validity?.months === 1
+                  ? "1 month"
+                  : `${i?.validity?.months} months`}
+                {" • "}
+                {i?.validity?.renewalType}
+              </div>
+
+              <Button
+                variant="secondary"
+                className="w-full"
+                LabelName={
+                  purchasingPlanId === i?._id ? "Opening payment..." : "Get"
+                }
+                onClick={() => purchasePlan(i)}
+                disabled={purchasingPlanId !== null}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
@@ -2617,12 +2965,12 @@ const CurrentlyUnderBooking = ({ data, role }) => {
   );
 };
 
-const Images = ({ data, role }) => {
-  const [coverImage, setCoverImage] = useState(data?.coverImage || {});
-
+const Images = ({ data, role, userId }) => {
+  const [coverImage, setCoverImage] = useState(data?.logo || {});
   const [gallery, setGallery] = useState(data?.gallery || []);
 
   const [uploading, setUploading] = useState(false);
+  const { alertSuccess, alertError } = useToast();
 
   // const [coverImage] = useState(
   //   "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200",
@@ -2643,9 +2991,10 @@ const Images = ({ data, role }) => {
       });
 
       const response = await FetchData(
-        "/store/upload-gallery",
-        "patch",
+        `store/update/add-gallery-images/${userId}`,
+        "post",
         formData,
+        true,
       );
 
       setGallery(response.data.data.gallery);
@@ -2665,15 +3014,19 @@ const Images = ({ data, role }) => {
 
       const formData = new FormData();
 
-      formData.append("coverImage", file);
+      formData.append("images", file);
 
       const response = await FetchData(
-        "/store/upload-cover",
-        "patch",
+        `store/update/add-gallery-images/${userId}`,
+        "post",
         formData,
+        true,
       );
 
-      setCoverImage(response.data.data.coverImage);
+      setGallery((currentGallery) => [
+        ...currentGallery,
+        ...(response.data.data.gallery || []).slice(-1),
+      ]);
     } catch (err) {
     } finally {
       setUploading(false);
@@ -2693,11 +3046,15 @@ const Images = ({ data, role }) => {
   // };
   const deleteImage = async ({ ImgId }) => {
     try {
-      const response = await FetchData(``, "delete");
+      const response = await FetchData(
+        `store/update/delete-gallery-image/${userId}/${ImgId}`,
+        "delete",
+      );
 
       alertSuccess(response.data.message);
+      setGallery(response.data.data.gallery || []);
     } catch (err) {
-      alertError(err.response.data);
+      alertError(err.response?.data?.message || "Unable to delete image");
     }
   };
   // const [gallery] = useState([
@@ -2782,7 +3139,7 @@ const Images = ({ data, role }) => {
 
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex justify-center items-center">
               <button
-                onClick={() => handleDelete(image.ImgId)}
+                onClick={() => deleteImage({ ImgId: image.fileId })}
                 className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full transition"
               >
                 <FaTrash />

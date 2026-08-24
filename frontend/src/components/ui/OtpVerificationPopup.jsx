@@ -7,6 +7,7 @@ import { useToast } from "../hooks/ToastContext";
 import { useDispatch } from "react-redux";
 import { addUser, clearUser } from "../../redux/slice/authSlice";
 import { useNavigate } from "react-router-dom";
+import { formatAccountNumberDisplay } from "../../utils/utility-functions";
 
 function OtpVerificationPopup({
   isOpen,
@@ -100,8 +101,9 @@ function OtpVerificationPopup({
             </p>
 
             <p className="font-semibold text-[#8B2954] mt-1">
-              {data?.user?.contactNumber}
-              <span className="px-5">Paste this OTP:{otpNumber}</span>
+              {formatAccountNumberDisplay(data?.user?.contactNumber)} and on
+              your email
+              {/* <span className="px-5">Paste this OTP:{otpNumber}</span> */}
             </p>
             <Countdown
               duration={1}

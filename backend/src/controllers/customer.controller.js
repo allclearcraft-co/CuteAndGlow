@@ -76,7 +76,7 @@ const registerCustomer = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { user, otpStatus, otp },
+        { user, otpStatus },
         "Otp has been sent to your contact number",
       ),
     );
@@ -102,12 +102,18 @@ const loginCustomer = asyncHandler(async (req, res) => {
   user.otpExpiry = expiresAt;
   await user.save();
 
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
+
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        { user: { contactNumber }, otpStatus, otp },
+        { user: { contactNumber }, otpStatus },
         "OTP sent successfully !",
       ),
     );
