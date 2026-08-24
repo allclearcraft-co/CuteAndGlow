@@ -32,4 +32,5 @@ export const PAYMENT_MODULES = Object.freeze({
   // SUBSCRIPTION: "Subscription",
   //
   REGISTRATION_CHARGE: "RegistrationCharge",
+  SUBSCRIPTION: "Subscription",
 });

@@ -1,5 +1,8 @@
 import { PAYMENT_MODULES } from "../constants/payment.constants.js";
 import { Store } from "../models/store.model.js";
+import { Subscription } from "../models/subscription.model.js";
+import { Customer } from "../models/customer.model.js";
+import { Professional } from "../models/professional.model.js";
 
 /**
  * CITY DARSHAN HANDLER
@@ -80,7 +83,33 @@ const promotionHandler = {
 };
 
 const subscriptionHandler = {
-  onPaymentSuccess: async () => true,
+  onPaymentSuccess: async (transaction) => {
+    const subscription = await Subscription.findById(transaction.moduleId);
+    if (!subscription || !subscription.isActive) return false;
+
+    const validity = new Date();
+    validity.setMonth(
+      validity.getMonth() + (subscription.validity.months || 0),
+    );
+    const subscriptionData = {
+      subscriptionModel: subscription._id,
+      subscriptionPurchased: true,
+      subscriptionValidity: validity,
+    };
+
+    const models = {
+      customer: Customer,
+      store: Store,
+      professional: Professional,
+    };
+    const Model = models[subscription.planFor];
+    if (!Model) return false;
+
+    const user = await Model.findByIdAndUpdate(transaction.user, {
+      subscription: subscriptionData,
+    });
+    return Boolean(user);
+  },
   onPaymentFailed: async () => true,
 };
 
@@ -90,9 +119,9 @@ const registrationHandler = {
 
     if (!store) return false;
 
-    if (store.registrationFeePaid) return true;
+    if (store.isRegistrationFeePaid) return true;
 
-    store.registrationFeePaid = true;
+    store.isRegistrationFeePaid = true;
     store.registrationFeePaidAt = new Date();
     store.registrationPaymentTransaction = transaction._id;
 
@@ -106,6 +135,7 @@ const registrationHandler = {
 
 const handlers = {
   [PAYMENT_MODULES.REGISTRATION_CHARGE]: registrationHandler,
+  [PAYMENT_MODULES.SUBSCRIPTION]: subscriptionHandler,
 };
 
 export const getPaymentModuleHandler = (module) => {
