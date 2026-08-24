@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { HiHome, HiMenu, HiX } from "react-icons/hi";
-// import Logo from "../assets/Logo.png";
-import Button from "./Button";
-import { FaMapMarkerAlt } from "react-icons/fa";
-import { FiSearch, FiShoppingCart, FiUser } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { HiHome } from "react-icons/hi";
+import { FiUser } from "react-icons/fi";
 import { AnimatePresence, motion, px } from "framer-motion";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { clearUser } from "../redux/slice/authSlice";
 import { useToast } from "./hooks/ToastContext";
 import { BsGeoAlt } from "react-icons/bs";
 import InputBox from "./Input";
@@ -230,7 +225,9 @@ const Header = () => {
             <a href="/" className="text-white hover:text-pink-200 transition">
               <HiHome />
             </a>
-            <div className="hidden bg-white w-[20vw] rounded-xl p-1 lg:block">
+            <div
+              className={`${city ? "" : "absolute top-0 right-0"} hidden bg-white w-[20vw] rounded-xl p-1 lg:block`}
+            >
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <BsGeoAlt className="text-[#8B2954]" />
