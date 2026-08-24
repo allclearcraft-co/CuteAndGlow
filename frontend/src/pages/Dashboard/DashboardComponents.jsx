@@ -46,7 +46,11 @@ import { useToast } from "../../components/hooks/ToastContext";
 import InputBox from "../../components/Input";
 import Button from "../../components/Button";
 import Popup from "../../components/ui/Popup";
-import { formatDateString } from "../../utils/utility-functions";
+import {
+  formatAccountNumberDisplay,
+  formatDateString,
+  formatEmailDisplay,
+} from "../../utils/utility-functions";
 import AddressMap from "../../components/ui/AddressMap";
 import { MdOutlineVerified } from "react-icons/md";
 import StoreServiceCard from "../../components/ui/StoreServiceCard";
@@ -231,7 +235,9 @@ const Overview = ({ data, role, userId, callData }) => {
             <div className="flex items-center gap-3">
               <FaEnvelope className="text-[#8B2954]" />
               <span>
-                {displayData?.email || displayData?.storeEmail || "Na"}
+                {formatEmailDisplay(displayData?.email) ||
+                  formatEmailDisplay(displayData?.storeEmail) ||
+                  "Na"}
               </span>
             </div>
 
@@ -1288,7 +1294,10 @@ const BankingDetails = ({ data, role, userId, handleReload, callData }) => {
             <div>
               <p className="text-sm text-gray-500">Account Number</p>
               <h3 className="font-semibold capitalize">
-                {data?.accountDetails?.accountNumber || "Na"}
+                {/* {data?.accountDetails?.accountNumber || "Na"} */}
+                {formatAccountNumberDisplay(
+                  data?.accountDetails?.accountNumber,
+                ) || "Na"}
               </h3>
             </div>
             <div>
@@ -2268,7 +2277,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div>
                 <div className="flex justify-between mb-5">
                   <h2 className="text-2xl font-semibold text-[#8B2954]">
-                    Service Exclusion <span className="text-base text-black">(Optional)</span>
+                    Service Exclusion{" "}
+                    <span className="text-base text-black">(Optional)</span>
                   </h2>
 
                   <button
@@ -2308,7 +2318,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div>
                 <div className="flex justify-between mb-5">
                   <h2 className="text-2xl font-semibold text-[#8B2954]">
-                    Customer Requirements <span className="text-base text-black">(Optional)</span>
+                    Customer Requirements{" "}
+                    <span className="text-base text-black">(Optional)</span>
                   </h2>
 
                   <button
