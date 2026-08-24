@@ -7,6 +7,6 @@ import {
 const router = Router();
 
 router.route("/create/new-model/:adminId").post(createSubscription);
-router.route("/get/subscription/:query").post(getSubscriptionByMadeFor);
+router.route("/get/subscription/:query").get(getSubscriptionByMadeFor);
 
 export default router;

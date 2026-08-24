@@ -16,6 +16,7 @@ import {
   reLoginToken,
   deleteBankDetails,
   getCustomerById,
+  updateProfile,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
@@ -33,6 +34,7 @@ router
   .route("/otp/authentication/:verificationType/:customerId")
   .post(otpVerification);
 router.route("/update/gender/:customerId").post(VerifyCustomer, updateGender);
+router.route("/update/profile/:customerId").post(VerifyCustomer, updateProfile);
 router
   .route("/update/add/alternate-contact-number/:customerId")
   .post(VerifyCustomer, addAlternateContactNumber);
