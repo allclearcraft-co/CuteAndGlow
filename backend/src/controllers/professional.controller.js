@@ -179,19 +179,36 @@ const otpVerification = asyncHandler(async (req, res) => {
 });
 
 const updateProfile = asyncHandler(async (req, res) => {
-  const { about, specialization, gender, serviceType, paymentOptions } =
-    req.body;
+  const {
+    name,
+    contactNumber,
+    email,
+    about,
+    specialization,
+    gender,
+    serviceType,
+    paymentOptions,
+  } = req.body;
   const { professionalId } = req.params;
-  if (!professionalId || !about || !specialization)
-    throw new ApiError(400, "Invalid request, please try again later");
+  if (!professionalId || !name || !contactNumber || !email)
+    throw new ApiError(400, "Name, contact number and email are required");
+  if (!validatePhone(contactNumber))
+    throw new ApiError(400, "Invalid contact number");
+  if (name.length > 50) throw new ApiError(400, "Name length is too long");
 
   const user = await Professional.findById(professionalId);
   if (!user) throw new ApiError(404, "Invalid user");
 
   const specialServiceName = specialization
-    ? specialization.split(",").map((s) => s.trim())
+    ? specialization
+        .split(",")
+        .map((service) => service.trim())
+        .filter(Boolean)
     : [];
 
+  user.name = name;
+  user.contactNumber = contactNumber;
+  user.email = email;
   user.about = about;
   user.specialization = specialServiceName;
   user.gender = gender;
