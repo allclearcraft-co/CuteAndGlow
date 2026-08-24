@@ -11,6 +11,7 @@ import {
   reLoginToken,
   dashboardData,
   addStoreStaff,
+  addGalleryImages,
   getStaffForService,
   registrationFeePaid,
 } from "../controllers/store.controller.js";
@@ -52,6 +53,12 @@ router.route("/update/submit-kyc/:storeId").post(
 router
   .route("/update/add-store-staff/:storeId")
   .post(VerifyStore, upload.single("profileImage"), addStoreStaff);
+router
+  .route("/update/add-gallery-images/:storeId")
+  .post(VerifyStore, upload.array("images", 20), addGalleryImages);
+// router
+//   .route("/update/delete-gallery-image/:storeId/:fileId")
+//   .delete(VerifyStore, deleteGalleryImage);
 router
   .route("/get/staff-for-service/store-staff/:storeId")
   .get(VerifyStore, getStaffForService);
