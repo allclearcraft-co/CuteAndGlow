@@ -266,7 +266,7 @@ function Dashboard() {
             />
           )}
           {activeSection === "images" && (
-            <Images data={data} role={localStorage.role} />
+            <Images data={data} role={localStorage.role} userId={userId} />
           )}
           {activeSection === "kyc" && (
             <KycDetails data={data} role={localStorage.role} />
