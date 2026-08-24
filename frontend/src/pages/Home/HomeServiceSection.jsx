@@ -19,9 +19,9 @@ const HomeServiceSection = ({ title, services }) => {
         </button>
       </div>
 
-      <div className="flex gap-4 overflow-scroll scrollbar-hide pb-2 w-full">
+      <div className="flex gap-4 overflow-scroll scrollbar-hide pb-2 w-full justify-start items-start">
         {services.map((service) => (
-          <div key={service._id} className=" w-full">
+          <div key={service._id} className="w-fit">
             <CustomerServiceCard service={service} />
           </div>
         ))}
