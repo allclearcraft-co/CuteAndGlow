@@ -88,7 +88,7 @@ export const customerRegistrationInputs = [
   },
   {
     label: "Contact Number",
-    storeLabel: "Store Number",
+    storeLabel: "Store Contact Number",
     placeholder: "Enter your contact number",
     name: "contactNumber",
     type: "text",

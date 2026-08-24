@@ -1,19 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoLogOut } from "react-icons/io5";
-import {
-  CustomerArray,
-  StoreArray,
-  ProfessionalArray,
-} from "../../constants/service";
 import { FaHome, FaBars } from "react-icons/fa";
 import {
   Overview,
   SavedAddress,
   BankingDetails,
   Booking,
-  IsProfileComplete,
-  CurrentlyUnderBooking,
   FavoriteStore,
   FavoriteProfessional,
   Services,
@@ -25,7 +18,7 @@ import { FetchData } from "../../utils/FetchFromApi";
 import Button from "../../components/Button";
 import { DashboardSectionList } from "../../constants/Constants.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import { clearUser, updateUser } from "../../redux/slice/authSlice.js";
+import { clearUser } from "../../redux/slice/authSlice.js";
 import { useToast } from "../../components/hooks/ToastContext.jsx";
 import RegistrationFeeModal from "../../components/ui/RegistrationFeePopup.jsx";
 
@@ -51,7 +44,6 @@ function Dashboard() {
       );
       setData(response.data.data);
     } catch (err) {
-      // console.log(err);
       console.log(err.response);
     }
   };
@@ -173,7 +165,7 @@ function Dashboard() {
       {/* More Menu */}
 
       {showMoreMenu && (
-        <>
+        <div className="h-fit">
           <div
             className="fixed inset-0 bg-black/40 z-40 md:hidden"
             onClick={() => setShowMoreMenu(false)}
@@ -182,7 +174,14 @@ function Dashboard() {
           <div className="fixed bottom-16 left-0 w-full bg-white rounded-t-3xl p-5 z-50 md:hidden">
             <div className="w-14 h-1 rounded-full bg-gray-300 mx-auto mb-5"></div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 h-fit">
+              <button
+                onClick={() => logout()}
+                className="bg-white text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
+              >
+                <IoLogOut />
+                Logout
+              </button>
               {moreNavItems.map((item) => (
                 <button
                   key={item.query}
@@ -201,14 +200,15 @@ function Dashboard() {
               ))}
             </div>
           </div>
-        </>
+        </div>
       )}
-      <div className="h-full w-full">
+      <div className="overflow-scroll h-full w-full">
         <main className="w-full h-full p-1 lg:p-5">
           {activeSection === "overview" && (
             <Overview
               data={data}
               role={localStorage.role}
+              userId={userId}
               callData={() => fetchDashboardData({ query: "overview" })}
               // userId={userId}
               // handleReload={() => fetchDashboardData({ query: "address" })}

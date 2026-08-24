@@ -211,6 +211,29 @@ const updateGender = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Updated successfully !"));
 });
 
+const updateProfile = asyncHandler(async (req, res) => {
+  const { customerId } = req.params;
+  const { name, contactNumber, email, gender, alternateContactNumber } =
+    req.body;
+
+  if (!customerId || !name || !contactNumber)
+    throw new ApiError(400, "Name and contact number are required");
+  if (!validatePhone(contactNumber))
+    throw new ApiError(400, "Invalid contact number");
+  if (name.length > 50) throw new ApiError(400, "Name length is too long");
+
+  const customer = await Customer.findByIdAndUpdate(
+    customerId,
+    { name, contactNumber, email, gender, alternateContactNumber },
+    { new: true, runValidators: true },
+  );
+  if (!customer) throw new ApiError(404, "Invalid user");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, customer, "Profile updated successfully"));
+});
+
 const addAlternateContactNumber = asyncHandler(async (req, res) => {
   const { customerId } = req.params;
   const { contactNumber } = req.body;
@@ -551,9 +574,10 @@ const dashboardData = asyncHandler(async (req, res) => {
     case "bookings": {
       const bookings = await ServiceBookings.find({
         customer: customerId,
-      }).populate({ path: "service", select: "name duration executive" });
-      console.log("Executive Id", bookings?.service?.executive);
-      // const executive = await StoreStaff.findById(bookings?.service?.executive);
+      })
+        .populate({ path: "service", select: "name duration executive" })
+        .populate({ path: "address", select: "city state" })
+        .sort({ createdAt: -1 });
 
       return res
         .status(200)
@@ -703,7 +727,6 @@ const getCustomerById = asyncHandler(async (req, res) => {
   if (!customerId) throw new ApiError(400, "Invalid request");
 
   const customer = await Customer.findById(customerId).populate("address");
-  console.log(customer);
   if (!customer)
     throw new ApiError(
       400,
@@ -732,6 +755,7 @@ export {
   loginCustomer,
   otpVerification,
   updateGender,
+  updateProfile,
   addAlternateContactNumber,
   updateAlternateNumber,
   addAddress,

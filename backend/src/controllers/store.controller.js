@@ -333,26 +333,43 @@ const addBankDetails = asyncHandler(async (req, res) => {
 const updateProfile = asyncHandler(async (req, res) => {
   const { storeId } = req.params;
   const {
+    storeName,
+    storeContactNumber,
+    storeEmail,
     serviceType,
     paymentOptions,
     storeTimings,
-    ownerName,
-    ownerContact,
-    ownerEmail,
-    ownerAddress,
   } = req.body;
 
-  if (!validatePhone(ownerContact))
+  if (!storeName || !storeContactNumber || !storeEmail)
+    throw new ApiError(
+      400,
+      "Store name, contact number and email are required",
+    );
+  if (!validatePhone(storeContactNumber))
     throw new ApiError(403, "Invalid contact number");
-  if (ownerName.length > 100)
+  if (storeName.length > 100)
     throw new ApiError(400, "Name length is too long.");
 
-  const store = await Store.findByIdAndUpdate(storeId, {
-    serviceType,
-    paymentOptions,
-    storeTimings,
-    owner: { ownerName, ownerContact, ownerEmail, ownerAddress },
-  });
+  const store = await Store.findByIdAndUpdate(
+    storeId,
+    {
+      storeName,
+      storeContactNumber,
+      storeEmail,
+      serviceType,
+      paymentOptions,
+      storeTimings: {
+        openFrom: storeTimings?.openFrom
+          ? new Date(`1970-01-01T${storeTimings.openFrom}:00`)
+          : undefined,
+        openTill: storeTimings?.openTill
+          ? new Date(`1970-01-01T${storeTimings.openTill}:00`)
+          : undefined,
+      },
+    },
+    { new: true, runValidators: true },
+  );
   if (!store)
     throw new ApiError(400, "Something went wrong, please try again later");
 
