@@ -6,6 +6,7 @@ import {
   createStoreService,
   getServiceById,
   getServices,
+  markAsActiveInactive,
 } from "../controllers/service.controller.js";
 
 const router = Router();
@@ -15,5 +16,6 @@ router
   .post(VerifyStore, upload.array("coverImage", 5), createStoreService);
 router.route("/get/service").get(getServices);
 router.route("/get/service/by-id/:serviceId").get(getServiceById);
+router.route("/update/service-status/:action/:serviceId").post(markAsActiveInactive);
 
 export default router;
