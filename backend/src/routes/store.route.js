@@ -44,6 +44,7 @@ router.route("/update/submit-kyc/:storeId").post(
     { name: "aadharFront", maxCount: 1 },
     { name: "aadharBack", maxCount: 1 },
     { name: "PAN", maxCount: 1 },
+    { name: "StorePAN", maxCount: 1 },
     { name: "GST", maxCount: 1 },
   ]),
   VerifyStore,

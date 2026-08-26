@@ -40,25 +40,25 @@ const storeSchema = new mongoose.Schema(
       ownerAddress: String,
       ownerKycSubmitted: { type: Boolean, default: false },
       aadhar: {
-        number: { type: Number },
+        number: { type: String },
         image: {
           front: { url: String, fileId: String },
           back: { url: String, fileId: String },
         },
       },
       pan: {
-        number: { type: Number },
+        number: { type: String },
         image: { url: String, fileId: String },
       },
     },
 
     // store kyc
     pan: {
-      number: { type: Number },
+      number: { type: String },
       image: { url: String, fileId: String },
     },
     gst: {
-      number: { type: Number },
+      number: { type: String },
       image: { url: String, fileId: String },
     },
 
