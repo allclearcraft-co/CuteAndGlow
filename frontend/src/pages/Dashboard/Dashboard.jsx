@@ -28,6 +28,10 @@ function Dashboard() {
     () => localStorage.getItem("activeSection") || "overview",
   );
   const [data, setData] = useState([]);
+  const subscriptionId =
+    data?.store?.subscription?.subscriptionModel ||
+    sessionStorage.getItem("subscriptionId");
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const user = useSelector((state) => state.auth.user);
   const userId = user?._id;
@@ -43,10 +47,32 @@ function Dashboard() {
         "get",
       );
       setData(response.data.data);
+      if (!sessionStorage.getItem("subscriptionId")) {
+        sessionStorage.setItem(
+          "subscriptionId",
+          response.data?.data?.store?.subscription?.subscriptionModel,
+        );
+      }
     } catch (err) {
       console.log(err.response);
     }
   };
+
+  const getSubscriptionDetails = async () => {
+    try {
+      const response = await FetchData(
+        `subscription/get/subscription/details/by-id/${subscriptionId}`,
+        "get",
+      );
+      setSubscriptionDetails(response.data.data);
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    getSubscriptionDetails();
+  }, [subscriptionId]);
 
   const mobileNavItems = DashboardSectionList.filter((item) =>
     item.roles.includes(role),
@@ -63,35 +89,35 @@ function Dashboard() {
     navigate("/");
   };
 
-  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  const [checkingPayment, setCheckingPayment] = useState(true);
-  useEffect(() => {
-    if (!user || role !== "Store") return;
-    console.log(user);
-    setShowRegistrationModal(!user.isRegistrationFeePaid);
-    setCheckingPayment(false);
-  }, [user, role]);
+  // const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  // const [checkingPayment, setCheckingPayment] = useState(true);
+  // useEffect(() => {
+  //   if (!user || role !== "Store") return;
+  //   console.log(user);
+  //   setShowRegistrationModal(!user.isRegistrationFeePaid);
+  //   setCheckingPayment(false);
+  // }, [user, role]);
 
-  const markRegistrationFeePaid = async () => {
-    try {
-      const userRole = role.toLowerCase();
-      const response = await FetchData(
-        `${userRole}/update/registration-fee-paid/true/${userId}`,
-        "post",
-      );
-      console.log(response);
-    } catch (err) {
-      console.log(err.response.data);
-    }
-  };
+  // const markRegistrationFeePaid = async () => {
+  //   try {
+  //     const userRole = role.toLowerCase();
+  //     const response = await FetchData(
+  //       `${userRole}/update/registration-fee-paid/true/${userId}`,
+  //       "post",
+  //     );
+  //     console.log(response);
+  //   } catch (err) {
+  //     console.log(err.response.data);
+  //   }
+  // };
 
-  const handleRegistrationSuccess = async () => {
-    markRegistrationFeePaid();
-    // dispatch(updateUser(response.data.data));
-    fetchDashboardData({ query: "overview" });
+  // const handleRegistrationSuccess = async () => {
+  //   markRegistrationFeePaid();
+  //   // dispatch(updateUser(response.data.data));
+  //   fetchDashboardData({ query: "overview" });
 
-    setShowRegistrationModal(false);
-  };
+  //   setShowRegistrationModal(false);
+  // };
   return user ? (
     <div className={`relative p-2 flex w-full items-start h-[90vh] `}>
       <aside className="hidden md:flex sticky w-[25vw] h-full bg-[#8B2954] rounded-xl flex-col items-start justify-between text-white py-6 px-5">
@@ -266,14 +292,21 @@ function Dashboard() {
             />
           )}
           {activeSection === "images" && (
-            <Images data={data} role={localStorage.role} userId={userId} />
+            <Images
+              callData={() => fetchDashboardData({ query: "storeStaff" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              subscription={subscriptionDetails}
+              handleReload={() => fetchDashboardData({ query: "storeStaff" })}
+            />
           )}
           {activeSection === "kyc" && (
             <KycDetails data={data} role={localStorage.role} />
           )}
         </main>
       </div>
-      <div>
+      {/* <div>
         {showRegistrationModal && (
           <div>
             <RegistrationFeeModal
@@ -282,7 +315,7 @@ function Dashboard() {
             />
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   ) : (
     <div className="h-[80vh] flex flex-col justify-center items-center w-full ">

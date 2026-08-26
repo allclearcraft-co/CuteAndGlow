@@ -1024,303 +1024,48 @@ const Overview = ({ data, role, userId, callData }) => {
           </div>
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 place-items-stretch gap-4 px-5">
-        {subscription?.map((i, index) => (
-          <div
-            key={i?._id || index}
-            className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition"
-          >
-            {/* ================= HEADER ================= */}
-            <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
-              <h1 className="text-3xl uppercase font-semibold">
-                {i?.planName}
-              </h1>
-
-              <p className="font-light text-sm mt-1">{i?.tagline}</p>
-
-              <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
-                {i?.planFor}
-              </span>
-            </div>
-
-            {/* ================= BODY ================= */}
-            <div className="px-5 py-6 flex flex-col w-full gap-6">
-              {/* ================= PRICE ================= */}
-              <div className="flex flex-col items-center gap-1">
-                <div className="flex justify-center items-end gap-2">
-                  <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
-                    <FaRupeeSign />
-                    {i?.price?.sellingPrice}
-                  </span>
-
-                  {i?.price?.discount > 0 && (
-                    <span className="text-sm line-through text-gray-400 flex items-center">
-                      <FaRupeeSign />
-                      {i?.price?.mrp}
-                    </span>
-                  )}
-
-                  {i?.price?.discount > 0 && (
-                    <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
-                      {i?.price?.discount}% OFF
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-xs text-gray-500">
-                  ₹{i?.price?.sellingPrice} / month
-                </p>
-
-                <p className="text-sm font-semibold text-[#8B2954]">
-                  Valid for {i?.validity?.months} months
-                </p>
-
-                <p className="text-xs text-gray-500 capitalize">
-                  Renewal: {i?.validity?.renewalType}
-                </p>
-              </div>
-
-              {/* ================= FEATURES ================= */}
+      {/* Statistics */}
+      {role === "Customer" ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="flex justify-between items-center">
               <div>
-                <h2 className="font-semibold text-lg mb-2">Plan Features</h2>
+                <p className="text-gray-500 text-sm">Total Bookings</p>
 
-                <div className="space-y-1 text-sm">
-                  {i?.features?.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-start gap-2">
-                      <span className="text-[#8B2954] font-bold">✓</span>
-
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
+                <h2 className="text-xl font-bold mt-2">
+                  {displayData?.bookings?.length || "No bookings yet"}
+                </h2>
               </div>
 
-              {/* ================= BOOKING ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold mb-2">Booking</h2>
-
-                <div className="text-sm space-y-1">
-                  <p>
-                    <strong>Status:</strong>{" "}
-                    {i?.booking?.enabled ? "Enabled" : "Disabled"}
-                  </p>
-
-                  <p>
-                    <strong>Advanced Booking:</strong>{" "}
-                    {i?.booking?.advancedBooking
-                      ? "Available"
-                      : "Not Available"}
-                  </p>
-                </div>
+              <div className="w-14 h-14 rounded-full bg-pink-100 flex justify-center items-center">
+                <FaCalendarCheck className="text-[#8B2954] text-2xl" />
               </div>
-
-              {/* ================= MANAGEMENT TOOLS ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold mb-2">Management Tools</h2>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <span
-                    className={
-                      i?.managementTools?.analytics
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Analytics
-                  </span>
-
-                  <span
-                    className={
-                      i?.managementTools?.inventory
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Inventory
-                  </span>
-
-                  <span
-                    className={
-                      i?.managementTools?.staffAttendance
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Staff Attendance
-                  </span>
-
-                  <span
-                    className={
-                      i?.managementTools?.commissionTracking
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Commission Tracking
-                  </span>
-                </div>
-              </div>
-
-              {/* ================= MARKETING ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold mb-2">Marketing</h2>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <span
-                    className={
-                      i?.marketing?.couponManager
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Coupon Manager
-                  </span>
-
-                  <span
-                    className={
-                      i?.marketing?.reviews ? "text-green-600" : "text-gray-400"
-                    }
-                  >
-                    ● Reviews
-                  </span>
-
-                  <span
-                    className={
-                      i?.marketing?.smsWhatsapp
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● SMS / WhatsApp
-                  </span>
-
-                  <span
-                    className={
-                      i?.marketing?.socialPromotion
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Social Promotion
-                  </span>
-                </div>
-              </div>
-
-              {/* ================= MEDIA LIMIT ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold mb-2">Media Limits</h2>
-
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p>
-                    <strong>Photos:</strong>{" "}
-                    {i?.mediaLimit?.unlimitedPhotos
-                      ? "Unlimited"
-                      : i?.mediaLimit?.photos}
-                  </p>
-
-                  <p>
-                    <strong>Videos:</strong>{" "}
-                    {i?.mediaLimit?.unlimitedVideos
-                      ? "Unlimited"
-                      : i?.mediaLimit?.videos}
-                  </p>
-                </div>
-              </div>
-
-              {/* ================= FRANCHISE ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold mb-2">Franchise</h2>
-
-                <div className="text-sm space-y-1">
-                  <p>
-                    <strong>Enabled:</strong>{" "}
-                    {i?.franchise?.enabled ? "Yes" : "No"}
-                  </p>
-
-                  <p>
-                    <strong>Enquiry Button:</strong>{" "}
-                    {i?.franchise?.enquiryButton ? "Yes" : "No"}
-                  </p>
-                </div>
-              </div>
-
-              {/* ================= VISIBILITY ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold mb-2">Visibility</h2>
-
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <span
-                    className={
-                      i?.visibility?.featured
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Featured
-                  </span>
-
-                  <span
-                    className={
-                      i?.visibility?.verifiedBadge
-                        ? "text-green-600"
-                        : "text-gray-400"
-                    }
-                  >
-                    ● Verified Badge
-                  </span>
-                </div>
-              </div>
-
-              {/* ================= SUPPORT ================= */}
-              <div className="border-t pt-4 flex justify-between items-center">
-                <span className="font-semibold">Support</span>
-
-                <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
-                  {i?.support}
-                </span>
-              </div>
-
-              {/* ================= FAQ ================= */}
-              <div className="border-t pt-4">
-                <h2 className="font-semibold text-lg mb-3">FAQs</h2>
-
-                <div className="space-y-3">
-                  {i?.faqs?.map((faq, faqIndex) => (
-                    <div key={faq?._id || faqIndex} className="text-xs">
-                      <p className="font-semibold">
-                        {faqIndex + 1}. {faq?.question}
-                      </p>
-
-                      <p className="text-gray-600 mt-1">{faq?.answer}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* ================= FOOTER ================= */}
-            <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
-              <div className="text-white text-sm text-center">
-                {i?.validity?.months === 1
-                  ? "1 month"
-                  : `${i?.validity?.months} months`}
-                {" • "}
-                {i?.validity?.renewalType}
-              </div>
-
-              <Button
-                variant="secondary"
-                className="w-full"
-                LabelName={
-                  purchasingPlanId === i?._id ? "Opening payment..." : "Get"
-                }
-                onClick={() => purchasePlan(i)}
-                disabled={purchasingPlanId !== null}
-              />
             </div>
           </div>
-        ))}
-      </div>
+
+          {data?.defaultAddress ? (
+            <div className="bg-white rounded-xl shadow p-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-gray-500 text-sm">Saved Addresses</p>
+
+                  <h2 className="text-xl font-bold mt-2">
+                    {displayData?.savedAddress || "No address added"}
+                  </h2>
+                </div>
+
+                <div className="w-14 h-14 rounded-full bg-pink-100 flex justify-center items-center">
+                  <FaHome className="text-[#8B2954] text-xl" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            ""
+          )}
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
@@ -2404,23 +2149,46 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
     setImagePreview(file?.map((f) => URL.createObjectURL(f)));
   };
 
+  console.log(data, role, userId);
+
   return (
     <div className="space-y-6 w-full h-full overflow-scroll relative">
-      <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
-        <h1 className="text-3xl font-bold">
-          Services <span className="text-sm">({data?.length})</span>
-        </h1>
-        <Button LabelName="Add New Service" onClick={() => setShowForm(true)} />
-        <input
-          placeholder="Search Service..."
-          className="border rounded-lg px-4 py-2"
-        />
-      </div>
+      {role === "Customer" ? (
+        <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
+          <h1 className="text-3xl font-bold">
+            Services <span className="text-sm">({data?.length})</span>
+          </h1>
+          <input
+            placeholder="Search Service..."
+            className="border rounded-lg px-4 py-2"
+          />
+        </div>
+      ) : (
+        <div>
+          {data?.store?.subscription?.subscriptionPurchased === true ? (
+            <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
+              <h1 className="text-3xl font-bold">
+                Services <span className="text-sm">({data?.length})</span>
+              </h1>
+              <Button
+                LabelName="Add New Service"
+                onClick={() => setShowForm(true)}
+              />
+              <input
+                placeholder="Search Service..."
+                className="border rounded-lg px-4 py-2"
+              />
+            </div>
+          ) : (
+            "Please select a plan to add services"
+          )}
+        </div>
+      )}
 
       <div className="w-full">
-        {Array.isArray(data) ? (
+        {Array.isArray(data.service) ? (
           <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-2 w-full place-items-center">
-            {data?.map((service) => (
+            {data?.service?.map((service) => (
               <StoreServiceCard key={service._id} service={service} />
             ))}
           </div>
@@ -2965,85 +2733,54 @@ const CurrentlyUnderBooking = ({ data, role }) => {
   );
 };
 
-const Images = ({ data, role, userId }) => {
-  const [coverImage, setCoverImage] = useState(data?.logo || {});
-  const [gallery, setGallery] = useState(data?.gallery || []);
+const Images = ({ data, role, userId, subscription }) => {
+  const storeImages = data?.images || {};
+  const coverImage = storeImages.logo || {};
+  const [gallery, setGallery] = useState(storeImages.gallery || []);
 
   const [uploading, setUploading] = useState(false);
   const { alertSuccess, alertError } = useToast();
 
-  // const [coverImage] = useState(
-  //   "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200",
-  // );
-
   const handleGalleryUpload = async (e) => {
-    const files = Array.from(e.target.files);
-
+    const files = Array.from(e.target.files || []);
     if (!files.length) return;
+
+    if (!subscription?.mediaLimit?.unlimitedPhotos) {
+      const availableSlots = Math.max(
+        (subscription?.mediaLimit?.photos || 0) - gallery.length,
+        0,
+      );
+      if (files.length > availableSlots) {
+        alertError(
+          `You can upload ${availableSlots} more image(s) on your plan`,
+        );
+        e.target.value = "";
+        return;
+      }
+    }
 
     try {
       setUploading(true);
-
       const formData = new FormData();
-
       files.forEach((file) => {
-        formData.append("gallery", file);
+        formData.append("images", file);
       });
-
       const response = await FetchData(
         `store/update/add-gallery-images/${userId}`,
         "post",
         formData,
         true,
       );
-
-      setGallery(response.data.data.gallery);
+      setGallery(response.data.data.gallery || []);
+      alertSuccess(response.data.message);
     } catch (err) {
+      alertError(err.response?.data?.message || "Unable to upload images");
     } finally {
       setUploading(false);
       e.target.value = "";
     }
   };
-  const handleCoverUpload = async (e) => {
-    const file = e.target.files[0];
 
-    if (!file) return;
-
-    try {
-      setUploading(true);
-
-      const formData = new FormData();
-
-      formData.append("images", file);
-
-      const response = await FetchData(
-        `store/update/add-gallery-images/${userId}`,
-        "post",
-        formData,
-        true,
-      );
-
-      setGallery((currentGallery) => [
-        ...currentGallery,
-        ...(response.data.data.gallery || []).slice(-1),
-      ]);
-    } catch (err) {
-    } finally {
-      setUploading(false);
-    }
-  };
-  // const handleDelete = async (fileId) => {
-  //   try {
-  //     const response = await FetchData(
-  //       `/store/delete-gallery/${fileId}`,
-  //       "delete",
-  //     );
-
-  //     setGallery(response.data.data.gallery);
-  //   } catch (err) {
-
-  //   }
-  // };
   const deleteImage = async ({ ImgId }) => {
     try {
       const response = await FetchData(
@@ -3057,16 +2794,8 @@ const Images = ({ data, role, userId }) => {
       alertError(err.response?.data?.message || "Unable to delete image");
     }
   };
-  // const [gallery] = useState([
-  //   "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500",
-  //   "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500",
-  //   "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=500",
-  //   "https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=500",
-  //   "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=500",
-  //   "https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500",
-  // ]);
 
-  return (
+  return subscription ? (
     <div className="space-y-6 w-full">
       {/* Header */}
 
@@ -3078,11 +2807,6 @@ const Images = ({ data, role, userId }) => {
             Manage your gallery and showcase your work.
           </p>
         </div>
-
-        <button className="bg-[#8B2954] text-white px-5 py-3 rounded-xl flex items-center gap-2 hover:bg-[#742247] transition">
-          <FaCloudUploadAlt />
-          Upload Images
-        </button>
       </div>
 
       {/* Cover Image */}
@@ -3090,26 +2814,15 @@ const Images = ({ data, role, userId }) => {
       <div className="bg-white rounded-2xl shadow">
         <div className="relative">
           <img
-            src={
-              coverImage?.url ||
-              "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=1200"
-            }
+            src={coverImage?.url}
             alt="Cover"
             className="w-full h-52 md:h-72 object-cover rounded-t-2xl"
           />
 
-          <label className="absolute bottom-4 right-4 bg-white shadow px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer">
+          <div className="absolute bottom-4 right-4 bg-white/90 shadow px-4 py-2 rounded-lg flex items-center gap-2 text-gray-600">
             <FaCamera />
-
-            {uploading ? "Uploading..." : "Change Cover"}
-
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              onChange={handleCoverUpload}
-            />
-          </label>
+            Cover image
+          </div>
         </div>
       </div>
 
@@ -3124,7 +2837,6 @@ const Images = ({ data, role, userId }) => {
       </div>
 
       {/* Gallery */}
-
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
         {gallery.map((image) => (
           <div
@@ -3149,24 +2861,28 @@ const Images = ({ data, role, userId }) => {
         ))}
 
         {/* Upload Card */}
-
-        <label className="border-2 border-dashed border-[#8B2954] rounded-xl h-48 flex flex-col justify-center items-center cursor-pointer hover:bg-pink-50 transition">
-          <FaImage className="text-4xl text-[#8B2954]" />
-
-          <p className="mt-3 font-medium">
-            {uploading ? "Uploading..." : "Add Images"}
-          </p>
-
-          <input
-            type="file"
-            hidden
-            multiple
-            accept="image/*"
-            onChange={handleGalleryUpload}
-          />
-        </label>
+        {!subscription?.mediaLimit?.unlimitedPhotos &&
+        subscription?.mediaLimit?.photos <= gallery?.length ? (
+          "Your have uploaded the number of images which comes under your plan,Please upgrade your plan to add more."
+        ) : (
+          <label className="border-2 border-dashed border-[#8B2954] rounded-xl h-48 flex flex-col justify-center items-center cursor-pointer hover:bg-pink-50 transition">
+            <FaImage className="text-4xl text-[#8B2954]" />
+            <p className="mt-3 font-medium">
+              {uploading ? "Uploading..." : "Add Images"}
+            </p>
+            <input
+              type="file"
+              hidden
+              multiple
+              accept="image/*"
+              onChange={handleGalleryUpload}
+            />
+          </label>
+        )}
       </div>
     </div>
+  ) : (
+    "Please purchase a subscription for gallery benefits"
   );
 };
 
