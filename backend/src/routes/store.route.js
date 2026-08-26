@@ -12,6 +12,7 @@ import {
   dashboardData,
   addStoreStaff,
   addGalleryImages,
+  deleteGalleryImage,
   getStaffForService,
   registrationFeePaid,
 } from "../controllers/store.controller.js";
@@ -56,9 +57,9 @@ router
 router
   .route("/update/add-gallery-images/:storeId")
   .post(VerifyStore, upload.array("images", 20), addGalleryImages);
-// router
-//   .route("/update/delete-gallery-image/:storeId/:fileId")
-//   .delete(VerifyStore, deleteGalleryImage);
+router
+  .route("/update/delete-gallery-image/:storeId/:fileId")
+  .delete(VerifyStore, deleteGalleryImage);
 router
   .route("/get/staff-for-service/store-staff/:storeId")
   .get(VerifyStore, getStaffForService);
