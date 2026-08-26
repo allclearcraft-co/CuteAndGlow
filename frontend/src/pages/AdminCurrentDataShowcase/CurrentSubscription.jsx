@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import { FaEdit, FaTimes } from "react-icons/fa";
+import SubscriptionModelForm from "../Admin/SubscriptionForm";
 
-const CurrentSubscription = ({ data }) => {
+const CurrentSubscription = ({ data, onSaved }) => {
+  const [isEditing, setIsEditing] = useState(false);
   const statusBadge = (value) => (
     <span
       className={`px-3 py-1 rounded-full text-xs font-semibold ${
@@ -181,7 +184,39 @@ const CurrentSubscription = ({ data }) => {
 
   return (
     <div className="space-y-6 h-full w-full p-10 mb-20">
-      <h1 className="text-2xl heading">Current Subscription</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl heading">Current Subscription</h1>
+        <button
+          type="button"
+          onClick={() => setIsEditing(true)}
+          className="flex items-center gap-2 rounded-lg bg-[#8B2954] px-4 py-2 text-white hover:bg-[#742247]"
+        >
+          <FaEdit /> Edit Subscription
+        </button>
+      </div>
+
+      {isEditing && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 p-3 sm:p-6">
+          <div className="mx-auto max-w-6xl rounded-xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b px-5 py-4">
+              <h2 className="text-xl font-semibold">Edit Subscription</h2>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+                aria-label="Close editor"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <SubscriptionModelForm
+              initialData={data}
+              onClose={() => setIsEditing(false)}
+              onSaved={onSaved}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full border-collapse">

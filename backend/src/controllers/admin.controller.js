@@ -424,6 +424,28 @@ const getCurrentRequestData = asyncHandler(async (req, res) => {
           new ApiResponse(200, subscription, "Data fetched successfully !"),
         );
     }
+
+    case "admin": {
+      const admin = await Admin.findById(keyId)
+        .populate("creatorAdmin")
+        .select("-password");
+      if (!admin) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, admin, "Data fetched successfully !"));
+    }
+
+    case "booking": {
+      const booking = await ServiceBookings.findById(keyId).populate(
+        "service customer address",
+      );
+      if (!booking) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, booking, "Data fetched successfully !"));
+    }
     default:
       throw new ApiError(400, "Invalid session or query");
   }
