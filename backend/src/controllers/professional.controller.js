@@ -558,12 +558,12 @@ const submitKYCVerification = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Aadhar and Pan numbers are required for KYC");
 
   //   validators
-  if (validateAadhaar(aadharNumber) === !true)
+  if (!validateAadhaar(aadharNumber).valid)
     throw new ApiError(401, "Invalid AADHAR number");
-  if (validatePAN(panNumber) === !true)
+  if (!validatePAN(panNumber).valid)
     throw new ApiError(401, "Invalid PAN number");
   if (gstNumber) {
-    if (validateGST(gstNumber) === !true)
+    if (!validateGST(gstNumber).valid)
       throw new ApiError(401, "Invalid GST number");
   }
 

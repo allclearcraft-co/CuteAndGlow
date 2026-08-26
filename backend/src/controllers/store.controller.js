@@ -110,11 +110,12 @@ const loginStore = asyncHandler(async (req, res) => {
   storeUser.otpExpiry = expiresAt;
   await storeUser.save();
 
-  await sendEmail({
-  to: storeUser?.storeEmail,
-  subject: "OTP Verification",
-  html: otpTemplate(storeUser?.storeName, otp),
-  });
+  // await sendEmail({
+  // to: storeUser?.storeEmail,
+  // subject: "OTP Verification",
+  // html: otpTemplate(storeUser?.storeName, otp),
+  // });
+  console.log(otp);
 
   return res
     .status(200)
@@ -214,6 +215,7 @@ const addAddress = asyncHandler(async (req, res) => {
     country,
     lat,
     lng,
+    pincode,
   } = req.body;
   if (!street1 || !area || !city || !state || !country)
     throw new ApiError(400, "Please fill the required inputs");
@@ -232,6 +234,7 @@ const addAddress = asyncHandler(async (req, res) => {
     city,
     state,
     country,
+    pincode,
     location: { coordinates: [lat, lng] },
   });
   if (!newAddress)
@@ -257,6 +260,7 @@ const updateAddress = asyncHandler(async (req, res) => {
     city,
     state,
     country,
+    pincode,
     lat,
     lng,
   } = req.body;
@@ -277,6 +281,7 @@ const updateAddress = asyncHandler(async (req, res) => {
     city,
     state,
     country,
+    pincode,
     location: { coordinates: [lat, lng] },
   });
   if (!updatedAddress)
@@ -392,23 +397,29 @@ const updateProfile = asyncHandler(async (req, res) => {
 
 const submitKYCVerification = asyncHandler(async (req, res) => {
   const { storeId } = req.params;
-  const { aadharNumber, panNumber, storePan, gstNumber } = req.body;
+  const {
+    aadharNumber,
+    panNumber,
+    storePan,
+    gstNumber,
+    ownerName,
+    ownerContact,
+    ownerEmail,
+    ownerAddress,
+  } = req.body;
 
   if (!storeId) throw new ApiError(400, "Invalid request");
   if (!aadharNumber || !panNumber)
     throw new ApiError(400, "Aadhar and Pan numbers are required for KYC");
 
-  //   validators
-  if (validateAadhaar(aadharNumber) === !true)
+  if (!validateAadhaar(aadharNumber).valid)
     throw new ApiError(401, "Invalid AADHAR number");
-  if (validatePAN(panNumber) === !true)
+  if (!validatePAN(panNumber).valid)
     throw new ApiError(401, "Invalid PAN number");
-  if (validatePAN(storePan) === !true)
-    throw new ApiError(401, "Invalid PAN number");
-  if (gstNumber) {
-    if (validateGST(gstNumber) === !true)
-      throw new ApiError(401, "Invalid GST number");
-  }
+  if (storePan && !validatePAN(storePan).valid)
+    throw new ApiError(401, "Invalid store PAN number");
+  if (gstNumber && !validateGST(gstNumber).valid)
+    throw new ApiError(401, "Invalid GST number");
 
   const user = await Store.findById(storeId);
   if (!user) throw new ApiError(404, "No user found");
@@ -476,6 +487,10 @@ const submitKYCVerification = asyncHandler(async (req, res) => {
   }
 
   user.owner = {
+    ownerName,
+    ownerContact,
+    ownerEmail,
+    ownerAddress,
     aadhar: {
       number: aadharNumber,
       image: {
@@ -488,9 +503,11 @@ const submitKYCVerification = asyncHandler(async (req, res) => {
       image: PAN,
     },
   };
-  user.pan = { number: storePan, image: { StorePAN } };
-  user.gst = { number: gstNumber, image: { GST } };
+  user.pan = { number: storePan, image: StorePAN };
+  user.gst = { number: gstNumber, image: GST };
   user.owner.ownerKycSubmitted = true;
+  user.ownerKycSubmitted = true;
+  user.storeKycSubmitted = true;
   await user.save();
 
   return res
@@ -625,6 +642,16 @@ const dashboardData = asyncHandler(async (req, res) => {
       return res
         .status(200)
         .json(new ApiResponse(200, bookings, "Bookings fetched successfully"));
+    }
+
+    case "kyc": {
+      const kyc = await Store.findById(storeId).select(
+        "storeName owner pan gst ownerKycSubmitted ownerKycComplete storeKycSubmitted storeKycComplete ",
+      );
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, kyc, "Data fetched successfully"));
     }
 
     default:

@@ -46,7 +46,7 @@ const professionalSchema = new mongoose.Schema(
     kycDetails: {
       aadhar: {
         verified: { type: Boolean, default: false },
-        number: { type: Number },
+        number: { type: String },
         image: {
           front: { url: String, fileId: String },
           back: { url: String, fileId: String },
@@ -54,12 +54,12 @@ const professionalSchema = new mongoose.Schema(
       },
       pan: {
         verified: { type: Boolean, default: false },
-        number: { type: Number },
+        number: { type: String },
         image: { url: String, fileId: String },
       },
       gst: {
         verified: { type: Boolean, default: false },
-        number: { type: Number },
+        number: { type: String },
         image: { url: String, fileId: String },
       },
     },
