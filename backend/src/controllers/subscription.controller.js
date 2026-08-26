@@ -213,10 +213,64 @@ const getSubscriptionById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, subscription, "Data fetched successfully !"));
 });
 
+const updateSubscription = asyncHandler(async (req, res) => {
+  const { subscriptionId } = req.params;
+  const subscription = await Subscription.findById(subscriptionId);
+  if (!subscription) throw new ApiError(404, "Subscription not found");
+  if (!req.body.parsingData)
+    throw new ApiError(400, "Subscription data is missing.");
+
+  const parsed = JSON.parse(req.body.parsingData);
+  const { planName, planFor, customModelFor, tagline, isActive } = req.body;
+  const updated = await Subscription.findByIdAndUpdate(
+    subscriptionId,
+    {
+      planName,
+      planFor,
+      customModel:
+        req.body.customModel === "true" ||
+        planFor === "custom" ||
+        Boolean(customModelFor),
+      customModelFor,
+      tagline,
+      validity: {
+        months: Number(parsed.validity?.months),
+        renewalType: parsed.validity?.renewalType || "yearly",
+      },
+      price: {
+        mrp: Number(parsed.price?.mrp),
+        discount: Number(parsed.price?.discount || 0),
+        sellingPrice: Number(parsed.price?.sellingPrice),
+      },
+      support: parsed.support || "basic",
+      mediaLimit: {
+        photos: Number(parsed.mediaLimit?.photos || 0),
+        videos: Number(parsed.mediaLimit?.videos || 0),
+        unlimitedPhotos: Boolean(parsed.mediaLimit?.unlimitedPhotos),
+        unlimitedVideos: Boolean(parsed.mediaLimit?.unlimitedVideos),
+      },
+      booking: parsed.booking || {},
+      visibility: parsed.visibility || {},
+      franchise: parsed.franchise || {},
+      managementTools: parsed.managementTools || {},
+      marketing: parsed.marketing || {},
+      features: parsed.features || [],
+      faqs: parsed.faqs || [],
+      isActive: isActive === "true",
+    },
+    { new: true, runValidators: true },
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updated, "Subscription updated successfully."));
+});
+
 export {
   createSubscription,
   getSubscriptionByMadeFor,
   getAllSubscription,
   purchaseSubscription,
   getSubscriptionById,
+  updateSubscription,
 };

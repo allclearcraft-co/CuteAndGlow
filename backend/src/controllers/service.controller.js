@@ -229,10 +229,44 @@ const getServiceById = asyncHandler(async (req, res) => {
     });
   if (!service) throw new ApiError(400, "Unable to process request !");
 
-
   return res
     .status(200)
     .json(new ApiResponse(200, service, "Data fetched successfully !"));
 });
 
-export { createStoreService, getServices, getServiceById };
+const markAsActiveInactive = asyncHandler(async (req, res) => {
+  const { serviceId, action } = req.params;
+  if (!serviceId || !action) throw new ApiError(400, "Invalid request");
+
+  const service = await Services.findById(serviceId);
+  if (!service) throw new ApiError(400, "Invalid service requested");
+
+  switch (action) {
+    case "active": {
+      service.isActive = true;
+      await service.save();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Action performed successfully !"));
+    }
+    case "inactive": {
+      service.isActive = false;
+      await service.save();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, service, "Action performed successfully !"));
+    }
+    default: {
+      throw new ApiError(400, "Invalid request");
+    }
+  }
+});
+
+export {
+  createStoreService,
+  getServices,
+  getServiceById,
+  markAsActiveInactive,
+};
