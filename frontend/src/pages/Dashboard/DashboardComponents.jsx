@@ -371,7 +371,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
       {/* Recent Activity */}
 
-      <div className="bg-white rounded-2xl shadow-md p-6">
+      {/* <div className="bg-white rounded-2xl shadow-md p-6">
         <h2 className="text-xl font-semibold mb-5">Recent Activity</h2>
 
         <div className="space-y-5">
@@ -389,7 +389,7 @@ const Overview = ({ data, role, userId, callData }) => {
             </span>
           </div>
 
-          {/* <div className="flex justify-between items-center border-b pb-4">
+          <div className="flex justify-between items-center border-b pb-4">
             <div>
               <h3 className="font-medium">Hair Spa Booking</h3>
 
@@ -399,9 +399,9 @@ const Overview = ({ data, role, userId, callData }) => {
             <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
               Upcoming
             </span>
-          </div> */}
+          </div>
 
-          {/* <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center">
             <div>
               <h3 className="font-medium">Saree Draping</h3>
 
@@ -413,9 +413,9 @@ const Overview = ({ data, role, userId, callData }) => {
             <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
               Confirmed
             </span>
-          </div> */}
+          </div>
         </div>
-      </div>
+      </div> */}
       {/* Update Profile Popup */}
       {showProfilePopup && (
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 sm:p-5">
@@ -1226,6 +1226,7 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                 <InputBox label="city" name="city" />
                 <InputBox label="state" name="state" />
                 <InputBox label="country" name="country" />
+                <InputBox label="pincode" name="pincode" />
                 <InputBox
                   label="country"
                   name="lng"
@@ -1665,6 +1666,7 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
               <InputBox label="designation" name="designation" type="text" />
               <InputBox label="experience" name="experience" type="text" />
               <InputBox
+                required={false}
                 label="specialization"
                 name="specialization"
                 type="text"
@@ -1672,6 +1674,7 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
               />
               <div className="col-span-2 w-full h-1 bg-neutral-200" />
               <InputBox
+                required={false}
                 label="Profile Picture"
                 name="profileImage"
                 type="file"
@@ -1688,7 +1691,11 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
               <div className="col-span-2 w-full h-1 bg-neutral-200" />
               <div className="col-span-2 lg:grid lg:grid-cols-4 gap-2">
                 <h1 className="col-span-4 capitalize">address</h1>
-                <InputBox label="Flat / House Number" name="flatNumber" />
+                <InputBox
+                  label="Flat / House Number"
+                  name="flatNumber"
+                  required={false}
+                />
                 <InputBox label="floor" name="floor" required={false} />
                 <InputBox label="block" name="block" required={false} />
                 <InputBox
@@ -1696,15 +1703,15 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
                   name="societyName"
                   required={false}
                 />
-                <InputBox label="street 1" name="street1" />
+                <InputBox label="street 1" name="street1" required={false} />
                 <InputBox label="street 2" name="street2" required={false} />
-                <InputBox label="area" name="area" />
-                <InputBox label="landmark" name="locality" />
+                <InputBox label="area" name="area" required={false} />
+                <InputBox label="landmark" name="locality" required={false} />
                 <InputBox label="sector" name="sector" required={false} />
-                <InputBox label="city" name="city" />
-                <InputBox label="state" name="state" />
-                <InputBox label="country" name="country" />
-                <InputBox label="pincode" name="pincode" />
+                <InputBox label="city" name="city" required={false} />
+                <InputBox label="state" name="state" required={false} />
+                <InputBox label="country" name="country" required={false} />
+                <InputBox label="pincode" name="pincode" required={false} />
               </div>
             </div>
             <div className="flex justify-center items-center gap-10 ">
@@ -2617,118 +2624,121 @@ const CurrentlyUnderBooking = ({ data, role }) => {
       </div>
 
       {/* Booking Cards */}
+      {data ? (
+        <div className="space-y-6">
+          {activeBookings.map((booking) => (
+            <div
+              key={booking.id}
+              className="bg-white rounded-2xl shadow-md hover:shadow-lg transition overflow-hidden"
+            >
+              <div className="flex flex-col lg:flex-row">
+                {/* Service Image */}
 
-      <div className="space-y-6">
-        {activeBookings.map((booking) => (
-          <div
-            key={booking.id}
-            className="bg-white rounded-2xl shadow-md hover:shadow-lg transition overflow-hidden"
-          >
-            <div className="flex flex-col lg:flex-row">
-              {/* Service Image */}
+                <img
+                  src={booking.image}
+                  alt={booking.service}
+                  className="w-full lg:w-72 h-60 object-cover"
+                />
 
-              <img
-                src={booking.image}
-                alt={booking.service}
-                className="w-full lg:w-72 h-60 object-cover"
-              />
+                {/* Content */}
 
-              {/* Content */}
+                <div className="flex-1 p-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-2xl font-bold">{booking.service}</h2>
 
-              <div className="flex-1 p-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-2xl font-bold">{booking.service}</h2>
-
-                    <p className="text-gray-500 mt-1">{booking.store}</p>
-                  </div>
-
-                  <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-medium">
-                    {booking.status}
-                  </span>
-                </div>
-
-                {/* Details */}
-
-                <div className="grid md:grid-cols-2 gap-4 mt-6">
-                  <div className="flex items-center gap-3">
-                    <FaStore className="text-[#8B2954]" />
-                    {booking.store}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <FaUserTie className="text-[#8B2954]" />
-                    {booking.professional}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <FaCalendarAlt className="text-[#8B2954]" />
-                    {booking.date}
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <FaClock className="text-[#8B2954]" />
-                    {booking.time}
-                  </div>
-
-                  <div className="flex items-center gap-3 md:col-span-2">
-                    <FaMapMarkerAlt className="text-[#8B2954]" />
-                    {booking.location}
-                  </div>
-                </div>
-
-                {/* Status Timeline */}
-
-                <div className="mt-8">
-                  <h3 className="font-semibold mb-4">Booking Progress</h3>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex flex-col items-center">
-                      <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                      <p className="text-xs mt-2">Booked</p>
+                      <p className="text-gray-500 mt-1">{booking.store}</p>
                     </div>
 
-                    <div className="flex-1 h-1 bg-green-500 mx-2"></div>
+                    <span className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-sm font-medium">
+                      {booking.status}
+                    </span>
+                  </div>
 
-                    <div className="flex flex-col items-center">
-                      <div className="w-4 h-4 rounded-full bg-green-500"></div>
-                      <p className="text-xs mt-2">Confirmed</p>
+                  {/* Details */}
+
+                  <div className="grid md:grid-cols-2 gap-4 mt-6">
+                    <div className="flex items-center gap-3">
+                      <FaStore className="text-[#8B2954]" />
+                      {booking.store}
                     </div>
 
-                    <div className="flex-1 h-1 bg-green-500 mx-2"></div>
-
-                    <div className="flex flex-col items-center">
-                      <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
-                      <p className="text-xs mt-2">On The Way</p>
+                    <div className="flex items-center gap-3">
+                      <FaUserTie className="text-[#8B2954]" />
+                      {booking.professional}
                     </div>
 
-                    <div className="flex-1 h-1 bg-gray-300 mx-2"></div>
+                    <div className="flex items-center gap-3">
+                      <FaCalendarAlt className="text-[#8B2954]" />
+                      {booking.date}
+                    </div>
 
-                    <div className="flex flex-col items-center">
-                      <div className="w-4 h-4 rounded-full bg-gray-300"></div>
-                      <p className="text-xs mt-2">Completed</p>
+                    <div className="flex items-center gap-3">
+                      <FaClock className="text-[#8B2954]" />
+                      {booking.time}
+                    </div>
+
+                    <div className="flex items-center gap-3 md:col-span-2">
+                      <FaMapMarkerAlt className="text-[#8B2954]" />
+                      {booking.location}
                     </div>
                   </div>
-                </div>
 
-                {/* Buttons */}
+                  {/* Status Timeline */}
 
-                <div className="flex flex-wrap gap-4 mt-8">
-                  <button className="flex items-center gap-2 bg-[#8B2954] text-white px-5 py-3 rounded-lg hover:bg-[#742247] transition">
-                    <FaPhoneAlt />
-                    Call Professional
-                  </button>
+                  <div className="mt-8">
+                    <h3 className="font-semibold mb-4">Booking Progress</h3>
 
-                  <button className="flex items-center gap-2 border border-[#8B2954] text-[#8B2954] px-5 py-3 rounded-lg hover:bg-[#8B2954] hover:text-white transition">
-                    <FaLocationArrow />
-                    Track Booking
-                  </button>
+                    <div className="flex justify-between items-center">
+                      <div className="flex flex-col items-center">
+                        <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                        <p className="text-xs mt-2">Booked</p>
+                      </div>
+
+                      <div className="flex-1 h-1 bg-green-500 mx-2"></div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="w-4 h-4 rounded-full bg-green-500"></div>
+                        <p className="text-xs mt-2">Confirmed</p>
+                      </div>
+
+                      <div className="flex-1 h-1 bg-green-500 mx-2"></div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="w-4 h-4 rounded-full bg-yellow-500"></div>
+                        <p className="text-xs mt-2">On The Way</p>
+                      </div>
+
+                      <div className="flex-1 h-1 bg-gray-300 mx-2"></div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="w-4 h-4 rounded-full bg-gray-300"></div>
+                        <p className="text-xs mt-2">Completed</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Buttons */}
+
+                  <div className="flex flex-wrap gap-4 mt-8">
+                    <button className="flex items-center gap-2 bg-[#8B2954] text-white px-5 py-3 rounded-lg hover:bg-[#742247] transition">
+                      <FaPhoneAlt />
+                      Call Professional
+                    </button>
+
+                    <button className="flex items-center gap-2 border border-[#8B2954] text-[#8B2954] px-5 py-3 rounded-lg hover:bg-[#8B2954] hover:text-white transition">
+                      <FaLocationArrow />
+                      Track Booking
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
@@ -2886,7 +2896,96 @@ const Images = ({ data, role, userId, subscription }) => {
   );
 };
 
-const KycDetails = ({ data, role }) => {
+const KycDetails = ({ data, role, storeId, handleReload, callData }) => {
+  useEffect(() => {
+    callData();
+  }, []);
+  const formRef = useRef();
+  const { alertSuccess, alertError } = useToast();
+  const [showForm, setShowForm] = useState(false);
+  const [imagePreview, setImagePreview] = useState("");
+  const [imagePreview2, setImagePreview2] = useState("");
+  const [imagePreview3, setImagePreview3] = useState("");
+  const [imagePreview4, setImagePreview4] = useState("");
+  const [imagePreview5, setImagePreview5] = useState("");
+  const [image, setImage] = useState(null);
+  const [image2, setImage2] = useState(null);
+  const [image3, setImage3] = useState(null);
+  const [image4, setImage4] = useState(null);
+  const [image5, setImage5] = useState(null);
+
+  const handleImage = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+  const handleImage2 = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setImage2(file);
+    setImagePreview2(URL.createObjectURL(file));
+  };
+  const handleImage3 = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setImage3(file);
+    setImagePreview3(URL.createObjectURL(file));
+  };
+  const handleImage4 = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setImage4(file);
+    setImagePreview4(URL.createObjectURL(file));
+  };
+  const handleImage5 = (e) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setImage5(file);
+    setImagePreview5(URL.createObjectURL(file));
+  };
+
+  const handleSubmitKYC = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(formRef.current);
+      const response = await FetchData(
+        `${role.toLowerCase()}/update/submit-kyc/${storeId}`,
+        "post",
+        formData,
+        true,
+      );
+      console.log(response);
+      formRef.current.reset();
+      setImagePreview(null);
+      setImagePreview2(null);
+      setImagePreview3(null);
+      setImagePreview4(null);
+      setImagePreview5(null);
+      setImage(null);
+      setImage2(null);
+      setImage3(null);
+      setImage4(null);
+      setImage5(null);
+      alertSuccess(response.data.message);
+      setShowForm(false);
+      handleReload();
+    } catch (err) {
+      alertError(err.response?.data?.message || "Unable to submit KYC details");
+    }
+  };
+
+  console.log(data);
   return (
     <div className="w-full space-y-6">
       {/* Header */}
@@ -2898,11 +2997,17 @@ const KycDetails = ({ data, role }) => {
             Manage your verification documents and business information.
           </p>
         </div>
-
-        <button className="bg-[#8B2954] text-white px-5 py-3 rounded-xl hover:bg-[#742247] transition flex items-center gap-2">
-          <FaUpload />
-          Update Documents
-        </button>
+        {data?.storeKycSubmitted === false ? (
+          <button
+            onClick={() => setShowForm(true)}
+            className="bg-[#8B2954] text-white px-5 py-3 rounded-xl hover:bg-[#742247] transition flex items-center gap-2"
+          >
+            <FaUpload />
+            Upload KYC
+          </button>
+        ) : (
+          ""
+        )}
       </div>
 
       {/* Status Card */}
@@ -2916,118 +3021,265 @@ const KycDetails = ({ data, role }) => {
             </p>
           </div>
 
-          <span className="bg-green-100 text-green-700 px-5 py-2 rounded-full flex items-center gap-2 w-fit">
-            <FaCheckCircle />
-            {data?.status || "Verified"}
+          <span
+            className={`${data?.storeKycComplete === true ? "bg-green-100 text-green-700 px-5 py-2 rounded-full flex items-center gap-2 w-fit" : "bg-red-100 text-red-700 px-5 py-2 rounded-full flex items-center gap-2 w-fit"} `}
+          >
+            {data?.storeKycComplete === true ? "KYC Verified" : "Pending"}
           </span>
         </div>
       </div>
 
       {/* Information Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Business Details */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <FaBuilding className="text-[#8B2954] text-2xl" />
-            <h2 className="text-xl font-semibold">Business Details</h2>
+      {data?.storeKycSubmitted === true ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Business Details */}
+          <div className="bg-white rounded-2xl shadow-md p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <FaBuilding className="text-[#8B2954] text-2xl" />
+              <h2 className="text-xl font-semibold">Business Details</h2>
+            </div>
+
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm text-gray-500">Business Name</p>
+
+                <h3 className="font-semibold">{data?.storeName || "Na"}</h3>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">GST Number</p>
+
+                <p className="font-semibold">
+                  {data?.gst?.number || "20ABCDE1234F1Z5"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Store Pan Number</p>
+
+                <p className="font-semibold">
+                  {data?.pan?.number || "License #UBS-2025-001"}
+                </p>
+              </div>
+              <div className="w-full h-96 md:w-96 md:h-96 overflow-hidden border-[0.1px] border-neutral-200">
+                <img
+                  src={data?.pan?.image?.url}
+                  className="object-cover h-full w-full"
+                />
+              </div>
+              <div className="w-full h-96 md:w-96 md:h-96 overflow-hidden border-[0.1px] border-neutral-200">
+                <img
+                  src={data?.gst?.image?.url}
+                  className="object-cover h-full w-full"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-5">
-            <div>
-              <p className="text-sm text-gray-500">Business Name</p>
-
-              <h3 className="font-semibold">
-                {data?.businessName || "Urban Beauty Salon"}
-              </h3>
+          {/* Owner Details */}
+          <div className="bg-white rounded-2xl shadow-md p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <FaUserTie className="text-[#8B2954] text-2xl" />
+              <h2 className="text-xl font-semibold">Owner Details</h2>
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500">GST Number</p>
+            <div className="space-y-5">
+              <div>
+                <p className="text-sm text-gray-500">Owner Name</p>
 
-              <h3 className="font-semibold">
-                {data?.gst || "20ABCDE1234F1Z5"}
-              </h3>
-            </div>
+                <h3 className="font-semibold">
+                  {data?.owner?.ownerName || "Na"}
+                </h3>
+              </div>
 
-            <div>
-              <p className="text-sm text-gray-500">Business License</p>
+              <div>
+                <p className="text-sm text-gray-500">Contact Number</p>
 
-              <h3 className="font-semibold">
-                {data?.businessLicense || "License #UBS-2025-001"}
-              </h3>
+                <p className="font-semibold">
+                  {data?.owner?.ownerContact || "123456789"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+
+                <p className="font-semibold">
+                  {data?.owner?.ownerEmail || "ABCDE1234F"}
+                </p>
+              </div>
+              <div className="w-full h-96 md:w-96 md:h-96 overflow-hidden border-[0.1px] border-neutral-200">
+                <img
+                  src={data?.owner?.pan?.image?.url}
+                  className="object-cover h-full w-full"
+                />
+              </div>
+              <div className="w-full h-96 md:w-96 md:h-96 overflow-hidden border-[0.1px] border-neutral-200">
+                <img
+                  src={data?.owner?.aadhar?.image?.front?.url}
+                  className="object-cover h-full w-full"
+                />
+              </div>
+              <div className="w-full h-96 md:w-96 md:h-96 overflow-hidden border-[0.1px] border-neutral-200">
+                <img
+                  src={data?.owner?.aadhar?.image?.back?.url}
+                  className="object-cover h-full w-full"
+                />
+              </div>
             </div>
           </div>
         </div>
+      ) : (
+        ""
+      )}
 
-        {/* Owner Details */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <FaUserTie className="text-[#8B2954] text-2xl" />
-            <h2 className="text-xl font-semibold">Owner Details</h2>
-          </div>
-
-          <div className="space-y-5">
-            <div>
-              <p className="text-sm text-gray-500">Owner Name</p>
-
-              <h3 className="font-semibold">
-                {data?.ownerName || "Akanksha Sinha"}
-              </h3>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-500">Aadhaar Number</p>
-
-              <h3 className="font-semibold">{data?.aadhaar || "123456789"}</h3>
-            </div>
-
-            <div>
-              <p className="text-sm text-gray-500">PAN Number</p>
-
-              <h3 className="font-semibold">{data?.pan || "ABCDE1234F"}</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Uploaded Documents */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-6">Uploaded Documents</h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {[
-            "Aadhaar Card",
-            "PAN Card",
-            "GST Certificate",
-            "Business License",
-          ].map((doc) => (
-            <div
-              key={doc}
-              className="border rounded-xl p-5 hover:shadow-md transition"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <FaFilePdf className="text-red-500 text-3xl" />
-
-                <div>
-                  <h3 className="font-semibold">{doc}</h3>
-
-                  <p className="text-xs text-gray-500">PDF Uploaded</p>
+      <Popup isOpen={showForm} onClose={() => setShowForm(false)}>
+        <div className="flex justify-start items-start h-screen w-full overflow-scroll">
+          {" "}
+          <form
+            ref={formRef}
+            onSubmit={handleSubmitKYC}
+            className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll"
+          >
+            <h1 className="heading text-3xl">Add KYC form</h1>
+            <div className="flex flex-col lg:grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
+              {role === "Store" && (
+                <div className="grid grid-cols-1 col-span-2 bg-neutral-200 p-4 rounded-xl ">
+                  <InputBox
+                    label="Store pan number"
+                    name="storePan"
+                    type="text"
+                  />
+                  <InputBox
+                    label="Pan card image"
+                    name="StorePAN"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImage}
+                  />
+                  {imagePreview && (
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-40 h-40 object-cover rounded-lg"
+                    />
+                  )}
                 </div>
+              )}
+              <div className="grid grid-cols-1 col-span-2 bg-neutral-200 p-4 rounded-xl ">
+                <InputBox label="GST number" name="gstNumber" type="text" />
+                <InputBox
+                  label="GST certificate image"
+                  name="GST"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImage2}
+                />
+                {imagePreview2 && (
+                  <img
+                    src={imagePreview2}
+                    alt="Preview"
+                    className="w-40 h-40 object-cover rounded-lg"
+                  />
+                )}
               </div>
-
-              <div className="flex gap-3">
-                <button className="flex-1 border border-[#8B2954] text-[#8B2954] py-2 rounded-lg hover:bg-pink-50 transition">
-                  View
-                </button>
-
-                <button className="flex-1 bg-[#8B2954] text-white py-2 rounded-lg hover:bg-[#742247] transition">
-                  Replace
-                </button>
+              <div className="col-span-2 w-full h-1 bg-neutral-200" />
+              <div className="grid grid-cols-1 md:grid-cols-2 col-span-2 gap-4">
+                <InputBox
+                  label="owner name"
+                  name="ownerName"
+                  required={false}
+                  type="text"
+                />
+                <InputBox
+                  label="owner contact numner"
+                  name="ownerContact"
+                  required={false}
+                  type="text"
+                />
+                <InputBox
+                  label="owner email"
+                  name="ownerEmail"
+                  required={false}
+                  type="text"
+                />
+                <InputBox
+                  label="write your full address"
+                  name="ownerAddress"
+                  required={false}
+                  type="text"
+                />
+              </div>
+              <div className="col-span-2 w-full h-1 bg-neutral-200" />
+              <div className="grid grid-cols-1 col-span-2 bg-neutral-200 p-4 rounded-xl ">
+                <InputBox
+                  required={false}
+                  label="aadhar number"
+                  name="aadharNumber"
+                  type="text"
+                />
+                <InputBox
+                  required={false}
+                  label="aadhar card image (Front)"
+                  name="aadharFront"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImage3}
+                />
+                {imagePreview3 && (
+                  <img
+                    src={imagePreview3}
+                    alt="Preview"
+                    className="w-40 h-40 object-cover rounded-lg"
+                  />
+                )}
+              </div>
+              <div className="grid grid-cols-1 col-span-2 bg-neutral-200 p-4 rounded-xl ">
+                <InputBox
+                  required={false}
+                  label="aadhar card image (Back)"
+                  name="aadharBack"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImage4}
+                />
+                {imagePreview4 && (
+                  <img
+                    src={imagePreview4}
+                    alt="Preview"
+                    className="w-40 h-40 object-cover rounded-lg"
+                  />
+                )}
+              </div>
+              <div className="grid grid-cols-1 col-span-2 bg-neutral-200 p-4 rounded-xl ">
+                <InputBox
+                  required={false}
+                  label="pan number"
+                  name="panNumber"
+                  type="text"
+                />
+                <InputBox
+                  required={false}
+                  label="pan card image"
+                  name="PAN"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImage5}
+                />
+                {imagePreview5 && (
+                  <img
+                    src={imagePreview5}
+                    alt="Preview"
+                    className="w-40 h-40 object-cover rounded-lg"
+                  />
+                )}
               </div>
             </div>
-          ))}
+            <div className="flex justify-center items-center gap-10 ">
+              <Button LabelName="Submit" type="submit" />
+            </div>
+          </form>
         </div>
-      </div>
+      </Popup>
     </div>
   );
 };

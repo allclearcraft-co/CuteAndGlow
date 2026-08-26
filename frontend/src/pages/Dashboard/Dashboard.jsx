@@ -293,16 +293,22 @@ function Dashboard() {
           )}
           {activeSection === "images" && (
             <Images
-              callData={() => fetchDashboardData({ query: "storeStaff" })}
+              callData={() => fetchDashboardData({ query: "images" })}
               data={data}
               role={localStorage.role}
               userId={userId}
               subscription={subscriptionDetails}
-              handleReload={() => fetchDashboardData({ query: "storeStaff" })}
+              handleReload={() => fetchDashboardData({ query: "images" })}
             />
           )}
           {activeSection === "kyc" && (
-            <KycDetails data={data} role={localStorage.role} />
+            <KycDetails
+              callData={() => fetchDashboardData({ query: "kyc" })}
+              data={data}
+              role={localStorage.role}
+              storeId={userId}
+              handleReload={() => fetchDashboardData({ query: "kyc" })}
+            />
           )}
         </main>
       </div>
