@@ -110,7 +110,7 @@ const createSubscription = asyncHandler(async (req, res) => {
     features,
     faqs,
 
-    isActive: isActive === "true",
+    // isActive: isActive === "true",
   });
 
   return res
@@ -203,9 +203,20 @@ const purchaseSubscription = asyncHandler(async (req, res) => {
   }
 });
 
+const getSubscriptionById = asyncHandler(async (req, res) => {
+  const { subscriptionId } = req.params;
+  const subscription = await Subscription.findById(subscriptionId);
+  if (!subscription) throw new ApiError(400, "Data not found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, subscription, "Data fetched successfully !"));
+});
+
 export {
   createSubscription,
   getSubscriptionByMadeFor,
   getAllSubscription,
   purchaseSubscription,
+  getSubscriptionById,
 };

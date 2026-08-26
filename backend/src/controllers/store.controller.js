@@ -64,9 +64,9 @@ const registerStore = asyncHandler(async (req, res) => {
   });
 
   await sendEmail({
-    to: user?.storeEmail,
+    to: newUser?.storeEmail,
     subject: "OTP Verification",
-    html: otpTemplate(user?.storeName, otp),
+    html: otpTemplate(newUser?.storeName, otp),
   });
 
   const user = await Store.findOne({
@@ -111,9 +111,9 @@ const loginStore = asyncHandler(async (req, res) => {
   await storeUser.save();
 
   await sendEmail({
-    to: storeUser?.storeEmail,
-    subject: "OTP Verification",
-    html: otpTemplate(storeUser?.storeName, otp),
+  to: storeUser?.storeEmail,
+  subject: "OTP Verification",
+  html: otpTemplate(storeUser?.storeName, otp),
   });
 
   return res
@@ -601,13 +601,20 @@ const dashboardData = asyncHandler(async (req, res) => {
     }
 
     case "services": {
+      const store = await Store.findById(storeId).select("subscription");
       const service = await Services.find({
         store: storeId,
       }).populate({ path: "executive", select: "name" });
 
       return res
         .status(200)
-        .json(new ApiResponse(200, service, "Details fetched successfully"));
+        .json(
+          new ApiResponse(
+            200,
+            { service, store },
+            "Details fetched successfully",
+          ),
+        );
     }
 
     case "service-bookings": {
