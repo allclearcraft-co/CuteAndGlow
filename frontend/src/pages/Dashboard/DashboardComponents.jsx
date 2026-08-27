@@ -1248,15 +1248,15 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                   required={false}
                   label="name"
                   name="name"
-                  labelClassName={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
-                  className={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
+                  labelClassName={`${role === "Customer" ? "block" : "hidden"}`}
+                  className={`${role === "Customer" ? "block" : "hidden"}`}
                 />
                 <InputBox
                   required={false}
                   label="contact"
                   name="contact"
-                  labelClassName={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
-                  className={`${role === "customer" || "Customer" ? "block" : "hidden"}`}
+                  labelClassName={`${role === "Customer" ? "block" : "hidden"}`}
+                  className={`${role === "Customer" ? "block" : "hidden"}`}
                 />
                 <div
                   className={`w-full py-3 ${role === "customer" || "Customer" ? "block" : "hidden"}`}
@@ -1273,11 +1273,15 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                     className={`w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed`}
                   >
                     <option value="">Select</option>
-                    {["Home", "Friend's", "Others"].map((i, index) => (
-                      <option key={index} value={i}>
-                        {index + 1}. {i}
-                      </option>
-                    ))}
+                    {role === "Customer"
+                      ? ["Home", "Friend's", "Others"]
+                      : ["Address 1", "Address 2", "Address 3"].map(
+                          (i, index) => (
+                            <option key={index} value={i}>
+                              {index + 1}. {i}
+                            </option>
+                          ),
+                        )}
                   </select>
                 </div>
               </div>

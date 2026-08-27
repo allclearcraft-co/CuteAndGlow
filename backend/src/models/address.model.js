@@ -38,7 +38,14 @@ const addressSchema = new mongoose.Schema(
     // address type
     addressType: {
       type: String,
-      enum: ["Home", "Friend's", "Others"],
+      enum: [
+        "Home",
+        "Friend's",
+        "Address 1",
+        "Address 2",
+        "Address 3",
+        "Others",
+      ],
       default: "Home",
     },
     contactDetails: { name: String, contact: String },
