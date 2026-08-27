@@ -110,11 +110,11 @@ const loginStore = asyncHandler(async (req, res) => {
   storeUser.otpExpiry = expiresAt;
   await storeUser.save();
 
-  // await sendEmail({
-  // to: storeUser?.storeEmail,
-  // subject: "OTP Verification",
-  // html: otpTemplate(storeUser?.storeName, otp),
-  // });
+  await sendEmail({
+  to: storeUser?.storeEmail,
+  subject: "OTP Verification",
+  html: otpTemplate(storeUser?.storeName, otp),
+  });
   console.log(otp);
 
   return res
