@@ -1114,9 +1114,13 @@ const Overview = ({ data, role, userId, callData }) => {
                   ₹{i?.price?.sellingPrice} / month
                 </p>
 
-                <p className="text-sm font-semibold text-[#8B2954]">
-                  Valid for {i?.validity?.months} months
-                </p>
+                {i?.validity?.months === 0 ? (
+                  ""
+                ) : (
+                  <p className="text-sm font-semibold text-[#8B2954]">
+                    Valid for {i?.validity?.months} months
+                  </p>
+                )}
 
                 <p className="text-xs text-gray-500 capitalize">
                   Renewal: {i?.validity?.renewalType}
@@ -1344,18 +1348,26 @@ const Overview = ({ data, role, userId, callData }) => {
             {/* ================= FOOTER ================= */}
             <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
               <div className="text-white text-sm text-center">
-                {i?.validity?.months === 1
-                  ? "1 month"
+                {i?.validity?.months === 0
+                  ? ""
                   : `${i?.validity?.months} months`}
                 {" • "}
-                {i?.validity?.renewalType}
+                {i?.validity?.renewalType === "oneTime"
+                  ? "One Time Purchase"
+                  : i?.validity?.renewalType === "monthly"
+                    ? "Monthly Plan"
+                    : i?.validity?.renewalType === "yearly"
+                      ? "Yearly"
+                      : ""}
               </div>
 
               <Button
                 variant="secondary"
                 className="w-full"
                 LabelName={
-                  purchasingPlanId === i?._id ? "Opening payment..." : "Get"
+                  purchasingPlanId === i?._id
+                    ? "Opening payment..."
+                    : "Get Plan"
                 }
                 onClick={() => purchasePlan(i)}
                 disabled={purchasingPlanId !== null}
@@ -1383,7 +1395,7 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
 
   const addNewAddress = async (e) => {
     e.preventDefault();
-    if (!coordinates.longitude || !coordinates.latitude) {
+    if (coordinates.longitude === null && coordinates.latitude === null) {
       alertError("Unable to fetch location, please try again !");
       setShowForm(false);
       formRef.current.reset();
@@ -1506,6 +1518,7 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
             <div className="w-full lg:w-1/2 h-[30vh] lg:h-full sticky top-0 left-0">
               <AddressMap setCoordinates={setCoordinates} />
             </div>
+            {/* {coordinates.latitude === "" && coordinates.longitude === "" ? } */}
             <div className="w-full lg:w-1/2 h-full">
               <div className="grid md:grid-cols-2 gap-1 w-full">
                 <InputBox label="Flat / House Number" name="flatNumber" />
@@ -1573,7 +1586,7 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
                     <option value="">Select</option>
                     {role === "Customer"
                       ? ["Home", "Friend's", "Others"]
-                      : ["Address 1", "Address 2", "Address 3"].map(
+                      : ["Address 1", "Address 2", "Address 3", "Others"].map(
                           (i, index) => (
                             <option key={index} value={i}>
                               {index + 1}. {i}
@@ -1958,15 +1971,31 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
           >
             <h1 className="heading text-3xl">Add Store Staff</h1>
             <div className="flex flex-col lg:grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
-              <InputBox label="name" name="name" type="text" />
+              <InputBox label="name" name="name" type="text" required={false} />
               <InputBox
                 label="contact number"
+                required={false}
                 name="contactNumber"
                 type="text"
               />
-              <InputBox label="email" name="email" type="text" />
-              <InputBox label="designation" name="designation" type="text" />
-              <InputBox label="experience" name="experience" type="text" />
+              <InputBox
+                label="email"
+                name="email"
+                type="text"
+                required={false}
+              />
+              <InputBox
+                label="designation"
+                name="designation"
+                type="text"
+                required={false}
+              />
+              <InputBox
+                label="experience"
+                name="experience"
+                type="text"
+                required={false}
+              />
               <InputBox
                 required={false}
                 label="specialization"
@@ -2536,6 +2565,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                   />
 
                   <InputBox
+                    required={false}
                     label="Duration (Minutes)"
                     name="duration"
                     type="number"
@@ -2547,7 +2577,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 ("Store" && (
                   <div>
                     <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
-                      Service Provider
+                      Service Provider{" "}
+                      <span className="text-base text-black">(Optional)</span>
                     </h2>
 
                     <div className="grid md:grid-cols-2 gap-4">
@@ -2559,7 +2590,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                         <select
                           name="executive"
                           className="w-full border rounded-lg px-4 py-2"
-                          required
+                          required={false}
                         >
                           <option value="">Select Staff</option>
                           {storeStaffList?.map((item) => (
@@ -2578,11 +2609,13 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
               <div>
                 <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
-                  Service Timing
+                  Service Timing{" "}
+                  <span className="text-base text-black">(Optional)</span>
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <InputBox
+                    required={false}
                     label="Preparation Time (Minutes)"
                     name="prepTime"
                     type="number"
@@ -2590,12 +2623,21 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
 
                   <div className="flex flex-col justify-end gap-4">
                     <label className="flex items-center gap-3">
-                      <input type="checkbox" name="isPrepTime" defaultChecked />
+                      <input
+                        type="checkbox"
+                        name="isPrepTime"
+                        defaultChecked
+                        required={false}
+                      />
                       Preparation Required
                     </label>
 
                     <label className="flex items-center gap-3">
-                      <input type="checkbox" name="timeIncludingPrepTime" />
+                      <input
+                        type="checkbox"
+                        name="timeIncludingPrepTime"
+                        required={false}
+                      />
                       Duration Includes Preparation
                     </label>
                   </div>
@@ -2605,7 +2647,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div>
                 <div className="flex justify-between items-center mb-5">
                   <h2 className="text-2xl font-semibold text-[#8B2954]">
-                    Products Used
+                    Products Used{" "}
+                    <span className="text-base text-black">(Optional)</span>
                   </h2>
 
                   <button
@@ -2620,6 +2663,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 {products.map((item, index) => (
                   <div key={index} className="grid md:grid-cols-3 gap-4 mb-4">
                     <InputBox
+                      required={false}
                       label="Product"
                       name={`productType-${index}`}
                       value={item.productType}
@@ -2633,6 +2677,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                     />
 
                     <InputBox
+                      required={false}
                       label="Brand"
                       name={`brand-${index}`}
                       value={item.brand}
@@ -2783,7 +2828,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
               <div>
                 <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
-                  Booking
+                  Booking{" "}
+                  <span className="text-base text-black">(Optional)</span>
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -2791,23 +2837,30 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                     <label className="block mb-2">Service For</label>
 
                     <select
+                      required={false}
                       name="serviceFor"
                       className="w-full border rounded-lg px-4 py-2"
                     >
-                      <option>Male</option>
                       <option>Female</option>
+                      <option>Male</option>
                       <option>Both</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block mb-2">Booking Day</label>
+                    <label className="block mb-2">Booking accepting days</label>
 
                     <select
+                      required={false}
                       name="bookingDays"
                       className="w-full border rounded-lg px-4 py-2"
                     >
-                      <option>Whole week</option>
+                      <option>Whole week (All 7 days)</option>
+                      <option>Monday to Saturday</option>
+                      <option>Monday to Friday</option>
+                      <option>Only on Tuesday, Thursday, Saturday</option>
+                      <option>Only on Monday, Wednesday, Friday</option>
+                      <option>Only on Sunday</option>
                       <option>Monday</option>
                       <option>Tuesday</option>
                       <option>Wednesday</option>
@@ -2819,12 +2872,14 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                   </div>
 
                   <InputBox
+                    required={false}
                     label="Booking From"
                     type="time"
                     name="bookingFrom"
                   />
 
                   <InputBox
+                    required={false}
                     label="Booking Till"
                     type="time"
                     name="bookingTill"
@@ -2834,17 +2889,28 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
               <div>
                 <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
-                  Service Availability
+                  Service Availability{" "}
+                  <span className="text-base text-black">(Optional)</span>
                 </h2>
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <label className="flex items-center gap-3">
-                    <input type="checkbox" name="onSite" defaultChecked />
+                    <input
+                      required={false}
+                      type="checkbox"
+                      name="onSite"
+                      defaultChecked
+                    />
                     On Site
                   </label>
 
                   <label className="flex items-center gap-3">
-                    <input type="checkbox" name="inHouse" defaultChecked />
+                    <input
+                      required={false}
+                      type="checkbox"
+                      name="inHouse"
+                      defaultChecked
+                    />
                     In House
                   </label>
 
@@ -2852,6 +2918,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                     <label className="block mb-2">Service Area</label>
 
                     <select
+                      required={false}
                       name="serviceArea"
                       className="w-full border rounded-lg px-4 py-2"
                     >
@@ -2866,10 +2933,12 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
 
               <div>
                 <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
-                  Cover Images
+                  Cover Images{" "}
+                  <span className="text-base text-black">(Optional)</span>
                 </h2>
 
                 <input
+                  required={false}
                   type="file"
                   name="coverImage"
                   multiple
