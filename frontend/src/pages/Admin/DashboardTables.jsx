@@ -108,6 +108,34 @@ const TABLE_CONFIG = {
       { header: "Actions", key: "actions" },
     ],
   },
+  payments: {
+    text: "Payment Details",
+    searchKeys: [
+      "transactionNumber",
+      "module",
+      "paymentStatus",
+      "gatewayPaymentId",
+    ],
+    viewRoute: (id) => `#`,
+    // viewRoute: (id) => `/admin/current/${"customer"}/${id}`,
+    columns: [
+      { header: "Transaction ID", key: "transactionNumber" },
+      { header: "Module", key: "module" },
+      {
+        header: "Amount",
+        key: "amount",
+        render: (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`,
+      },
+      { header: "Status", key: "paymentStatus" },
+      {
+        header: "Date",
+        key: "paymentDate",
+        render: (value) =>
+          value ? new Date(value).toLocaleString("en-IN") : "-",
+      },
+      { header: "Actions", key: "actions" },
+    ],
+  },
   adminsQuery: {
     text: "Admins",
     searchKeys: ["name", "contactNumber", "employeeId"],

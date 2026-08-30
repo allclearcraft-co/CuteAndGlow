@@ -150,6 +150,9 @@ function AdminDashboard() {
           {activeSection === "bookings" && (
             <DashboardTable tableRole="booking" TableData={data} />
           )}
+          {activeSection === "payments" && (
+            <DashboardTable tableRole="payments" TableData={data} />
+          )}
           {activeSection === "adminsQuery" && (
             <div className="w-full">
               <div className="border-[0.1px] px-4 py-3 rounded-xl border-[#8B2954]">

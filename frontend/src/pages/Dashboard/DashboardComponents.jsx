@@ -2055,6 +2055,95 @@ const StoreStaffs = ({ data, role, userId, handleReload, callData }) => {
   );
 };
 
+const PaymentDetails = ({ data, role, userId, handleReload, callData }) => {
+  const paymentList = Array.isArray(data) ? data : [];
+
+  useEffect(() => {
+    callData();
+  }, []);
+
+  return (
+    <div className="space-y-5 w-full pb-40 md:pb-20 lg:pb-0">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+            Payment Details
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            All successful and pending payment activity for your account.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-sm text-gray-700">
+            <thead className="bg-gray-100 text-gray-600">
+              <tr>
+                <th className="px-5 py-3 font-medium">Transaction ID</th>
+                <th className="px-5 py-3 font-medium">Module</th>
+                <th className="px-5 py-3 font-medium">Amount</th>
+                <th className="px-5 py-3 font-medium">Status</th>
+                <th className="px-5 py-3 font-medium">Date</th>
+                <th className="px-5 py-3 font-medium">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paymentList.length ? (
+                paymentList.map((payment) => (
+                  <tr key={payment._id} className="border-b last:border-b-0">
+                    <td className="px-5 py-3 font-medium text-gray-800">
+                      {payment.transactionNumber || "-"}
+                    </td>
+                    <td className="px-5 py-3 capitalize">
+                      {payment.module || "-"}
+                    </td>
+                    <td className="px-5 py-3">
+                      ₹{Number(payment.amount || 0).toLocaleString("en-IN")}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          payment.paymentStatus === "Captured"
+                            ? "bg-green-100 text-green-700"
+                            : payment.paymentStatus === "Failed"
+                              ? "bg-red-100 text-red-700"
+                              : payment.paymentStatus === "Pending"
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {payment.paymentStatus || "-"}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      {payment.paymentDate
+                        ? new Date(payment.paymentDate).toLocaleString("en-IN")
+                        : "-"}
+                    </td>
+                    <td className="px-5 py-3 text-gray-600">
+                      {payment.remarks || "-"}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-5 py-8 text-center text-gray-500"
+                  >
+                    No payment details found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Booking = ({ data, role, userId, handleReload, callData }) => {
   useEffect(() => {
     callData();
@@ -3668,4 +3757,5 @@ export {
   CurrentlyUnderBooking,
   Images,
   KycDetails,
+  PaymentDetails,
 };

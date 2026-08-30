@@ -7,6 +7,7 @@ import {
   SavedAddress,
   BankingDetails,
   Booking,
+  PaymentDetails,
   FavoriteStore,
   FavoriteProfessional,
   Services,
@@ -266,6 +267,15 @@ function Dashboard() {
               role={localStorage.role}
               userId={userId}
               handleReload={() => fetchDashboardData({ query: "bankDetails" })}
+            />
+          )}
+          {activeSection === "payments" && (
+            <PaymentDetails
+              callData={() => fetchDashboardData({ query: "payments" })}
+              data={data}
+              role={localStorage.role}
+              userId={userId}
+              handleReload={() => fetchDashboardData({ query: "payments" })}
             />
           )}
           {activeSection === "storeStaff" && (
