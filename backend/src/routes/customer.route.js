@@ -17,6 +17,8 @@ import {
   deleteBankDetails,
   getCustomerById,
   updateProfile,
+  passwordLogin,
+  updatePassword,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
@@ -26,8 +28,10 @@ const router = Router();
 //public routes
 router.route("/register").post(registerCustomer);
 router.route("/login").post(loginCustomer);
+router.route("/login/via/password").post(passwordLogin);
 router.route("/auth/re-login").post(reLoginToken);
 router.route("/get/customer/data/:customerId").get(getCustomerById);
+router.route("/update/password/:userId").post(updatePassword);
 
 //private routes
 router
