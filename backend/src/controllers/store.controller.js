@@ -19,6 +19,7 @@ import { StoreStaff } from "../models/storeStaff.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import sendEmail from "../services/mail.service.js";
 import otpTemplate from "../template/otp.mail.template.js";
+import welcomeTemplate from "../template/welcome.mail.template.js";
 
 const registerStore = asyncHandler(async (req, res) => {
   const { name, contactNumber, email, password } = req.body;
@@ -225,6 +226,12 @@ const otpVerification = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
+    await sendEmail({
+      to: user?.storeEmail,
+      subject: "Welcome",
+      html: welcomeTemplate(user?.storeName),
+    });
 
     return res
       .status(200)

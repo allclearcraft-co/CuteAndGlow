@@ -9,6 +9,9 @@ import { validatePhone } from "../validators/contactNumber.validator.js";
 import { UploadImages } from "../utils/imageKit.io.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { Services } from "../models/service.model.js";
+import sendEmail from "../services/mail.service.js";
+import otpTemplate from "../template/otp.mail.template.js";
+import welcomeTemplate from "../template/welcome.mail.template.js";
 import {
   validateAadhaar,
   validateGST,
@@ -67,6 +70,12 @@ const registerProfessional = asyncHandler(async (req, res) => {
   if (!user)
     throw new ApiError(400, "Registration incomplete. Please try again later");
 
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
+
   return res
     .status(200)
     .json(
@@ -97,6 +106,12 @@ const loginProfessional = asyncHandler(async (req, res) => {
   user.otp = otp;
   user.otpExpiry = expiresAt;
   await user.save();
+
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
 
   return res
     .status(200)
@@ -205,6 +220,12 @@ const otpVerification = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
+    await sendEmail({
+      to: user?.email,
+      subject: "Welcome",
+      html: welcomeTemplate(user?.name),
+    });
 
     return res
       .status(200)
