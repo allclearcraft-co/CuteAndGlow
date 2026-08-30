@@ -9,6 +9,7 @@ import { validatePhone } from "../validators/contactNumber.validator.js";
 import { UploadImages } from "../utils/imageKit.io.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { Services } from "../models/service.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import sendEmail from "../services/mail.service.js";
 import otpTemplate from "../template/otp.mail.template.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
@@ -611,6 +612,15 @@ const dashboardData = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .json(new ApiResponse(200, address, "Data fetched successfully !"));
+  }
+  if (query === "payments") {
+    const payments = await PaymentTransaction.find({ user: professionalId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, payments, "Payments fetched successfully !"));
   }
   if (query === "bankDetails") {
     const bankDetails = await BankDetails.findOne({

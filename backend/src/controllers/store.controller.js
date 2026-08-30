@@ -17,6 +17,7 @@ import { validateBankDetails } from "../validators/bankDetails.validator.js";
 import { Store } from "../models/store.model.js";
 import { StoreStaff } from "../models/storeStaff.model.js";
 import { Subscription } from "../models/subscription.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import sendEmail from "../services/mail.service.js";
 import otpTemplate from "../template/otp.mail.template.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
@@ -672,6 +673,16 @@ const dashboardData = asyncHandler(async (req, res) => {
             "Bank details fetched successfully",
           ),
         );
+    }
+
+    case "payments": {
+      const payments = await PaymentTransaction.find({ user: storeId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, payments, "Payments fetched successfully"));
     }
 
     case "storeStaff": {

@@ -6,6 +6,7 @@ import { Customer } from "../models/customer.model.js";
 import { Address } from "../models/address.model.js";
 import { BankDetails } from "../models/bankDetails.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import { validatePhone } from "../validators/contactNumber.validator.js";
 import otpTemplate from "../template/otp.mail.template.js";
 import sendEmail from "../services/mail.service.js";
@@ -688,6 +689,16 @@ const dashboardData = asyncHandler(async (req, res) => {
             "Bank details fetched successfully",
           ),
         );
+    }
+
+    case "payments": {
+      const payments = await PaymentTransaction.find({ user: customerId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, payments, "Payments fetched successfully"));
     }
 
     case "service-bookings": {
