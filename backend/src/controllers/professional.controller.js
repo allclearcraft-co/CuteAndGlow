@@ -17,7 +17,7 @@ import {
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
 
 const registerProfessional = asyncHandler(async (req, res) => {
-  const { contactNumber, name, email } = req.body;
+  const { contactNumber, name, email, password } = req.body;
 
   // contact number validation
   if (!contactNumber) throw new ApiError(400, "Please enter contact number");
@@ -54,6 +54,7 @@ const registerProfessional = asyncHandler(async (req, res) => {
 
   const newUser = await Professional.create({
     name: name,
+    password: password,
     contactNumber: contactNumber,
     email: email,
     otp: otp,
@@ -106,6 +107,79 @@ const loginProfessional = asyncHandler(async (req, res) => {
         "OTP sent successfully !",
       ),
     );
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { password } = req.body;
+
+  if (!userId || !password)
+    throw new ApiError(400, "Please fill the correct value");
+
+  const user = await Professional.findById(userId);
+  const userPassword = user.password;
+  if (!userPassword) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password saved successfully !"));
+  }
+  if (userPassword || user.password.length <= 1) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password updated successfully !"));
+  }
+});
+
+const passwordLogin = asyncHandler(async (req, res) => {
+  const { contactNumber, email, password } = req.body;
+  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
+
+  if (contactNumber) {
+    const user = await Professional.findOne({ contactNumber });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
+  if (email) {
+    const user = await Professional.findOne({ email });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -676,6 +750,8 @@ const reLoginToken = asyncHandler(async (req, res) => {
 export {
   registerProfessional,
   loginProfessional,
+  updatePassword,
+  passwordLogin,
   otpVerification,
   updateProfile,
   addAddress,
