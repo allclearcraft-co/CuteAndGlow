@@ -7,7 +7,7 @@ const storeSchema = new mongoose.Schema(
     storeName: { type: String, required: true },
     storeContactNumber: { type: String, required: true },
     storeEmail: { type: String, required: true },
-    password: { type: String, required: true },
+    password: { type: String },
     address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
     bank: { type: mongoose.Schema.Types.ObjectId, ref: "BankDetails" },
     storeStaffs: [{ type: mongoose.Schema.Types.ObjectId, ref: "StoreStaff" }],
