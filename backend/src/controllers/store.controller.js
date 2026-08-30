@@ -17,11 +17,13 @@ import { validateBankDetails } from "../validators/bankDetails.validator.js";
 import { Store } from "../models/store.model.js";
 import { StoreStaff } from "../models/storeStaff.model.js";
 import { Subscription } from "../models/subscription.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import sendEmail from "../services/mail.service.js";
 import otpTemplate from "../template/otp.mail.template.js";
+import welcomeTemplate from "../template/welcome.mail.template.js";
 
 const registerStore = asyncHandler(async (req, res) => {
-  const { name, contactNumber, email } = req.body;
+  const { name, contactNumber, email, password } = req.body;
   // contact number validation
   if (!contactNumber) throw new ApiError(400, "Please enter contact number");
   if (!validatePhone(contactNumber))
@@ -57,6 +59,7 @@ const registerStore = asyncHandler(async (req, res) => {
 
   const newUser = await Store.create({
     storeName: name,
+    password: password,
     storeContactNumber: contactNumber,
     storeEmail: email,
     otp: otp,
@@ -110,11 +113,11 @@ const loginStore = asyncHandler(async (req, res) => {
   storeUser.otpExpiry = expiresAt;
   await storeUser.save();
 
-  // await sendEmail({
-  // to: storeUser?.storeEmail,
-  // subject: "OTP Verification",
-  // html: otpTemplate(storeUser?.storeName, otp),
-  // });
+  await sendEmail({
+    to: storeUser?.storeEmail,
+    subject: "OTP Verification",
+    html: otpTemplate(storeUser?.storeName, otp),
+  });
   console.log(otp);
 
   return res
@@ -126,6 +129,79 @@ const loginStore = asyncHandler(async (req, res) => {
         "OTP sent successfully !",
       ),
     );
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { password } = req.body;
+
+  if (!userId || !password)
+    throw new ApiError(400, "Please fill the correct value");
+
+  const user = await Store.findById(userId);
+  const userPassword = user.password;
+  if (!userPassword) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password saved successfully !"));
+  }
+  if (userPassword || user.password.length <= 1) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password updated successfully !"));
+  }
+});
+
+const passwordLogin = asyncHandler(async (req, res) => {
+  const { contactNumber, email, password } = req.body;
+  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
+
+  if (contactNumber) {
+    const user = await Store.findOne({ contactNumber });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
+  if (email) {
+    const user = await Store.findOne({ email });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -151,6 +227,12 @@ const otpVerification = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
+    await sendEmail({
+      to: user?.storeEmail,
+      subject: "Welcome",
+      html: welcomeTemplate(user?.storeName),
+    });
 
     return res
       .status(200)
@@ -593,6 +675,16 @@ const dashboardData = asyncHandler(async (req, res) => {
         );
     }
 
+    case "payments": {
+      const payments = await PaymentTransaction.find({ user: storeId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, payments, "Payments fetched successfully"));
+    }
+
     case "storeStaff": {
       const storeStaff = await StoreStaff.find({
         store: storeId,
@@ -892,6 +984,8 @@ const deleteGalleryImage = asyncHandler(async (req, res) => {
 export {
   registerStore,
   loginStore,
+  updatePassword,
+  passwordLogin,
   otpVerification,
   addAddress,
   updateAddress,

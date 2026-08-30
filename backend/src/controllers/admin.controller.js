@@ -319,6 +319,16 @@ const dashboardData = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, bookings, "Data fetched successfully"));
     }
 
+    case "payments": {
+      const payments = await PaymentTransaction.find()
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, payments, "Payments fetched successfully"));
+    }
+
     case "adminsQuery": {
       const admin = await Admin.find()
         .populate("creatorAdmin")

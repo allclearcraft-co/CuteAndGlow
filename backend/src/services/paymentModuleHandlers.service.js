@@ -3,6 +3,51 @@ import { Store } from "../models/store.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { Customer } from "../models/customer.model.js";
 import { Professional } from "../models/professional.model.js";
+import sendEmail from "../services/mail.service.js";
+import paymentConfirmationTemplate from "../template/paymentConfirmation.mail.template.js";
+
+const sendPaymentConfirmationEmail = async (transaction) => {
+  if (!transaction?.user || !transaction?.amount) return false;
+
+  const userModels = [
+    { Model: Customer, emailField: "email", nameField: "name" },
+    { Model: Store, emailField: "storeEmail", nameField: "storeName" },
+    { Model: Professional, emailField: "email", nameField: "name" },
+  ];
+
+  for (const { Model, emailField, nameField } of userModels) {
+    const user = await Model.findById(transaction.user).lean();
+    if (!user) continue;
+
+    const recipientEmail = user[emailField];
+    const recipientName = user[nameField] || "there";
+
+    if (!recipientEmail) continue;
+
+    const moduleLabel =
+      transaction.module === PAYMENT_MODULES.SUBSCRIPTION
+        ? "subscription"
+        : transaction.module === PAYMENT_MODULES.REGISTRATION_CHARGE
+          ? "registration fee"
+          : "payment";
+
+    await sendEmail({
+      to: recipientEmail,
+      subject: "Payment Confirmation",
+      html: paymentConfirmationTemplate({
+        name: recipientName,
+        amount: transaction.amount,
+        moduleName: moduleLabel,
+        transactionNumber: transaction.transactionNumber,
+        paymentDate: transaction.paymentDate || new Date(),
+      }),
+    });
+
+    return true;
+  }
+
+  return false;
+};
 
 /**
  * CITY DARSHAN HANDLER
@@ -138,16 +183,30 @@ const handlers = {
   [PAYMENT_MODULES.SUBSCRIPTION]: subscriptionHandler,
 };
 
+const notifyPaymentSuccess = async (transaction) => {
+  if (!transaction) return false;
+
+  try {
+    return await sendPaymentConfirmationEmail(transaction);
+  } catch (error) {
+    console.error("Payment confirmation email failed:", error);
+    return false;
+  }
+};
+
 export const getPaymentModuleHandler = (module) => {
   return handlers[module] || null;
 };
 
 export const runPaymentSuccessHandler = async (transaction) => {
   const handler = getPaymentModuleHandler(transaction.module);
-  if (handler?.onPaymentSuccess) {
-    return handler.onPaymentSuccess(transaction);
-  }
-  return null;
+  const result = handler?.onPaymentSuccess
+    ? await handler.onPaymentSuccess(transaction)
+    : null;
+
+  await notifyPaymentSuccess(transaction);
+
+  return result;
 };
 
 export const runPaymentFailedHandler = async (transaction) => {

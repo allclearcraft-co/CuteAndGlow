@@ -15,6 +15,8 @@ import {
   submitKYCVerification,
   dashboardData,
   reLoginToken,
+  passwordLogin,
+  updatePassword,
 } from "../controllers/professional.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -24,7 +26,9 @@ const router = Router();
 
 router.route("/register").post(registerProfessional);
 router.route("/login").post(loginProfessional);
+router.route("/login/via/password").post(passwordLogin);
 router.route("/auth/re-login").post(reLoginToken);
+router.route("/update/password/:userId").post(updatePassword);
 router
   .route("/otp/authentication/:verificationType/:professionalId")
   .post(otpVerification);

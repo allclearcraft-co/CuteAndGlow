@@ -9,14 +9,14 @@ const serviceSchema = new mongoose.Schema(
     category: String,
     products: [
       {
-        productType: { type: String, required: true, trim: true },
-        brand: { type: String, required: true, trim: true },
+        productType: { type: String, trim: true },
+        brand: { type: String, trim: true },
       },
     ],
     serviceInclusion: [{ type: String, trim: true }],
     serviceExclusion: [{ type: String, trim: true }],
-    duration: { type: Number, required: true },
-    prepTime: { type: Number, default: 0, required: true },
+    duration: { type: Number, default: 1 },
+    prepTime: { type: Number, default: 0 },
     isPrepTime: { type: Boolean, default: true },
     timeIncludingPrepTime: { type: Boolean, default: false },
     onSite: { type: Boolean, default: true },
@@ -30,6 +30,12 @@ const serviceSchema = new mongoose.Schema(
     bookingDays: {
       type: String,
       enum: [
+        "Only on Sunday",
+        "Only on Monday, Wednesday, Friday",
+        "Only on Tuesday, Thursday, Saturday",
+        "Monday to Friday",
+        "Monday to Saturday",
+        "Whole week (All 7 days)",
         "Monday",
         "Tuesday",
         "Wednesday",

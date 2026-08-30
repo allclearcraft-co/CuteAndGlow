@@ -6,6 +6,7 @@ import { Customer } from "../models/customer.model.js";
 import { Address } from "../models/address.model.js";
 import { BankDetails } from "../models/bankDetails.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import { validatePhone } from "../validators/contactNumber.validator.js";
 import otpTemplate from "../template/otp.mail.template.js";
 import sendEmail from "../services/mail.service.js";
@@ -15,7 +16,7 @@ import { StoreStaff } from "../models/storeStaff.model.js";
 import { Subscription } from "../models/subscription.model.js";
 
 const registerCustomer = asyncHandler(async (req, res) => {
-  const { contactNumber, name, email } = req.body;
+  const { contactNumber, name, email, password } = req.body;
 
   // contact number validation
   if (!contactNumber) throw new ApiError(400, "Please enter contact number");
@@ -53,6 +54,7 @@ const registerCustomer = asyncHandler(async (req, res) => {
 
   const newUser = await Customer.create({
     name: name,
+    password: password,
     contactNumber: contactNumber,
     email: email,
     otp: otp,
@@ -80,6 +82,33 @@ const registerCustomer = asyncHandler(async (req, res) => {
         "Otp has been sent to your contact number",
       ),
     );
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { password } = req.body;
+
+  if (!userId || !password)
+    throw new ApiError(400, "Please fill the correct value");
+
+  const user = await Customer.findById(userId);
+  const userPassword = user.password;
+  if (!userPassword) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password saved successfully !"));
+  }
+  if (userPassword || user.password.length <= 1) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password updated successfully !"));
+  }
 });
 
 const loginCustomer = asyncHandler(async (req, res) => {
@@ -117,6 +146,52 @@ const loginCustomer = asyncHandler(async (req, res) => {
         "OTP sent successfully !",
       ),
     );
+});
+
+const passwordLogin = asyncHandler(async (req, res) => {
+  const { contactNumber, email, password } = req.body;
+  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
+
+  if (contactNumber) {
+    const user = await Customer.findOne({ contactNumber });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
+  if (email) {
+    const user = await Customer.findOne({ email });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -616,6 +691,16 @@ const dashboardData = asyncHandler(async (req, res) => {
         );
     }
 
+    case "payments": {
+      const payments = await PaymentTransaction.find({ user: customerId })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, payments, "Payments fetched successfully"));
+    }
+
     case "service-bookings": {
       const bookings = await ServiceBookings.find({
         customer: customerId,
@@ -759,6 +844,8 @@ const getCustomerById = asyncHandler(async (req, res) => {
 export {
   registerCustomer,
   loginCustomer,
+  updatePassword,
+  passwordLogin,
   otpVerification,
   updateGender,
   updateProfile,

@@ -15,6 +15,8 @@ import {
   deleteGalleryImage,
   getStaffForService,
   registrationFeePaid,
+  passwordLogin,
+  updatePassword,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -24,7 +26,9 @@ const router = Router();
 
 router.route("/register").post(registerStore);
 router.route("/login").post(loginStore);
+router.route("/login/via/password").post(passwordLogin);
 router.route("/auth/re-login").post(reLoginToken);
+router.route("/update/password/:userId").post(updatePassword);
 router
   .route("/otp/authentication/:verificationType/:storeId")
   .post(otpVerification);

@@ -209,6 +209,11 @@ export const adminDashboardSection = [
     count: 0,
   },
   {
+    query: "payments",
+    label: "Payments",
+    count: 0,
+  },
+  {
     query: "adminsQuery",
     label: "Admins",
     count: 0,

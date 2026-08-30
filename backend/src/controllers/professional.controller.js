@@ -9,6 +9,10 @@ import { validatePhone } from "../validators/contactNumber.validator.js";
 import { UploadImages } from "../utils/imageKit.io.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { Services } from "../models/service.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
+import sendEmail from "../services/mail.service.js";
+import otpTemplate from "../template/otp.mail.template.js";
+import welcomeTemplate from "../template/welcome.mail.template.js";
 import {
   validateAadhaar,
   validateGST,
@@ -17,7 +21,7 @@ import {
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
 
 const registerProfessional = asyncHandler(async (req, res) => {
-  const { contactNumber, name, email } = req.body;
+  const { contactNumber, name, email, password } = req.body;
 
   // contact number validation
   if (!contactNumber) throw new ApiError(400, "Please enter contact number");
@@ -54,6 +58,7 @@ const registerProfessional = asyncHandler(async (req, res) => {
 
   const newUser = await Professional.create({
     name: name,
+    password: password,
     contactNumber: contactNumber,
     email: email,
     otp: otp,
@@ -65,6 +70,12 @@ const registerProfessional = asyncHandler(async (req, res) => {
   }).select("name contactNumber email");
   if (!user)
     throw new ApiError(400, "Registration incomplete. Please try again later");
+
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
 
   return res
     .status(200)
@@ -97,6 +108,12 @@ const loginProfessional = asyncHandler(async (req, res) => {
   user.otpExpiry = expiresAt;
   await user.save();
 
+  await sendEmail({
+    to: user?.email,
+    subject: "OTP Verification",
+    html: otpTemplate(user?.name, otp),
+  });
+
   return res
     .status(200)
     .json(
@@ -106,6 +123,79 @@ const loginProfessional = asyncHandler(async (req, res) => {
         "OTP sent successfully !",
       ),
     );
+});
+
+const updatePassword = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { password } = req.body;
+
+  if (!userId || !password)
+    throw new ApiError(400, "Please fill the correct value");
+
+  const user = await Professional.findById(userId);
+  const userPassword = user.password;
+  if (!userPassword) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password saved successfully !"));
+  }
+  if (userPassword || user.password.length <= 1) {
+    user.password = password;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Password updated successfully !"));
+  }
+});
+
+const passwordLogin = asyncHandler(async (req, res) => {
+  const { contactNumber, email, password } = req.body;
+  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
+
+  if (contactNumber) {
+    const user = await Professional.findOne({ contactNumber });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
+  if (email) {
+    const user = await Professional.findOne({ email });
+    if (!user) throw new ApiError(401, "Invalid credentials");
+
+    const isValid = await user.comparePassword(password);
+    if (!isValid) throw new ApiError(401, "Incorrect Password !");
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { user, tokens: { accessToken, refreshToken } },
+          "Logged in successful !",
+        ),
+      );
+  }
 });
 
 const otpVerification = asyncHandler(async (req, res) => {
@@ -131,6 +221,12 @@ const otpVerification = asyncHandler(async (req, res) => {
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
+
+    await sendEmail({
+      to: user?.email,
+      subject: "Welcome",
+      html: welcomeTemplate(user?.name),
+    });
 
     return res
       .status(200)
@@ -517,6 +613,15 @@ const dashboardData = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, address, "Data fetched successfully !"));
   }
+  if (query === "payments") {
+    const payments = await PaymentTransaction.find({ user: professionalId })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, payments, "Payments fetched successfully !"));
+  }
   if (query === "bankDetails") {
     const bankDetails = await BankDetails.findOne({
       professional: professionalId,
@@ -676,6 +781,8 @@ const reLoginToken = asyncHandler(async (req, res) => {
 export {
   registerProfessional,
   loginProfessional,
+  updatePassword,
+  passwordLogin,
   otpVerification,
   updateProfile,
   addAddress,
