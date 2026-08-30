@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoLogOut } from "react-icons/io5";
 import { FaHome, FaBars } from "react-icons/fa";
@@ -20,10 +20,13 @@ import { DashboardSectionList } from "../../constants/Constants.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUser } from "../../redux/slice/authSlice.js";
 import { useToast } from "../../components/hooks/ToastContext.jsx";
-import RegistrationFeeModal from "../../components/ui/RegistrationFeePopup.jsx";
+import Popup from "../../components/ui/Popup.jsx";
+import InputBox from "../../components/Input.jsx";
+import { useRef } from "react";
 
 function Dashboard() {
   const role = localStorage.getItem("role");
+  const formRef = useRef();
   const [activeSection, setActiveSection] = useState(
     () => localStorage.getItem("activeSection") || "overview",
   );
@@ -37,7 +40,7 @@ function Dashboard() {
   const userId = user?._id;
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { alertInfo } = useToast();
+  const { alertSuccess, alertInfo } = useToast();
 
   const fetchDashboardData = async ({ query }) => {
     try {
@@ -89,35 +92,33 @@ function Dashboard() {
     navigate("/");
   };
 
-  // const [showRegistrationModal, setShowRegistrationModal] = useState(false);
-  // const [checkingPayment, setCheckingPayment] = useState(true);
-  // useEffect(() => {
-  //   if (!user || role !== "Store") return;
-  //   console.log(user);
-  //   setShowRegistrationModal(!user.isRegistrationFeePaid);
-  //   setCheckingPayment(false);
-  // }, [user, role]);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  useEffect(() => {
+    const password = user?.password;
+    if (!password && password.length === 0) {
+      setShowPasswordModal(true);
+    }
+  }, [user]);
 
-  // const markRegistrationFeePaid = async () => {
-  //   try {
-  //     const userRole = role.toLowerCase();
-  //     const response = await FetchData(
-  //       `${userRole}/update/registration-fee-paid/true/${userId}`,
-  //       "post",
-  //     );
-  //     console.log(response);
-  //   } catch (err) {
-  //     console.log(err.response.data);
-  //   }
-  // };
+  const updatePassword = async () => {
+    try {
+      const userRole = role.toLowerCase();
+      const formData = new FormData(formRef.current);
+      const response = await FetchData(
+        `${userRole}/update/password/${userId}`,
+        "post",
+        formData,
+      );
+      formRef.current.reset();
+      console.log(response);
+      alertSuccess(response.data.message);
+      setShowPasswordModal(false);
+    } catch (err) {
+      console.log(err.response.data);
+      setShowPasswordModal(false);
+    }
+  };
 
-  // const handleRegistrationSuccess = async () => {
-  //   markRegistrationFeePaid();
-  //   // dispatch(updateUser(response.data.data));
-  //   fetchDashboardData({ query: "overview" });
-
-  //   setShowRegistrationModal(false);
-  // };
   return user ? (
     <div className={`relative p-2 flex w-full items-start h-[90vh] `}>
       <aside className="hidden md:flex sticky w-[25vw] h-full bg-[#8B2954] rounded-xl flex-col items-start justify-between text-white py-6 px-5">
@@ -312,16 +313,27 @@ function Dashboard() {
           )}
         </main>
       </div>
-      {/* <div>
-        {showRegistrationModal && (
+      <div>
+        {showPasswordModal && (
           <div>
-            <RegistrationFeeModal
-              store={user}
-              onSuccess={handleRegistrationSuccess}
-            />
+            <Popup center={true} onClose={() => setShowPasswordModal(false)}>
+              <form
+                ref={formRef}
+                onSubmit={updatePassword}
+                className="w-full md:w-1/2 h-fit flex flex-col justify-center items-center p-4 border rounded-xl gap-5"
+              >
+                <h1>Update Password</h1>
+                <InputBox
+                  type="password"
+                  label="Update password"
+                  name="password"
+                />
+                <Button LabelName="update password" type="submit" />
+              </form>
+            </Popup>
           </div>
         )}
-      </div> */}
+      </div>
     </div>
   ) : (
     <div className="h-[80vh] flex flex-col justify-center items-center w-full ">

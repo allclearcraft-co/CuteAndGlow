@@ -10,6 +10,8 @@ import { useRef } from "react";
 import { useToast } from "./hooks/ToastContext";
 import { parseErrorMessage } from "../utils/parseErrorMessage";
 import OtpVerificationPopup from "./ui/OtpVerificationPopup";
+import { useDispatch } from "react-redux";
+import { addUser, clearUser } from "../redux/slice/authSlice";
 
 const Login = ({ onRegister }) => {
   const navigate = useNavigate();
@@ -19,8 +21,10 @@ const Login = ({ onRegister }) => {
   const [data, setData] = useState();
   const [otpPopup, setOtpPopup] = useState(false);
   const [otpNumber, setOTPNumber] = useState("");
+  const [loginWithPassword, setLoginWithPassword] = useState(false);
+  const dispatch = useDispatch();
 
-  const handleLogin = async (e) => {
+  const handleLoginWithOtp = async (e) => {
     e.preventDefault();
     try {
       const formData = new FormData(formRef.current);
@@ -31,6 +35,31 @@ const Login = ({ onRegister }) => {
         setData(response.data.data);
         setOTPNumber(response.data.data.otp);
       }
+      alertInfo(response.data.message);
+    } catch (err) {
+      alertError(err?.response?.data);
+    }
+  };
+
+  const handleLoginWithPassword = async (e) => {
+    e.preventDefault();
+    try {
+      const formData = new FormData(formRef.current);
+      const response = await FetchData(
+        `${userType}/login/via/password`,
+        "post",
+        formData,
+      );
+      const { user, tokens } = response.data.data;
+
+      localStorage.setItem("accessToken", tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
+      localStorage.setItem("role", user.role);
+
+      dispatch(clearUser());
+      dispatch(addUser(user));
+      formRef.current.reset();
+      navigate(`/dashboard`);
       alertInfo(response.data.message);
     } catch (err) {
       alertError(err?.response?.data);
@@ -74,8 +103,12 @@ const Login = ({ onRegister }) => {
             {/* Form */}
             <form
               ref={formRef}
-              onSubmit={handleLogin}
-              className="mt-8 space-y-4"
+              onSubmit={
+                loginWithPassword === true
+                  ? handleLoginWithPassword
+                  : handleLoginWithOtp
+              }
+              className="mt-8"
             >
               <InputBox
                 label="contact Number"
@@ -83,9 +116,29 @@ const Login = ({ onRegister }) => {
                 name="contactNumber"
                 type="text"
               />
+              {loginWithPassword === true ? (
+                <InputBox
+                  required={loginWithPassword === true ? true : false}
+                  label="Password"
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                />
+              ) : (
+                ""
+              )}
+
               <Button type="submit" LabelName="Login" className="w-full" />
             </form>
             {/* Register */}
+            <p className="text-center mt-8 text-gray-600">
+              <button
+                onClick={() => setLoginWithPassword(true)}
+                className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
+              >
+                Login with password
+              </button>
+            </p>
             <p className="text-center mt-8 text-gray-600">
               Don't have an account?{" "}
               <button
