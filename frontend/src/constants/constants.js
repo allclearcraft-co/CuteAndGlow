@@ -100,6 +100,13 @@ export const customerRegistrationInputs = [
     name: "email",
     type: "email",
   },
+  {
+    label: "Password",
+    storeLabel: "Password",
+    placeholder: "",
+    name: "password",
+    type: "password",
+  },
 ];
 
 export const genderData = [
