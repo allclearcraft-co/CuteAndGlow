@@ -22,6 +22,7 @@ const Login = ({ onRegister }) => {
   const [otpPopup, setOtpPopup] = useState(false);
   const [otpNumber, setOTPNumber] = useState("");
   const [loginWithPassword, setLoginWithPassword] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
   const dispatch = useDispatch();
 
   const handleLoginWithOtp = async (e) => {
@@ -130,15 +131,31 @@ const Login = ({ onRegister }) => {
 
               <Button type="submit" LabelName="Login" className="w-full" />
             </form>
-            {/* Register */}
-            <p className="text-center mt-8 text-gray-600">
-              <button
-                onClick={() => setLoginWithPassword(true)}
-                className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
-              >
-                Login with password
-              </button>
-            </p>
+            {loginWithPassword === true ? (
+              <p className="text-center mt-8 text-gray-600 space-x-6">
+                <button
+                  onClick={() => setLoginWithPassword(true)}
+                  className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
+                >
+                  Forgot password ?
+                </button>
+                <button
+                  onClick={() => setLoginWithPassword(false)}
+                  className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
+                >
+                  Login with OTP
+                </button>
+              </p>
+            ) : (
+              <p className="text-center mt-8 text-gray-600">
+                <button
+                  onClick={() => setLoginWithPassword(true)}
+                  className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
+                >
+                  Login with password
+                </button>
+              </p>
+            )}
             <p className="text-center mt-8 text-gray-600">
               Don't have an account?{" "}
               <button
