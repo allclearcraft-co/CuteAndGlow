@@ -9,6 +9,7 @@ import { Services } from "../models/service.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import jwt from "jsonwebtoken";
+import { Category } from "../models/category.model.js";
 
 const createAdmin = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
@@ -260,6 +261,17 @@ const dashboardData = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, customer, "Data fetched successfully"));
     }
 
+    case "categories": {
+      const categories = await Category.find()
+        // .select("storeName storeContactNumber storeEmail")
+        .sort({
+          createdAt: -1,
+        });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, categories, "Data fetched successfully"));
+    }
+
     case "store": {
       const store = await Store.find()
         .select("storeName storeContactNumber storeEmail")
@@ -456,6 +468,20 @@ const getCurrentRequestData = asyncHandler(async (req, res) => {
         .status(200)
         .json(new ApiResponse(200, booking, "Data fetched successfully !"));
     }
+
+    case "category": {
+      const category = await Category.findById(keyId).populate({
+        path: "createdBy",
+        select: "name employeeId role",
+      });
+      // .populate({ path: "subcategories", select: "title" });
+      if (!category) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, category, "Data fetched successfully !"));
+    }
+
     default:
       throw new ApiError(400, "Invalid session or query");
   }
