@@ -14,6 +14,8 @@ import SubscriptionModelForm from "./SubscriptionForm";
 import { useDispatch, useSelector } from "react-redux";
 import { clearUser } from "../../redux/slice/authSlice";
 import { useToast } from "../../components/hooks/ToastContext";
+import AddCategoryForm from "./AddCategoryForm";
+import AddSubCategoryForm from "./AddSubcategoryForm";
 
 function AdminDashboard() {
   const user = useSelector((state) => state.auth.user);
@@ -27,6 +29,10 @@ function AdminDashboard() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpen1, setIsOpen1] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false);
+  const [categoryLoading, setCategoryLoading] = useState(false);
+  const [subCategoryLoading, setSubCategoryLoading] = useState(false);
   const { alertInfo } = useToast();
 
   const fetchDashboard = async ({ query }) => {
@@ -62,6 +68,87 @@ function AdminDashboard() {
           user?.sectionList?.includes(section.label),
         )
       : adminDashboardSection;
+
+  const handleAddCategory = async (formData) => {
+    try {
+      setCategoryLoading(true);
+
+      const response = await FetchData(
+        "category-subcategory/update/add-new/category",
+        "post",
+        formData,
+        true,
+      );
+
+      console.log("CREATE CATEGORY:", response);
+
+      if (response?.data?.success) {
+        alert("Category added successfully.");
+
+        setIsCategoryOpen(false);
+        fetchDashboard({
+          query: localStorage.getItem("adminDashboardQuery") || "customer",
+        });
+
+        // Refresh category list
+        // await getCategories();
+      } else {
+        alert(response?.data?.message || "Unable to add category.");
+      }
+    } catch (error) {
+      console.error("CREATE CATEGORY ERROR:", error);
+
+      alert(
+        error?.response?.data?.message ||
+          "Something went wrong while adding the category.",
+      );
+    } finally {
+      setCategoryLoading(false);
+    }
+  };
+
+  const handleAddSubCategory = async (formData, categoryId) => {
+    try {
+      setSubCategoryLoading(true);
+
+      if (!categoryId) {
+        alert("Please select a main category.");
+        return;
+      }
+
+      const response = await FetchData(
+        `category-subcategory/update/add-new/subcategory/${categoryId}`,
+        "post",
+        formData,
+        true,
+      );
+
+      console.log("CREATE SUBCATEGORY:", response);
+
+      if (response?.data?.success) {
+        alert("Subcategory added successfully.");
+
+        setIsSubCategoryOpen(false);
+        fetchDashboard({
+          query: localStorage.getItem("adminDashboardQuery") || "customer",
+        });
+
+        // Refresh category list
+        // await getCategories();
+      } else {
+        alert(response?.data?.message || "Unable to add subcategory.");
+      }
+    } catch (error) {
+      console.error("CREATE SUBCATEGORY ERROR:", error);
+
+      alert(
+        error?.response?.data?.message ||
+          "Something went wrong while adding the subcategory.",
+      );
+    } finally {
+      setSubCategoryLoading(false);
+    }
+  };
 
   if (!adminRole.includes(user?.role)) {
     return (
@@ -116,6 +203,50 @@ function AdminDashboard() {
                 onClick={() => navigate(`/auth/${"register"}/${"store"}`)}
               />
               <DashboardTable tableRole="store" TableData={data} />
+            </div>
+          )}
+          {activeSection === "categories" && (
+            <div>
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Categories
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Manage your categories and their subcategories.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    LabelName="Add Category"
+                    onClick={() => setIsCategoryOpen(true)}
+                  />
+
+                  <Button
+                    LabelName="Add Subcategory"
+                    onClick={() => setIsSubCategoryOpen(true)}
+                  />
+                </div>
+              </div>
+              {console.log(data)}
+              <DashboardTable tableRole="categories" TableData={data} />
+
+              <AddCategoryForm
+                isOpen={isCategoryOpen}
+                onClose={() => setIsCategoryOpen(false)}
+                onSubmit={handleAddCategory}
+                loading={categoryLoading}
+              />
+
+              <AddSubCategoryForm
+                isOpen={isSubCategoryOpen}
+                onClose={() => setIsSubCategoryOpen(false)}
+                onSubmit={handleAddSubCategory}
+                categories={data}
+                loading={subCategoryLoading}
+              />
             </div>
           )}
           {activeSection === "active_services" && (
