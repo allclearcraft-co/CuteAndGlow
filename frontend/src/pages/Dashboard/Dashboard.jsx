@@ -96,7 +96,7 @@ function Dashboard() {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   useEffect(() => {
     const password = user?.password;
-    if (!password && password.length === 0) {
+    if (!password && password?.length === 0) {
       setShowPasswordModal(true);
     }
   }, [user]);

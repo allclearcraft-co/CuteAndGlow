@@ -8,7 +8,7 @@ const customerSchema = new mongoose.Schema(
     name: { type: String, required: true },
     contactNumber: { type: String, required: true },
     email: { type: String },
-    password: { type: String, required: true },
+    password: { type: String },
 
     // extra details
     gender: {
