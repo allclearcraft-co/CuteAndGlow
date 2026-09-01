@@ -293,6 +293,111 @@ const getServiceById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, service, "Data fetched successfully !"));
 });
 
+const updateStoreService = asyncHandler(async (req, res) => {
+  const { serviceId } = req.params;
+  if (!serviceId) throw new ApiError(400, "Invalid request");
+
+  const service = await Services.findById(serviceId);
+  if (!service) throw new ApiError(400, "Invalid service requested");
+
+  const payload = req.body.serviceData ? JSON.parse(req.body.serviceData) : {};
+  const images = req.files || [];
+
+  const uploadedImages = [];
+
+  for (const img of images) {
+    const uploaded = await UploadImages(img.filename, {
+      folderStructure: `store/service/${serviceId}`,
+    });
+
+    uploadedImages.push({
+      url: uploaded.url,
+      fileId: uploaded.fileId,
+      altText: req.body.name || service.name,
+    });
+  }
+
+  const normalizedProducts = Array.isArray(payload.products)
+    ? payload.products
+    : service.products || [];
+  const normalizedInclusions = Array.isArray(payload.serviceInclusion)
+    ? payload.serviceInclusion
+    : service.serviceInclusion || [];
+  const normalizedExclusions = Array.isArray(payload.serviceExclusion)
+    ? payload.serviceExclusion
+    : service.serviceExclusion || [];
+  const normalizedRequirements = Array.isArray(payload.serviceRequirements)
+    ? payload.serviceRequirements
+    : service.serviceRequirements || [];
+
+  service.name = req.body.name || service.name;
+  service.category = req.body.category || service.category;
+  service.subcategory = req.body.subcategory || service.subcategory;
+  service.duration = req.body.duration || service.duration;
+  service.executive = req.body.executive || service.executive;
+  service.prepTime = req.body.prepTime || service.prepTime;
+  service.isPrepTime = req.body.isPrepTime === "on" ? true : service.isPrepTime;
+  service.timeIncludingPrepTime =
+    req.body.timeIncludingPrepTime === "on"
+      ? true
+      : service.timeIncludingPrepTime;
+  service.serviceFor = req.body.serviceFor || service.serviceFor;
+  service.bookingDays = req.body.bookingDays || service.bookingDays;
+  service.bookingAcceptingHours = {
+    from: req.body.bookingFrom || service.bookingAcceptingHours?.from,
+    till: req.body.bookingTill || service.bookingAcceptingHours?.till,
+  };
+  service.onSite = req.body.onSite === "on" ? true : service.onSite;
+  service.inHouse = req.body.inHouse === "on" ? true : service.inHouse;
+  service.serviceArea = req.body.serviceArea || service.serviceArea;
+  service.products = normalizedProducts;
+  service.serviceInclusion = normalizedInclusions;
+  service.serviceExclusion = normalizedExclusions;
+  service.serviceRequirements = normalizedRequirements;
+
+  if (req.body.mrp || req.body.discount || req.body.sellingPrice) {
+    service.price = {
+      mrp: Number(req.body.mrp || service.price?.mrp || 0),
+      discount: Number(req.body.discount || service.price?.discount || 0),
+      sellingPrice: Number(
+        req.body.sellingPrice || service.price?.sellingPrice || 0,
+      ),
+    };
+  }
+
+  if (uploadedImages.length) {
+    service.coverImage = [...(service.coverImage || []), ...uploadedImages];
+  }
+
+  await service.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, service, "Service updated successfully !"));
+});
+
+const deleteStoreService = asyncHandler(async (req, res) => {
+  const { serviceId } = req.params;
+  if (!serviceId) throw new ApiError(400, "Invalid request");
+
+  const service = await Services.findById(serviceId);
+  if (!service) throw new ApiError(400, "Invalid service requested");
+
+  if (service.coverImage?.length) {
+    await Promise.all(
+      service.coverImage.map((image) =>
+        image.fileId ? DeleteImage(image.fileId) : Promise.resolve(),
+      ),
+    );
+  }
+
+  await Services.findByIdAndDelete(serviceId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Service deleted successfully !"));
+});
+
 const markAsActiveInactive = asyncHandler(async (req, res) => {
   const { serviceId, action } = req.params;
   if (!serviceId || !action) throw new ApiError(400, "Invalid request");
@@ -327,5 +432,7 @@ export {
   createStoreService,
   getServices,
   getServiceById,
+  updateStoreService,
+  deleteStoreService,
   markAsActiveInactive,
 };

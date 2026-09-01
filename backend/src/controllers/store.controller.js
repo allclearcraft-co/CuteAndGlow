@@ -161,10 +161,10 @@ const updatePassword = asyncHandler(async (req, res) => {
 
 const passwordLogin = asyncHandler(async (req, res) => {
   const { contactNumber, email, password } = req.body;
-  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
+  if (!contactNumber) throw new ApiError(400, "Invalid request ");
 
   if (contactNumber) {
-    const user = await Store.findOne({ contactNumber });
+    const user = await Store.findOne({ storeContactNumber: contactNumber });
     if (!user) throw new ApiError(401, "Invalid credentials");
 
     const isValid = await user.comparePassword(password);
@@ -373,6 +373,21 @@ const updateAddress = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, updatedAddress, "Added successfully !"));
+});
+
+const deleteAddress = asyncHandler(async (req, res) => {
+  const { addressId, storeId } = req.params;
+
+  const store = await Store.findById(storeId);
+  if (!store)
+    throw new ApiError(400, "Invalid request, please try again later");
+
+  const address = await Address.findByIdAndDelete(addressId);
+  if (!address) throw new ApiError(400, "Unable to delete address");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Deleted successfully !"));
 });
 
 const addBankDetails = asyncHandler(async (req, res) => {
@@ -719,7 +734,10 @@ const dashboardData = asyncHandler(async (req, res) => {
       const store = await Store.findById(storeId).select("subscription");
       const service = await Services.find({
         store: storeId,
-      }).populate({ path: "executive", select: "name" });
+      })
+        .populate({ path: "executive", select: "name" })
+        .populate({ path: "category", select: "title" })
+        .sort({ createdAt: -1 });
 
       return res
         .status(200)
@@ -800,18 +818,18 @@ const addStoreStaff = asyncHandler(async (req, res) => {
     throw new ApiError(403, "Purchase an active subscription to add staff");
   }
 
-  if (!name?.trim()) throw new ApiError(400, "Please enter staff name");
-  if (name.length > 50)
-    throw new ApiError(
-      400,
-      "Name length is too long, please use a shorter name",
-    );
+  // if (!name?.trim()) throw new ApiError(400, "Please enter staff name");
+  // if (name.length > 50)
+  //   throw new ApiError(
+  //     400,
+  //     "Name length is too long, please use a shorter name",
+  //   );
 
-  if (!contactNumber) throw new ApiError(400, "Contact number is required");
-  if (!validatePhone(contactNumber))
-    throw new ApiError(400, "Invalid contact number");
+  // if (!contactNumber) throw new ApiError(400, "Contact number is required");
+  // if (!validatePhone(contactNumber))
+  //   throw new ApiError(400, "Invalid contact number");
 
-  if (!email) throw new ApiError(400, "Email is required");
+  // if (!email) throw new ApiError(400, "Email is required");
   // if (!validateEmail(email)) throw new ApiError(400, "Invalid email address");
 
   const alreadyExists = await StoreStaff.findOne({
@@ -995,6 +1013,7 @@ export {
   otpVerification,
   addAddress,
   updateAddress,
+  deleteAddress,
   addBankDetails,
   updateProfile,
   submitKYCVerification,

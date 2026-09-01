@@ -8,7 +8,7 @@ const storeSchema = new mongoose.Schema(
     storeContactNumber: { type: String, required: true },
     storeEmail: { type: String, required: true },
     password: { type: String },
-    address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
+    address: [{ type: mongoose.Schema.Types.ObjectId, ref: "Address" }],
     bank: { type: mongoose.Schema.Types.ObjectId, ref: "BankDetails" },
     storeStaffs: [{ type: mongoose.Schema.Types.ObjectId, ref: "StoreStaff" }],
     services: [{ type: mongoose.Schema.Types.ObjectId, ref: "Services" }],
