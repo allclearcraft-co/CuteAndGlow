@@ -57,11 +57,14 @@ import StoreServiceCard from "../../components/ui/StoreServiceCard";
 
 const Overview = ({ data, role, userId, callData }) => {
   const [subscription, setSubscription] = useState([]);
+  const [currentSubscriptionModel, setCurrentSubscriptionModel] =
+    useState(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [profileForm, setProfileForm] = useState({});
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [purchasingPlanId, setPurchasingPlanId] = useState(null);
   const { alertSuccess, alertError } = useToast();
+  const subscriptionId = data?.store?.subscription?.subscriptionModel;
 
   const getSubscription = async () => {
     try {
@@ -75,6 +78,23 @@ const Overview = ({ data, role, userId, callData }) => {
       console.log(err.response);
     }
   };
+
+  // const getSubscriptionModel = async () => {
+  //   try {
+  //     const response = await FetchData(
+  //       `subscription/get/subscription/details/by-id/${subscriptionId}`,
+  //       "get",
+  //     );
+  //     console.log(response);
+  //     setCurrentSubscriptionModel(response.data.data);
+  //   } catch (err) {
+  //     console.log(err.response);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   getSubscriptionModel();
+  // }, [data]);
 
   useEffect(() => {
     callData();
@@ -1066,7 +1086,7 @@ const Overview = ({ data, role, userId, callData }) => {
       ) : (
         ""
       )}
-      {data?.subscription?.subscriptionPurchased === false ? (
+      {data?.store?.subscription?.subscriptionPurchased === false ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-stretch gap-4 px-5">
           {subscription?.map((i, index) => (
             <div
@@ -1383,7 +1403,315 @@ const Overview = ({ data, role, userId, callData }) => {
           ))}
         </div>
       ) : (
-        ""
+        <div className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition">
+          {/* ================= HEADER ================= */}
+          <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
+            <h1 className="text-3xl uppercase font-semibold">
+              {data?.subscription?.planName} <span className="capitalize bg-green-300 p-2 text-green-700 rounded-full text-xs">Purchased</span>
+            </h1>
+
+            <p className="font-light text-sm mt-1">
+              {data?.subscription?.tagline}
+            </p>
+
+            <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
+              {data?.subscription?.planFor}
+            </span>
+          </div>
+
+          {/* ================= BODY ================= */}
+          <div className="px-5 py-6 flex flex-col w-full gap-6">
+            {/* ================= PRICE ================= */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex justify-center items-center flex-col gap-2">
+                <div className="flex justify-center items-center gap-3">
+                  {data?.subscription?.price?.discount > 0 && (
+                    <span className="text-sm line-through text-gray-400 flex items-center">
+                      <FaRupeeSign />
+                      {data?.subscription?.price?.mrp}
+                    </span>
+                  )}
+
+                  {data?.subscription?.price?.discount > 0 && (
+                    <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
+                      {data?.subscription?.price?.discount}% OFF
+                    </span>
+                  )}
+                </div>
+                <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
+                  <FaRupeeSign />
+                  {data?.subscription?.price?.sellingPrice}
+                </span>
+              </div>
+
+              <p className="text-xs text-gray-500">
+                ₹{data?.subscription?.price?.sellingPrice} / month
+              </p>
+
+              {data?.subscription?.validity?.months === 0 ? (
+                ""
+              ) : (
+                <p className="text-sm font-semibold text-[#8B2954]">
+                  Valid for {data?.subscription?.validity?.months} months
+                </p>
+              )}
+
+              <p className="text-xs text-gray-500 capitalize">
+                Renewal: {data?.subscription?.validity?.renewalType}
+              </p>
+            </div>
+
+            {/* ================= FEATURES ================= */}
+            <div>
+              <h2 className="font-semibold text-lg mb-2">Plan Features</h2>
+
+              <div className="space-y-1 text-sm">
+                {data?.subscription?.features?.map((feature, featureIndex) => (
+                  <div key={featureIndex} className="flex items-start gap-2">
+                    <span className="text-[#8B2954] font-bold">✓</span>
+
+                    <span>{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ================= BOOKING ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold mb-2">Booking</h2>
+
+              <div className="text-sm space-y-1">
+                <p>
+                  <strong>Status:</strong>{" "}
+                  {data?.subscription?.booking?.enabled
+                    ? "Enabled"
+                    : "Disabled"}
+                </p>
+
+                <p>
+                  <strong>Advanced Booking:</strong>{" "}
+                  {data?.subscription?.booking?.advancedBooking
+                    ? "Available"
+                    : "Not Available"}
+                </p>
+              </div>
+            </div>
+
+            {/* ================= MANAGEMENT TOOLS ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold mb-2">Management Tools</h2>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <span
+                  className={
+                    data?.subscription?.managementTools?.analytics
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Analytics
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.managementTools?.inventory
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Inventory
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.managementTools?.staffAttendance
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Staff Attendance
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.managementTools?.commissionTracking
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Commission Tracking
+                </span>
+              </div>
+            </div>
+
+            {/* ================= MARKETING ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold mb-2">Marketing</h2>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <span
+                  className={
+                    data?.subscription?.marketing?.couponManager
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Coupon Manager
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.marketing?.reviews
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Reviews
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.marketing?.smsWhatsapp
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● SMS / WhatsApp
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.marketing?.socialPromotion
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Social Promotion
+                </span>
+              </div>
+            </div>
+
+            {/* ================= MEDIA LIMIT ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold mb-2">Media Limits</h2>
+
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <p>
+                  <strong>Photos:</strong>{" "}
+                  {data?.subscription?.mediaLimit?.unlimitedPhotos
+                    ? "Unlimited"
+                    : data?.subscription?.mediaLimit?.photos}
+                </p>
+
+                <p>
+                  <strong>Videos:</strong>{" "}
+                  {data?.subscription?.mediaLimit?.unlimitedVideos
+                    ? "Unlimited"
+                    : data?.subscription?.mediaLimit?.videos}
+                </p>
+              </div>
+            </div>
+
+            {/* ================= FRANCHISE ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold mb-2">Franchise</h2>
+
+              <div className="text-sm space-y-1">
+                <p>
+                  <strong>Enabled:</strong>{" "}
+                  {data?.subscription?.franchise?.enabled ? "Yes" : "No"}
+                </p>
+
+                <p>
+                  <strong>Enquiry Button:</strong>{" "}
+                  {data?.subscription?.franchise?.enquiryButton ? "Yes" : "No"}
+                </p>
+              </div>
+            </div>
+
+            {/* ================= VISIBILITY ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold mb-2">Visibility</h2>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <span
+                  className={
+                    data?.subscription?.visibility?.featured
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Featured
+                </span>
+
+                <span
+                  className={
+                    data?.subscription?.visibility?.verifiedBadge
+                      ? "text-green-600"
+                      : "text-gray-400"
+                  }
+                >
+                  ● Verified Badge
+                </span>
+              </div>
+            </div>
+
+            {/* ================= SUPPORT ================= */}
+            <div className="border-t pt-4 flex justify-between items-center">
+              <span className="font-semibold">Support</span>
+
+              <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
+                {data?.subscription?.support}
+              </span>
+            </div>
+
+            {/* ================= FAQ ================= */}
+            <div className="border-t pt-4">
+              <h2 className="font-semibold text-lg mb-3">FAQs</h2>
+
+              <div className="space-y-3">
+                {data?.subscription?.faqs?.map((faq, faqIndex) => (
+                  <div key={faq?._id || faqIndex} className="text-xs">
+                    <p className="font-semibold">
+                      {faqIndex + 1}. {faq?.question}
+                    </p>
+
+                    <p className="text-gray-600 mt-1">{faq?.answer}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ================= FOOTER ================= */}
+          <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
+            <div className="text-white text-sm text-center">
+              {data?.subscription?.validity?.months === 0
+                ? ""
+                : `${data?.subscription?.validity?.months} months`}
+              {" • "}
+              {data?.subscription?.validity?.renewalType === "oneTime"
+                ? "One Time Purchase"
+                : data?.subscription?.validity?.renewalType === "monthly"
+                  ? "Monthly Plan"
+                  : data?.subscription?.validity?.renewalType === "yearly"
+                    ? "Yearly"
+                    : ""}
+            </div>
+
+            {/* <Button
+              variant="secondary"
+              className="w-full"
+              LabelName={
+                purchasingPlanId === data?.subscription?._id
+                  ? "Opening payment..."
+                  : "Get Plan"
+              }
+              onClick={() => purchasePlan(i)}
+              disabled={purchasingPlanId !== null}
+            /> */}
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1520,7 +1848,7 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
         <form
           ref={formRef}
           onSubmit={addNewAddress}
-          className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll"
+          className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll pb-20"
         >
           <h1 className="heading text-3xl">Add address</h1>
           <div className="flex flex-col lg:flex-row justify-center items-start w-full h-full relative gap-5">
@@ -1763,7 +2091,7 @@ const BankingDetails = ({ data, role, userId, handleReload, callData }) => {
         <form
           ref={formRef}
           onSubmit={addBank}
-          className="flex-col flex justify-center items-center w-full md:w-[70vw]"
+          className="flex-col flex justify-center items-center w-full md:w-[70vw] pb-20"
         >
           <h1 className="heading text-3xl">Add bank account</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
@@ -2430,6 +2758,14 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [storeStaffList, setStoreStaffList] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [priceData, setPriceData] = useState({
+    mrp: "",
+    discount: "",
+    sellingPrice: "",
+  });
   const [products, setProducts] = useState([
     {
       productType: "",
@@ -2527,7 +2863,26 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
       } catch (err) {}
     };
 
+    const getAllCategories = async () => {
+      try {
+        const response = await FetchData(
+          "category-subcategory/get/categories/all",
+          "get",
+        );
+
+        console.log("Categories:", response.data.data);
+
+        setCategories(response.data.data || []);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+        alertError(
+          err?.response?.data?.message || "Unable to fetch categories",
+        );
+      }
+    };
+
     getAllStoreStaff();
+    getAllCategories();
   }, []);
 
   const addService = async (e) => {
@@ -2585,7 +2940,25 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
     setImagePreview(file?.map((f) => URL.createObjectURL(f)));
   };
 
-  console.log(data, role, userId);
+  const handlePriceChange = (e) => {
+    const { name, value } = e.target;
+
+    const updatedData = {
+      ...priceData,
+      [name]: value,
+    };
+
+    const mrp = parseFloat(updatedData.mrp) || 0;
+    const discount = parseFloat(updatedData.discount) || 0;
+
+    if (mrp > 0 && discount >= 0) {
+      updatedData.sellingPrice = (mrp - (mrp * discount) / 100).toFixed(2);
+    } else {
+      updatedData.sellingPrice = "";
+    }
+
+    setPriceData(updatedData);
+  };
 
   return (
     <div className="space-y-6 w-full h-full overflow-scroll relative">
@@ -2650,17 +3023,113 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <InputBox label="Service Name" name="name" />
 
-                  <InputBox
-                    label="Charges (including tax)"
+                  {/* <InputBox
+                    label=""
                     name="charges"
                     type="number"
-                  />
-                  <InputBox
-                    label="category"
-                    name="category"
-                    type="text"
-                    placeholder="Eg: Spa, Hair Cut etc."
-                  />
+                  /> */}
+                  <div className="flex flex-col lg:flex-row justify-between items-center w-full gap-5">
+                    <InputBox
+                      name="mrp"
+                      type="number"
+                      label="Charges"
+                      onChange={handlePriceChange}
+                      value={priceData.mrp}
+                    />
+                    <InputBox
+                      name="discount"
+                      type="number"
+                      label="Discount (in %)"
+                      onChange={handlePriceChange}
+                      value={priceData.discount}
+                      required={false}
+                    />
+                    <InputBox
+                      name="sellingPrice"
+                      type="number"
+                      label="Discounted Price"
+                      value={priceData.sellingPrice}
+                      // Disabled={true}
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Category */}
+                    <div>
+                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Category
+                        <span className="text-red-500">*</span>
+                      </label>
+
+                      <select
+                        name="category"
+                        value={selectedCategory}
+                        onChange={(e) => {
+                          setSelectedCategory(e.target.value);
+
+                          // Whenever category changes,
+                          // remove previously selected subcategory.
+                          setSelectedSubcategory("");
+                        }}
+                        required
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md"
+                      >
+                        <option value="">Select Category</option>
+
+                        {categories
+                          ?.filter(
+                            (category) =>
+                              category.status === "Verified" &&
+                              category.isActive === true,
+                          )
+                          ?.map((category) => (
+                            <option key={category._id} value={category._id}>
+                              {category.title}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+
+                    {/* Subcategory */}
+                    <div>
+                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Subcategory
+                        <span className="text-red-500">*</span>
+                      </label>
+
+                      <select
+                        name="subcategory"
+                        value={selectedSubcategory}
+                        onChange={(e) => setSelectedSubcategory(e.target.value)}
+                        required
+                        disabled={!selectedCategory}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      >
+                        <option value="">
+                          {!selectedCategory
+                            ? "Select category first"
+                            : "Select Subcategory"}
+                        </option>
+
+                        {categories
+                          ?.find(
+                            (category) => category._id === selectedCategory,
+                          )
+                          ?.subcategories?.filter(
+                            (subcategory) =>
+                              subcategory.status === "Verified" &&
+                              subcategory.isActive === true,
+                          )
+                          ?.map((subcategory) => (
+                            <option
+                              key={subcategory._id}
+                              value={subcategory._id}
+                            >
+                              {subcategory.title}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
 
                   <InputBox
                     required={false}
@@ -3607,7 +4076,7 @@ const KycDetails = ({ data, role, storeId, handleReload, callData }) => {
           <form
             ref={formRef}
             onSubmit={handleSubmitKYC}
-            className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll"
+            className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll pb-20"
           >
             <h1 className="heading text-3xl">Add KYC form</h1>
             <div className="flex flex-col lg:grid grid-cols-1 lg:grid-cols-2 gap-4 w-full">
