@@ -4,6 +4,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { Admin } from "../models/admin.model.js";
 import { DeleteImage, UploadImages } from "../utils/imageKit.io.js";
 import { Category } from "../models/category.model.js";
+import mongoose from "mongoose";
+
+const sanitizeFolderName = (value = "") => {
+  return value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+};
 
 const createCategory = asyncHandler(async (req, res) => {
   const admin = req.user;
@@ -20,10 +25,11 @@ const createCategory = asyncHandler(async (req, res) => {
   }
 
   let uploadedImage = null;
+
   uploadedImage = await UploadImages(
     req.file.filename,
     {
-      folderStructure: "/categories",
+      folderStructure: `categories/${sanitizeFolderName(title)}`,
     },
     ["category"],
   );
@@ -41,10 +47,6 @@ const createCategory = asyncHandler(async (req, res) => {
     displayOrder: Number(displayOrder) || 0,
     subcategories: [],
   });
-
-  if (uploadedImage?.fileId) {
-    await DeleteImage(uploadedImage.fileId);
-  }
 
   return res
     .status(201)
@@ -108,9 +110,6 @@ const createSubCategory = asyncHandler(async (req, res) => {
   const createdSubCategory =
     category.subcategories[category.subcategories.length - 1];
 
-  if (uploadedImage?.fileId) {
-    await DeleteImage(uploadedImage.fileId);
-  }
   return res
     .status(201)
     .json(
@@ -174,4 +173,140 @@ const rejectCategory = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, category, "Category rejected successfully"));
 });
 
-export { createCategory, createSubCategory, approveCategory, rejectCategory };
+const getAllCategories = asyncHandler(async (req, res) => {
+  const categories = await Category.find();
+  if (!categories) throw new ApiError(400, "No category found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, categories, "Data fetched successfully !"));
+});
+
+const getAllCategoriesName = asyncHandler(async (req, res) => {
+  const categories = await Category.find().select("title");
+  if (!categories) throw new ApiError(400, "No category found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, categories, "Data fetched successfully !"));
+});
+
+const deleteCategory = asyncHandler(async (req, res) => {
+  const { categoryId } = req.params;
+
+  // Only admin can delete
+  if (req.admin?.role !== "admin") {
+    return res
+      .status(403)
+      .json(new ApiResponse(403, null, "Only admin can delete a category."));
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Invalid category ID."));
+  }
+
+  const category = await Category.findById(categoryId);
+
+  if (!category) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, null, "Category not found."));
+  }
+
+  if (!category.isActive && category.status === "Inactive") {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Category is already inactive."));
+  }
+
+  if (category.image?.fileId) {
+    await DeleteImage(category.image.fileId);
+  }
+
+  for (const subcategory of category.subcategories) {
+    if (subcategory.image?.fileId) {
+      await DeleteImage(subcategory.image.fileId);
+    }
+  }
+
+  category.isActive = false;
+  category.status = "Inactive";
+
+  category.subcategories.forEach((subcategory) => {
+    subcategory.isActive = false;
+    subcategory.status = "Inactive";
+  });
+
+  await category.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, category, "Category deleted successfully."));
+});
+
+const deleteSubCategory = asyncHandler(async (req, res) => {
+  const { categoryId, subcategoryId } = req.params;
+
+  // Only admin can delete
+  if (req.user?.role !== "admin") {
+    return res
+      .status(403)
+      .json(new ApiResponse(403, null, "Only admin can delete a subcategory."));
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(categoryId)) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Invalid category ID."));
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(subcategoryId)) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Invalid subcategory ID."));
+  }
+
+  const category = await Category.findById(categoryId);
+
+  if (!category) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, null, "Category not found."));
+  }
+
+  // Find subcategory before removing it
+  const subcategory = category.subcategories.id(subcategoryId);
+
+  if (!subcategory) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, null, "Subcategory not found."));
+  }
+
+  // Delete image from ImageKit first
+  if (subcategory.image?.fileId) {
+    await DeleteImage(subcategory.image.fileId);
+  }
+
+  // Remove subcategory completely from embedded array
+  category.subcategories.pull(subcategoryId);
+
+  await category.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, null, "Subcategory deleted successfully."));
+});
+
+export {
+  createCategory,
+  createSubCategory,
+  approveCategory,
+  rejectCategory,
+  getAllCategories,
+  getAllCategoriesName,
+  deleteCategory,
+  deleteSubCategory,
+};
