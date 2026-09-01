@@ -66,7 +66,22 @@ const CustomerServiceCard = ({ service }) => {
               <p className="text-xs text-neutral-500">Starts From</p>
 
               <h3 className="heading text-2xl text-[#d65f92]">
-                ₹{Number(service?.charges || 0).toLocaleString("en-IN")}
+                {service?.price?.discount === 0 ? (
+                  ""
+                ) : (
+                  <div className="flex justify-center items-center gap-3">
+                    <span className="line-through text-lg">
+                      ₹ {service?.price?.mrp}
+                    </span>
+                    <span className="bg-green-300 text-xs text-green-800 rounded-full px-2 py-1">
+                      {service?.price?.discount}%off
+                    </span>
+                  </div>
+                )}
+                {/* {service?.charges || service?.price?.sellingPrice}₹ */}₹{" "}
+                {Number(
+                  service?.charges || service?.price?.sellingPrice || 0,
+                ).toLocaleString("en-IN")}
               </h3>
             </div>
 

@@ -60,7 +60,7 @@ const CurrentService = () => {
   const ServiceInfo = [
     {
       title: "Category",
-      value: services?.category,
+      value: services?.category?.title,
       icon: <FaTag />,
     },
     {
@@ -186,9 +186,27 @@ const CurrentService = () => {
                     </h1>
 
                     <div className="text-right">
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        ₹{services?.charges}
-                      </h2>
+                      <h3 className="heading text-2xl text-[#d65f92]">
+                        {services?.price?.discount === 0 ? (
+                          ""
+                        ) : (
+                          <div className="flex justify-center items-center gap-3">
+                            <span className="line-through text-lg">
+                              ₹ {services?.price?.mrp}
+                            </span>
+                            <span className="bg-green-300 text-xs text-green-800 rounded-full px-2 py-1">
+                              {services?.price?.discount}%off
+                            </span>
+                          </div>
+                        )}
+                        {/* {services?.charges || services?.price?.sellingPrice}₹ */}
+                        ₹{" "}
+                        {Number(
+                          services?.charges ||
+                            services?.price?.sellingPrice ||
+                            0,
+                        ).toLocaleString("en-IN")}
+                      </h3>
 
                       <Button
                         LabelName="Book now"
@@ -214,7 +232,7 @@ const CurrentService = () => {
                   <div className="grid grid-cols-2 place-items-center gap-2">
                     <div className="flex items-center gap-2 bg-white border border-neutral-100 rounded-xl px-2 py-1 shadow-sm">
                       <FaMarsStroke className="text-[#8B2954]" />
-                      <span className="">{services?.category}</span>
+                      <span className="">{services?.category?.title}</span>
                     </div>
                     <div className="flex items-center gap-2 bg-white border border-neutral-100 rounded-xl px-2 py-1 shadow-sm">
                       <FaFemale className="text-[#8B2954]" />
@@ -355,7 +373,7 @@ const CurrentService = () => {
                 </div>
               ))}
             </div>
-            {/* service store and executive details */}
+
             <div className="flex flex-col md:flex-row justify-between items-center py-10 md:px-40 md:py-20 bg-neutral-100">
               {/* Store Details */}
               <div className="flex justify-center items-center gap-2">
@@ -364,22 +382,26 @@ const CurrentService = () => {
                   {services?.store?.storeName}
                 </button>
               </div>
-              <div className="flex justify-center items-center bg-neutral-200 p-2 rounded-xl gap-4">
-                <div className="w-20 h-20 rounded-full overflow-hidden">
-                  <img
-                    src={services?.executive?.profileImage?.url}
-                    className="h-full w-full object-cover"
-                  />
+              {services?.executive ? (
+                <div className="flex justify-center items-center bg-neutral-200 p-2 rounded-xl gap-4">
+                  <div className="w-20 h-20 rounded-full overflow-hidden">
+                    <img
+                      src={services?.executive?.profileImage?.url}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <h1 className="flex flex-col justify-center items-start heading">
+                    <strong className="paragraph">Executive details: </strong>
+                    <span>{services?.executive?.name}</span>
+                    <span>
+                      {services?.executive?.designation} |{" "}
+                      {services?.executive?.experience}
+                    </span>
+                  </h1>
                 </div>
-                <h1 className="flex flex-col justify-center items-start heading">
-                  <strong className="paragraph">Executive details: </strong>
-                  <span>{services?.executive?.name}</span>
-                  <span>
-                    {services?.executive?.designation} |{" "}
-                    {services?.executive?.experience}
-                  </span>
-                </h1>
-              </div>
+              ) : (
+                ""
+              )}
             </div>
           </div>
         </div>

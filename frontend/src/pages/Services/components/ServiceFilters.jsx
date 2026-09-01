@@ -8,11 +8,29 @@ import {
 } from "react-icons/fa";
 import Button from "../../../components/Button";
 import { motion, AnimatePresence } from "framer-motion";
+import { FetchData } from "../../../utils/FetchFromApi";
 
 const ServiceFilters = ({ filters, setFilters }) => {
   const [search, setSearch] = useState(filters.search);
   const [isOpen, setIsOpen] = useState(false);
   const [rotate, setRotate] = useState(false);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const getAllCategoriesName = async () => {
+      try {
+        const response = await FetchData(
+          "category-subcategory/get/categories/name-all",
+          "get",
+        );
+        setCategories(response.data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getAllCategoriesName();
+  }, []);
 
   // Debounce Search
   useEffect(() => {
@@ -93,11 +111,11 @@ const ServiceFilters = ({ filters, setFilters }) => {
                 className="rounded-xl border border-neutral-200 px-3 py-2 focus:border-[#d65f92] outline-none"
               >
                 <option value="">All Categories</option>
-                <option value="Hair">Hair</option>
-                <option value="Skin">Skin</option>
-                <option value="Makeup">Makeup</option>
-                <option value="Spa">Spa</option>
-                <option value="Nails">Nails</option>
+                {categories?.map((i, index) => (
+                  <option key={index} value={i?.title}>
+                    {i?.title}
+                  </option>
+                ))}
               </select>
               <select
                 value={filters.serviceFor}

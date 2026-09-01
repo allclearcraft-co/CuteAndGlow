@@ -33,6 +33,17 @@ const TABLE_CONFIG = {
     ],
   },
 
+  categories: {
+    text: "Categories",
+    searchKeys: ["name", "isActive", "admin?.name"],
+    viewRoute: (id) => `/admin/current/${"category"}/${id}`,
+    columns: [
+      { header: "Name", key: "title" },
+      { header: "Subcategories", key: "subcategories.length" },
+      { header: "Actions", key: "actions" },
+    ],
+  },
+
   activeService: {
     text: "Active Services",
     searchKeys: ["category", "serviceFor", "store.storeName"],

@@ -4,6 +4,10 @@ import CustomerServiceCard from "../../components/ui/CustomerServiceCard";
 const HomeServiceSection = ({ title, services }) => {
   const navigate = useNavigate();
 
+  if (!Array.isArray(services) || services.length === 0) {
+    return null;
+  }
+
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex justify-between items-center">

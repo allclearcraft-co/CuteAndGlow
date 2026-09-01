@@ -54,6 +54,7 @@ const AccordionCard = ({ children, isScrolled }) => {
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
+  const userRole = user?.role.toLowerCase();
   const { alertInfo } = useToast();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -294,7 +295,9 @@ const Header = () => {
             {user ? (
               <button
                 onClick={() => {
-                  navigate("/dashboard");
+                  navigate(
+                    userRole === "admin" ? "/admin/dashboard" : "/dashboard",
+                  );
                 }}
                 className="flex justify-center items-start rounded-full py-1 px-3 bg-white text-black cursor-pointer"
               >

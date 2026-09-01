@@ -196,6 +196,11 @@ export const adminDashboardSection = [
     count: 0,
   },
   {
+    query: "categories",
+    label: "Categories",
+    count: 0,
+  },
+  {
     query: "active_services",
     label: "Active Service",
     count: 0,

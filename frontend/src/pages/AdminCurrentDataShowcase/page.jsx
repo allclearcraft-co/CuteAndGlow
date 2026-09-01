@@ -10,7 +10,8 @@ import CurrentProfessional from "./CurrentProfessional";
 import CurrentService from "./CurrentServices";
 import CurrentSubscription from "./CurrentSubscription";
 import CurrentAdmin from "./CurrentAdmin";
-import CurrentBooking from "./CurrentBooking"
+import CurrentBooking from "./CurrentBooking";
+import CurrentCategory from "./CurrentCategory";
 import { useSelector } from "react-redux";
 
 const componentMap = {
@@ -20,7 +21,8 @@ const componentMap = {
   service: CurrentService,
   subscription: CurrentSubscription,
   admin: CurrentAdmin,
-  booking:CurrentBooking
+  booking: CurrentBooking,
+  category: CurrentCategory,
 };
 
 const CurrentDataShowcase = () => {

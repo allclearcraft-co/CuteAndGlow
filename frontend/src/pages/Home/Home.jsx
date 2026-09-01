@@ -21,16 +21,6 @@ function Home() {
   const navigate = useNavigate();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const categories = [
-    { label: "Hair Styling & Treatments", search: "Hair" },
-    { label: "Bridal & Event Makeup", search: "Makeup" },
-    { label: "Skin Care & Facials", search: "Skin" },
-    { label: "Hand & Feet Care", search: "Nails" },
-    { label: "Waxing & Hair Removal", search: "Skin" },
-    { label: "Eye & Brow Enhancements", search: "Eye" },
-    { label: "Body Wellness", search: "Spa" },
-    { label: "Pre-Grooming Packages", search: "Makeup" },
-  ];
   const [servicesByCategory, setServicesByCategory] = useState({});
   const [filters, setFilters] = useState({
     page: 1,
@@ -40,29 +30,50 @@ function Home() {
     search: "",
     sortBy: "latest",
   });
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const getAllCategoriesName = async () => {
+      try {
+        const response = await FetchData(
+          "category-subcategory/get/categories/name-all",
+          "get",
+        );
+        setCategories(response.data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    getAllCategoriesName();
+  }, []);
 
   const getHomeServices = async () => {
     try {
       setLoading(true);
 
       const responses = await Promise.all(
-        categories.map(async (category) => {
+        categories?.map(async (category) => {
           const res = await FetchData(
-            `services/get/service?category=${encodeURIComponent(category.search)}&limit=6`,
+            `services/get/service?category=${encodeURIComponent(category._id)}&limit=6`,
             "get",
           );
 
           return {
-            label: category.label,
+            label: category.title,
             services: res.data.data.services,
           };
         }),
       );
 
       const grouped = {};
-      responses.forEach((item) => {
-        grouped[item.label] = item.services;
-      });
+      responses
+        .filter(
+          (item) => Array.isArray(item.services) && item.services.length > 0,
+        )
+        .forEach((item) => {
+          grouped[item.label] = item.services;
+        });
 
       setServicesByCategory(grouped);
       setData(grouped);
@@ -73,7 +84,7 @@ function Home() {
 
   useEffect(() => {
     getHomeServices();
-  }, []);
+  }, [categories]);
 
   return (
     <div className="h-full pb-10 gap-10 flex flex-col">
@@ -96,13 +107,19 @@ function Home() {
           <EmptyState />
         ) : (
           <div className="px-4 lg:px-10 mt-10 flex flex-col gap-12 w-full">
-            {categories.map((category) => (
-              <HomeServiceSection
-                key={category.label}
-                title={category.label}
-                services={servicesByCategory[category.label] || []}
-              />
-            ))}
+            {categories
+              .filter(
+                (category) =>
+                  Array.isArray(servicesByCategory[category.title]) &&
+                  servicesByCategory[category.title].length > 0,
+              )
+              .map((category) => (
+                <HomeServiceSection
+                  key={category.label}
+                  title={category.title}
+                  services={servicesByCategory[category.title] || []}
+                />
+              ))}
           </div>
         )}
         <Button
