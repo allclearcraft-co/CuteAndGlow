@@ -1,7 +1,28 @@
-import React from "react";
+import React, { useState } from "react";
+import Button from "../../components/Button";
+import { FetchData } from "../../utils/FetchFromApi";
+import { useToast } from "../../components/hooks/ToastContext";
 
 const CurrentCategory = ({ data }) => {
-  console.log(data);
+  const { alertSuccess, alertInfo, alertError } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  const deleteSubcategory = async ({ subcategoryId }) => {
+    try {
+      setLoading(true);
+      const response = await FetchData(
+        `category-subcategory/update/delete/subcategory/${data?._id}/${subcategoryId}`,
+        "delete",
+      );
+      alertSuccess(response.data.message);
+      window.location.reload();
+    } catch (err) {
+      setLoading(false);
+      alertError(err.response.data);
+    } finally {
+      setLoading(false);
+    }
+  };
   const TableData = [
     {
       id: 1,
@@ -39,7 +60,7 @@ const CurrentCategory = ({ data }) => {
       label: "Image ",
       value: (
         <div>
-          <img src={data?.image?.url} />
+          <img src={data?.image?.url} className="w-40" />
         </div>
       ),
     },
@@ -49,9 +70,17 @@ const CurrentCategory = ({ data }) => {
       value: (
         <div className="flex flex-col justify-start items-start">
           {data?.subcategories?.map((i, index) => (
-            <h1>
-              {index + 1}. {i?.title} <img src={data?.image?.url} />
-            </h1>
+            <div className="flex justify-between items-center w-full border-b-[0.1px]">
+              <span>
+                {index + 1}. {i?.title}
+              </span>
+              <img src={i?.image?.url} className="w-20" />
+              <Button
+                variant="secondary"
+                LabelName={loading ? "Deleting..." : "Delete"}
+                onClick={() => deleteSubcategory({ subcategoryId: i?._id })}
+              />
+            </div>
           ))}
         </div>
       ),
