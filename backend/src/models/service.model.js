@@ -6,7 +6,17 @@ const serviceSchema = new mongoose.Schema(
     store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
     executive: { type: mongoose.Schema.Types.ObjectId, ref: "StoreStaff" },
     professional: { type: mongoose.Schema.Types.ObjectId, ref: "Professional" },
-    category: String,
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
+    },
+
+    // _id of the subcategory embedded inside Category
+    subcategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
     products: [
       {
         productType: { type: String, trim: true },
@@ -26,7 +36,12 @@ const serviceSchema = new mongoose.Schema(
       enum: ["Male", "Female", "Both"],
       default: "Both",
     },
-    charges: { type: Number, default: 0, required: true },
+    price: {
+      // charges: { type: Number, default: 0 },
+      mrp: { type: Number, required: true },
+      discount: { type: Number, default: 0 },
+      sellingPrice: { type: Number, required: true },
+    },
     bookingDays: {
       type: String,
       enum: [
