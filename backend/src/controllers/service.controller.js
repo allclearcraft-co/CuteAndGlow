@@ -34,8 +34,29 @@ const createStoreService = asyncHandler(async (req, res) => {
     discount,
     sellingPrice,
   } = req.body;
-  const { products, serviceInclusion, serviceExclusion, serviceRequirements } =
-    JSON.parse(req.body.serviceData);
+
+  if (!name || !category || !subcategory || !mrp || !sellingPrice) {
+    throw new ApiError(
+      400,
+      "Service name, category, subcategory, and price are required.",
+    );
+  }
+
+  let parsedServiceData = {};
+  try {
+    parsedServiceData = req.body.serviceData
+      ? JSON.parse(req.body.serviceData)
+      : {};
+  } catch (error) {
+    throw new ApiError(400, "Invalid service form data.");
+  }
+
+  const {
+    products = [],
+    serviceInclusion = [],
+    serviceExclusion = [],
+    serviceRequirements = [],
+  } = parsedServiceData;
 
   const store = await Store.findById(storeId);
   if (!store) throw new ApiError(400, "Invalid access !");

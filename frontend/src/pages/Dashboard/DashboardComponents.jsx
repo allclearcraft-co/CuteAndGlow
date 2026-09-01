@@ -2746,6 +2746,10 @@ const FavoriteProfessional = ({ data, role }) => {
 };
 
 const Services = ({ data, role, userId, handleReload, callData }) => {
+  const normalizedRole = (role || "").toLowerCase();
+  const isCustomer = normalizedRole === "customer";
+  const isStore = normalizedRole === "store";
+
   const [showForm, setShowForm] = useState(false);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
@@ -2936,7 +2940,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
     const getAllStoreStaff = async () => {
       try {
         const response = await FetchData(
-          `${role}/get/staff-for-service/store-staff/${userId}`,
+          `${normalizedRole}/get/staff-for-service/store-staff/${userId}`,
           "get",
         );
         setStoreStaffList(response.data.data);
@@ -2980,7 +2984,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
 
       const endpoint = editingService
         ? `services/update/service/${editingService._id}`
-        : `services/add/service/${role}/${userId}`;
+        : `services/add/service/${normalizedRole}/${userId}`;
 
       const response = await FetchData(endpoint, "post", formData, true);
       alertSuccess(response.data.message);
@@ -3010,6 +3014,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
   };
 
   const handleEditService = (service) => {
+    if (!service?._id) return;
+
     setEditingService(service);
     setShowForm(true);
 
@@ -3019,9 +3025,10 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
   };
 
   const handleImage = (e) => {
-    const file = Array.from(e.target.files);
+    const fileList = e?.target?.files;
+    if (!fileList || !fileList.length) return;
 
-    if (!file) return;
+    const file = Array.from(fileList);
     if (file.length > 5) {
       alert("Maximum 5 images allowed");
       e.target.value = "";
@@ -3054,7 +3061,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
 
   return (
     <div className="space-y-6 w-full h-full overflow-scroll relative">
-      {role === "Customer" ? (
+      {isCustomer ? (
         <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
           <h1 className="text-3xl font-bold">
             Services <span className="text-sm">({data?.service?.length})</span>
@@ -3066,7 +3073,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
         </div>
       ) : (
         <div>
-          {data?.store?.subscription?.subscriptionPurchased === true ? (
+          {isStore &&
+          data?.store?.subscription?.subscriptionPurchased === true ? (
             <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
               <h1 className="text-3xl font-bold">
                 Services{" "}
@@ -3090,9 +3098,9 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
       <div className="w-full">
         {Array.isArray(data?.service) ? (
           <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-2 w-full place-items-center">
-            {data?.service?.map((service) => (
+            {data.service.filter(Boolean).map((service, index) => (
               <StoreServiceCard
-                key={service._id}
+                key={service?._id || index}
                 service={service}
                 onEdit={handleEditService}
                 onDelete={deleteService}
@@ -3246,39 +3254,38 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                 </div>
               </div>
               <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
-              {role === "store" ||
-                ("Store" && (
-                  <div>
-                    <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
-                      Service Provider{" "}
-                      <span className="text-base text-black">(Optional)</span>
-                    </h2>
+              {isStore && (
+                <div>
+                  <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
+                    Service Provider{" "}
+                    <span className="text-base text-black">(Optional)</span>
+                  </h2>
 
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block mb-2 font-medium">
-                          Executive
-                        </label>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-2 font-medium">
+                        Executive
+                      </label>
 
-                        <select
-                          name="executive"
-                          className="w-full border rounded-lg px-4 py-2"
-                          required={false}
-                        >
-                          <option value="">Select Staff</option>
-                          {storeStaffList?.map((item) => (
-                            <option key={item._id} value={item._id}>
-                              <>
-                                Name: {item.name} ({item.designation})
-                                (Specialization: {item.specialization})
-                              </>
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <select
+                        name="executive"
+                        className="w-full border rounded-lg px-4 py-2"
+                        required={false}
+                      >
+                        <option value="">Select Staff</option>
+                        {storeStaffList?.map((item) => (
+                          <option key={item._id} value={item._id}>
+                            <>
+                              Name: {item.name} ({item.designation})
+                              (Specialization: {item.specialization})
+                            </>
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
-                ))}
+                </div>
+              )}
               <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
               <div>
                 <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
