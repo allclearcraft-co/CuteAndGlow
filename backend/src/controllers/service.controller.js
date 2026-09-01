@@ -279,6 +279,10 @@ const getServiceById = asyncHandler(async (req, res) => {
       select: "name specialization profileImage designation experience",
     })
     .populate({
+      path: "category",
+      select: "title",
+    })
+    .populate({
       path: "professional",
       select: "name images.profileImage gender specialization about",
     });
