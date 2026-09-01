@@ -72,29 +72,11 @@ const Overview = ({ data, role, userId, callData }) => {
         `subscription/get/subscription/${role}`,
         "get",
       );
-      console.log(response);
       setSubscription(response.data.data);
     } catch (err) {
       console.log(err.response);
     }
   };
-
-  // const getSubscriptionModel = async () => {
-  //   try {
-  //     const response = await FetchData(
-  //       `subscription/get/subscription/details/by-id/${subscriptionId}`,
-  //       "get",
-  //     );
-  //     console.log(response);
-  //     setCurrentSubscriptionModel(response.data.data);
-  //   } catch (err) {
-  //     console.log(err.response);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   getSubscriptionModel();
-  // }, [data]);
 
   useEffect(() => {
     callData();
@@ -1407,7 +1389,10 @@ const Overview = ({ data, role, userId, callData }) => {
           {/* ================= HEADER ================= */}
           <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
             <h1 className="text-3xl uppercase font-semibold">
-              {data?.subscription?.planName} <span className="capitalize bg-green-300 p-2 text-green-700 rounded-full text-xs">Purchased</span>
+              {data?.subscription?.planName}{" "}
+              <span className="capitalize bg-green-300 p-2 text-green-700 rounded-full text-xs">
+                Purchased
+              </span>
             </h1>
 
             <p className="font-light text-sm mt-1">
@@ -1757,8 +1742,12 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
 
   const deleteCurrentAddress = async ({ addressId }) => {
     try {
-      const response = await FetchData(``, "delete");
+      const response = await FetchData(
+        `${role}/update/delete-address/${addressId}/${userId}`,
+        "delete",
+      );
       alertSuccess(response.data.message);
+      handleReload();
     } catch (err) {
       alertError(err.response.data);
     }
@@ -1831,7 +1820,10 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
 
                 {/* Actions */}
                 <div className="flex justify-end gap-3 mt-6">
-                  <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition">
+                  <button
+                    onClick={() => deleteCurrentAddress({ addressId: d?._id })}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
+                  >
                     <FaTrash />
                     Delete
                   </button>
@@ -2775,8 +2767,96 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
   const [serviceInclusion, setServiceInclusion] = useState([""]);
   const [serviceExclusion, setServiceExclusion] = useState([""]);
   const [serviceRequirements, setServiceRequirements] = useState([""]);
+  const [editingService, setEditingService] = useState(null);
   const { alertInfo, alertSuccess, alertError } = useToast();
   const formRef = useRef();
+  const [loading, setLoading] = useState(false);
+
+  const resetServiceForm = () => {
+    setSelectedCategory("");
+    setSelectedSubcategory("");
+    setPriceData({ mrp: "", discount: "", sellingPrice: "" });
+    setProducts([{ productType: "", brand: "" }]);
+    setServiceInclusion([""]);
+    setServiceExclusion([""]);
+    setServiceRequirements([""]);
+    setImage(null);
+    setImagePreview([]);
+    setEditingService(null);
+    formRef.current?.reset();
+  };
+
+  const populateServiceForm = (service) => {
+    if (!service || !formRef.current) return;
+
+    const form = formRef.current;
+    const setFieldValue = (name, value) => {
+      const input = form.querySelector(`[name="${name}"]`);
+      if (input) input.value = value ?? "";
+    };
+
+    setFieldValue("name", service?.name || "");
+    setFieldValue("duration", service?.duration || "");
+    setFieldValue("prepTime", service?.prepTime || "");
+    setFieldValue("bookingFrom", service?.bookingAcceptingHours?.from || "");
+    setFieldValue("bookingTill", service?.bookingAcceptingHours?.till || "");
+    setFieldValue("serviceFor", service?.serviceFor || "Both");
+    setFieldValue(
+      "bookingDays",
+      service?.bookingDays || "Whole week (All 7 days)",
+    );
+    setFieldValue("serviceArea", service?.serviceArea || "Inside city");
+
+    setSelectedCategory(service?.category?._id || service?.category || "");
+    setSelectedSubcategory(service?.subcategory || "");
+    setPriceData({
+      mrp: service?.price?.mrp ?? "",
+      discount: service?.price?.discount ?? "",
+      sellingPrice: service?.price?.sellingPrice ?? "",
+    });
+    setProducts(
+      Array.isArray(service?.products) && service.products.length
+        ? service.products
+        : [{ productType: "", brand: "" }],
+    );
+    setServiceInclusion(
+      Array.isArray(service?.serviceInclusion) &&
+        service.serviceInclusion.length
+        ? service.serviceInclusion
+        : [""],
+    );
+    setServiceExclusion(
+      Array.isArray(service?.serviceExclusion) &&
+        service.serviceExclusion.length
+        ? service.serviceExclusion
+        : [""],
+    );
+    setServiceRequirements(
+      Array.isArray(service?.serviceRequirements) &&
+        service.serviceRequirements.length
+        ? service.serviceRequirements
+        : [""],
+    );
+
+    if (form.querySelector('input[name="onSite"]')) {
+      form.querySelector('input[name="onSite"]').checked = !!service?.onSite;
+    }
+    if (form.querySelector('input[name="inHouse"]')) {
+      form.querySelector('input[name="inHouse"]').checked = !!service?.inHouse;
+    }
+    if (form.querySelector('input[name="isPrepTime"]')) {
+      form.querySelector('input[name="isPrepTime"]').checked =
+        !!service?.isPrepTime;
+    }
+    if (form.querySelector('input[name="timeIncludingPrepTime"]')) {
+      form.querySelector('input[name="timeIncludingPrepTime"]').checked =
+        !!service?.timeIncludingPrepTime;
+    }
+    if (form.querySelector('select[name="executive"]')) {
+      form.querySelector('select[name="executive"]').value =
+        service?.executive?._id || service?.executive || "";
+    }
+  };
 
   const addProduct = () => {
     setProducts((prev) => [
@@ -2870,8 +2950,6 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
           "get",
         );
 
-        console.log("Categories:", response.data.data);
-
         setCategories(response.data.data || []);
       } catch (err) {
         console.error("Error fetching categories:", err);
@@ -2888,6 +2966,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
   const addService = async (e) => {
     e.preventDefault();
     try {
+      setLoading(true);
       const formData = new FormData(formRef.current);
       formData.append(
         "serviceData",
@@ -2898,32 +2977,45 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
           serviceRequirements: serviceRequirements.filter((i) => i.trim()),
         }),
       );
-      const response = await FetchData(
-        `services/add/service/${role}/${userId}`,
-        "post",
-        formData,
-        true,
-      );
+
+      const endpoint = editingService
+        ? `services/update/service/${editingService._id}`
+        : `services/add/service/${role}/${userId}`;
+
+      const response = await FetchData(endpoint, "post", formData, true);
       alertSuccess(response.data.message);
       setShowForm(false);
-      formRef.current.reset();
+      resetServiceForm();
       handleReload();
     } catch (err) {
-      alertError(err.response);
+      alertError(err.response?.data?.message || "Unable to save service");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteService = async ({ serviceId }) => {
+  const deleteService = async (service) => {
+    if (!service?._id) return;
+
     try {
       const response = await FetchData(
-        `${role}/update/delete-bank-details/${serviceId}/${userId}`,
+        `services/delete/service/${service._id}`,
         "delete",
       );
       alertSuccess(response.data.message);
       handleReload();
     } catch (err) {
-      alertError(err.response.data);
+      alertError(err.response?.data?.message || "Unable to delete service");
     }
+  };
+
+  const handleEditService = (service) => {
+    setEditingService(service);
+    setShowForm(true);
+
+    setTimeout(() => {
+      populateServiceForm(service);
+    }, 0);
   };
 
   const handleImage = (e) => {
@@ -2965,7 +3057,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
       {role === "Customer" ? (
         <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
           <h1 className="text-3xl font-bold">
-            Services <span className="text-sm">({data?.length})</span>
+            Services <span className="text-sm">({data?.service?.length})</span>
           </h1>
           <input
             placeholder="Search Service..."
@@ -2977,7 +3069,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
           {data?.store?.subscription?.subscriptionPurchased === true ? (
             <div className="flex flex-col md:flex-row justify-between items-start gap-2 md:items-center sticky top-0 left-0 z-10 bg-white">
               <h1 className="text-3xl font-bold">
-                Services <span className="text-sm">({data?.length})</span>
+                Services{" "}
+                <span className="text-sm">({data?.service?.length})</span>
               </h1>
               <Button
                 LabelName="Add New Service"
@@ -2995,17 +3088,28 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
       )}
 
       <div className="w-full">
-        {Array.isArray(data.service) ? (
+        {Array.isArray(data?.service) ? (
           <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-2 w-full place-items-center">
             {data?.service?.map((service) => (
-              <StoreServiceCard key={service._id} service={service} />
+              <StoreServiceCard
+                key={service._id}
+                service={service}
+                onEdit={handleEditService}
+                onDelete={deleteService}
+              />
             ))}
           </div>
         ) : (
           <span>No service listed kindly list service</span>
         )}
       </div>
-      <Popup isOpen={showForm} onClose={() => setShowForm(false)}>
+      <Popup
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          resetServiceForm();
+        }}
+      >
         <div className="flex justify-start items-start h-screen w-full overflow-scroll pb-40">
           {" "}
           <form
@@ -3013,7 +3117,9 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
             onSubmit={addService}
             className="flex-col flex justify-start items-start w-full md:w-[90vw] md:h-[90vh] overflow-scroll no-scrollbar"
           >
-            <h1 className="heading text-3xl">Add Service</h1>
+            <h1 className="heading text-3xl">
+              {editingService ? "Edit Service" : "Add Service"}
+            </h1>
             <div className="flex flex-col gap-4 w-full">
               <div>
                 <h2 className="text-2xl font-semibold text-[#8B2954] mb-5">
@@ -3529,7 +3635,12 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
               </div>
             </div>
             <div className="flex justify-center items-center gap-10 ">
-              <Button LabelName="Submit" type="submit" />
+              <Button
+                LabelName={
+                  loading ? "Saving..." : editingService ? "Update" : "Submit"
+                }
+                type="submit"
+              />
             </div>
           </form>
         </div>
