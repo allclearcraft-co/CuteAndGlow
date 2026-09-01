@@ -66,7 +66,10 @@ const CustomerServiceCard = ({ service }) => {
               <p className="text-xs text-neutral-500">Starts From</p>
 
               <h3 className="heading text-2xl text-[#d65f92]">
-                ₹{Number(service?.charges || 0).toLocaleString("en-IN")}
+                {/* {service?.charges || service?.price?.sellingPrice}₹ */}
+                {Number(
+                  service?.charges || service?.price?.sellingPrice || 0,
+                ).toLocaleString("en-IN")}
               </h3>
             </div>
 

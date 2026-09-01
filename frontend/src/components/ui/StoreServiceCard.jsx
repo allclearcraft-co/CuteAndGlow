@@ -54,7 +54,9 @@ const StoreServiceCard = ({ service }) => {
             <FaMoneyBillWave className="text-green-600" />
             <div>
               <p className="text-xs text-gray-500">Charges</p>
-              <p className="font-semibold">₹ {service?.charges}</p>
+              <p className="font-semibold">
+                ₹ {service?.charges || service?.price?.sellingPrice}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -66,7 +68,7 @@ const StoreServiceCard = ({ service }) => {
           </div>
         </div>
 
-        <div className="flex gap-1 w-full justify-between ">
+        {/* <div className="flex gap-1 w-full justify-between ">
           <Button
             variant="secondary"
             LabelName="view details"
@@ -90,7 +92,7 @@ const StoreServiceCard = ({ service }) => {
               </h1>
             }
           />
-        </div>
+        </div> */}
       </div>
       <Popup isOpen={showDetails} onClose={() => setShowDetails(false)}>
         <div className="bg-white flex md:justify-between justify-evenly items-start flex-col h-fit py-5 px-5 rounded-xl">
