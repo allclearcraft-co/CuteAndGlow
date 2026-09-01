@@ -100,7 +100,8 @@ const loginStore = asyncHandler(async (req, res) => {
     storeContactNumber: contactNumber,
     isTemporaryRegistered: false,
   });
-  if (!storeUser) throw new ApiError(404, "Invalid storeUser");
+  if (!storeUser)
+    throw new ApiError(404, "Invalid credentials, please register.");
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   if (!otp) throw new ApiError(500, "Internal server error");
@@ -638,11 +639,16 @@ const dashboardData = asyncHandler(async (req, res) => {
         "storeName storeContactNumber storeEmail createdAt bookings isRegistrationFeePaid serviceType paymentOptions storeTimings images subscription",
       );
 
+      const subscription = await Subscription.findById(
+        storeInfo?.subscription?.subscriptionModel,
+      );
+
       return res.status(200).json(
         new ApiResponse(
           200,
           {
             store: storeInfo,
+            subscription,
           },
           "Dashboard data fetched successfully",
         ),
