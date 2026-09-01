@@ -6,6 +6,8 @@ import {
   createStoreService,
   getServiceById,
   getServices,
+  updateStoreService,
+  deleteStoreService,
   markAsActiveInactive,
 } from "../controllers/service.controller.js";
 
@@ -16,6 +18,14 @@ router
   .post(VerifyStore, upload.array("coverImage", 5), createStoreService);
 router.route("/get/service").get(getServices);
 router.route("/get/service/by-id/:serviceId").get(getServiceById);
-router.route("/update/service-status/:action/:serviceId").post(markAsActiveInactive);
+router
+  .route("/update/service/:serviceId")
+  .post(VerifyStore, upload.array("coverImage", 5), updateStoreService);
+router
+  .route("/delete/service/:serviceId")
+  .delete(VerifyStore, deleteStoreService);
+router
+  .route("/update/service-status/:action/:serviceId")
+  .post(markAsActiveInactive);
 
 export default router;

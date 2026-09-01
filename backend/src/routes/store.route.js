@@ -17,6 +17,7 @@ import {
   registrationFeePaid,
   passwordLogin,
   updatePassword,
+  deleteAddress,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -37,6 +38,9 @@ router.route("/update/add-address/:storeId").post(VerifyStore, addAddress);
 router
   .route("/update/modify-address/:addressId/:storeId")
   .post(VerifyStore, addAddress);
+router
+  .route("/update/delete-address/:addressId/:storeId")
+  .delete(VerifyStore, deleteAddress);
 router
   .route("/update/add-bank-details/:storeId")
   .post(VerifyStore, addBankDetails);

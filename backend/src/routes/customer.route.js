@@ -55,7 +55,7 @@ router
   .route("/update/modify-address/:customerId/:addressId")
   .post(VerifyCustomer, updateAddress);
 router
-  .route("/update/delete-address/:customerId/:addressId")
+  .route("/update/delete-address/:addressId/:customerId")
   .post(VerifyCustomer, deleteAddress);
 router
   .route("/update/add-bank-details/:customerId")
