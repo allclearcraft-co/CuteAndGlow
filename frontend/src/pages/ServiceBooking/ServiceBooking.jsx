@@ -18,7 +18,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
   const [service, setService] = useState({});
   const formRef = useRef();
   const navigate = useNavigate();
-
+  const storeId = service?.store?._id;
   const handleBookAppointment = async (e) => {
     e.preventDefault();
 
@@ -28,7 +28,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
       const formData = new FormData(formRef.current);
 
       const response = await FetchData(
-        `service-booking/add/create/new-appointment/${userId}/${serviceId}`,
+        `service-booking/add/create/new-appointment/${userId}/${serviceId}/${storeId}`,
         "post",
         formData,
       );
@@ -118,7 +118,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
       ),
     },
     { label: "Booking Day/s allowed", value: service?.bookingDays },
-    { label: "Category", value: service?.category },
+    { label: "Category", value: service?.category?.title },
     { label: "Duration (mins)", value: service?.duration },
     {
       label: "Requirements from customer-end",
@@ -139,14 +139,12 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
   ];
 
   const displayChargesData = [
-    { label: "Amount", value: service?.charges },
+    { label: "Amount", value: service?.price?.sellingPrice },
     { label: "Surge Fee", value: 110 },
     { label: "Platform fee", value: 20 },
-    // { label: "CGST", value: (service?.charges * 9) / 100 },
-    // { label: "SGST", value: (service?.charges * 9) / 100 },
     {
       label: "Grand Total",
-      value: 110 + 20 + service?.charges,
+      value: 110 + 20 + service?.price?.sellingPrice,
     },
   ];
 
@@ -155,11 +153,6 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
       className=" flex flex-col lg:flex-row justify-center items-start w-full gap-5 lg:gap-10 px-3 sm:px-5 py-3 lg:py-10 relative
       "
     >
-      {/* =========================================================
-          SERVICE & BILLING
-          Desktop: LEFT
-          Mobile: BELOW CUSTOMER DETAILS
-      ========================================================= */}
       <div
         className=" w-full lg:w-[40%] bg-neutral-100 flex flex-col justify-center items-center rounded-xl py-4 lg:py-5 gap-5 lg:gap-6 static lg:sticky lg:top-24 lg:left-0 order-2 lg:order-1
         "
@@ -240,8 +233,9 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
           <InputBox
             type="number"
             name="bookingAmount"
-            value={110 + 20 + service?.charges}
+            value={110 + 20 + service?.price?.sellingPrice}
             className="hidden"
+            required={false}
           />
 
           <InputBox
