@@ -30,6 +30,91 @@ import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "../../components/hooks/ToastContext";
 import { AnimatePresence, motion } from "framer-motion";
 import { IoMdPricetag } from "react-icons/io";
+import { IoClose } from "react-icons/io5";
+import { BsChevronDown } from "react-icons/bs";
+
+const AccordionCard = ({ description, isScrolled = false }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const iconColor = isScrolled ? "text-gray-200" : "text-gray-500";
+
+  return (
+    <div className="w-full">
+      <div className="w-full rounded-2xl backdrop-blur-3xl bg-neutral-100 overflow-hidden">
+        {/* Header */}
+        <button
+          type="button"
+          onClick={() => setIsOpen((prev) => !prev)}
+          aria-expanded={isOpen}
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+            px-5
+            py-4
+            text-left
+            cursor-pointer
+            hover:bg-neutral-200/60
+            transition-colors
+          "
+        >
+          <span className="font-semibold text-gray-800">Description</span>
+
+          <motion.div
+            animate={{
+              rotate: isOpen ? 180 : 0,
+            }}
+            transition={{
+              duration: 0.25,
+              ease: "easeInOut",
+            }}
+            className={iconColor}
+          >
+            <BsChevronDown className="text-lg" />
+          </motion.div>
+        </button>
+
+        {/* Description */}
+        <AnimatePresence initial={false}>
+          {isOpen && (
+            <motion.div
+              initial={{
+                height: 0,
+                opacity: 0,
+              }}
+              animate={{
+                height: "auto",
+                opacity: 1,
+              }}
+              exit={{
+                height: 0,
+                opacity: 0,
+              }}
+              transition={{
+                height: {
+                  duration: 0.35,
+                  ease: [0.4, 0, 0.2, 1],
+                },
+                opacity: {
+                  duration: 0.2,
+                },
+              }}
+              className="overflow-hidden"
+            >
+              <div className="px-5 pb-5 pt-1">
+                <p className="text-gray-600 leading-7 whitespace-pre-line">
+                  {description || "No description available."}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+};
 
 const EmptyState = () => {
   return (
@@ -131,7 +216,7 @@ const CurrentService = () => {
   useEffect(() => {
     getServiceById();
   }, [serviceId]);
-
+  console.log(services);
   return (
     <div className="space-y-6">
       {loading ? (
@@ -279,6 +364,7 @@ const CurrentService = () => {
                       </span>
                     </div>
                   </div>
+                  <AccordionCard description={services?.description} />
                 </div>
               </div>
             </div>
