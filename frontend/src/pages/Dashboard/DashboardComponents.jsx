@@ -2504,7 +2504,6 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
           View and manage all your beauty service bookings.
         </p>
       </div>
-
       {/* Cards */}
       {Array.isArray(data) ? (
         <div className="space-y-5 pb-40 md:pb-20 lg:pb-0">
@@ -2521,7 +2520,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                     {booking?.service?.name}
                   </h2>
 
-                  <p className="text-gray-500">{booking.store}</p>
+                  <p className="text-gray-500">{booking?.store?.storeName}</p>
                 </div>
 
                 <span
@@ -3267,6 +3266,15 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
                     type="number"
                   />
                 </div>
+              </div>
+              <InputBox
+                name="description"
+                label="Service description"
+                textarea={true}
+                required={false}
+              />
+              <div className="w-full justify-center items-center flex uppercase text-sm text-red-700 font-semibold">
+                Or fill the below details
               </div>
               <div className="w-full col-span-2 bg-neutral-200 h-1 rounded-full" />
               {isStore && (
