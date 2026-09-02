@@ -1068,23 +1068,345 @@ const Overview = ({ data, role, userId, callData }) => {
       ) : (
         ""
       )}
-      {data?.store?.subscription?.subscriptionPurchased === false ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-stretch gap-4 px-5">
-          {subscription?.map((i, index) => (
-            <div
-              key={i?._id || index}
-              className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition"
-            >
+      {role === "Customer" ? (
+        ""
+      ) : (
+        <div>
+          {data?.store?.subscription?.subscriptionPurchased === false ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-stretch gap-4 px-5">
+              {subscription?.map((i, index) => (
+                <div
+                  key={i?._id || index}
+                  className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition"
+                >
+                  {/* ================= HEADER ================= */}
+                  <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
+                    <h1 className="text-3xl uppercase font-semibold">
+                      {i?.planName}
+                    </h1>
+
+                    <p className="font-light text-sm mt-1">{i?.tagline}</p>
+
+                    <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
+                      {i?.planFor}
+                    </span>
+                  </div>
+
+                  {/* ================= BODY ================= */}
+                  <div className="px-5 py-6 flex flex-col w-full gap-6">
+                    {/* ================= PRICE ================= */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex justify-center items-center flex-col gap-2">
+                        <div className="flex justify-center items-center gap-3">
+                          {i?.price?.discount > 0 && (
+                            <span className="text-sm line-through text-gray-400 flex items-center">
+                              <FaRupeeSign />
+                              {i?.price?.mrp}
+                            </span>
+                          )}
+
+                          {i?.price?.discount > 0 && (
+                            <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
+                              {i?.price?.discount}% OFF
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
+                          <FaRupeeSign />
+                          {i?.price?.sellingPrice}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-gray-500">
+                        ₹{i?.price?.sellingPrice} / month
+                      </p>
+
+                      {i?.validity?.months === 0 ? (
+                        ""
+                      ) : (
+                        <p className="text-sm font-semibold text-[#8B2954]">
+                          Valid for {i?.validity?.months} months
+                        </p>
+                      )}
+
+                      <p className="text-xs text-gray-500 capitalize">
+                        Renewal: {i?.validity?.renewalType}
+                      </p>
+                    </div>
+
+                    {/* ================= FEATURES ================= */}
+                    <div>
+                      <h2 className="font-semibold text-lg mb-2">
+                        Plan Features
+                      </h2>
+
+                      <div className="space-y-1 text-sm">
+                        {i?.features?.map((feature, featureIndex) => (
+                          <div
+                            key={featureIndex}
+                            className="flex items-start gap-2"
+                          >
+                            <span className="text-[#8B2954] font-bold">✓</span>
+
+                            <span>{feature}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ================= BOOKING ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Booking</h2>
+
+                      <div className="text-sm space-y-1">
+                        <p>
+                          <strong>Status:</strong>{" "}
+                          {i?.booking?.enabled ? "Enabled" : "Disabled"}
+                        </p>
+
+                        <p>
+                          <strong>Advanced Booking:</strong>{" "}
+                          {i?.booking?.advancedBooking
+                            ? "Available"
+                            : "Not Available"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ================= MANAGEMENT TOOLS ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Management Tools</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <span
+                          className={
+                            i?.managementTools?.analytics
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Analytics
+                        </span>
+
+                        <span
+                          className={
+                            i?.managementTools?.inventory
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Inventory
+                        </span>
+
+                        <span
+                          className={
+                            i?.managementTools?.staffAttendance
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Staff Attendance
+                        </span>
+
+                        <span
+                          className={
+                            i?.managementTools?.commissionTracking
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Commission Tracking
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ================= MARKETING ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Marketing</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <span
+                          className={
+                            i?.marketing?.couponManager
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Coupon Manager
+                        </span>
+
+                        <span
+                          className={
+                            i?.marketing?.reviews
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Reviews
+                        </span>
+
+                        <span
+                          className={
+                            i?.marketing?.smsWhatsapp
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● SMS / WhatsApp
+                        </span>
+
+                        <span
+                          className={
+                            i?.marketing?.socialPromotion
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Social Promotion
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ================= MEDIA LIMIT ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Media Limits</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <p>
+                          <strong>Photos:</strong>{" "}
+                          {i?.mediaLimit?.unlimitedPhotos
+                            ? "Unlimited"
+                            : i?.mediaLimit?.photos}
+                        </p>
+
+                        <p>
+                          <strong>Videos:</strong>{" "}
+                          {i?.mediaLimit?.unlimitedVideos
+                            ? "Unlimited"
+                            : i?.mediaLimit?.videos}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ================= FRANCHISE ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Franchise</h2>
+
+                      <div className="text-sm space-y-1">
+                        <p>
+                          <strong>Enabled:</strong>{" "}
+                          {i?.franchise?.enabled ? "Yes" : "No"}
+                        </p>
+
+                        <p>
+                          <strong>Enquiry Button:</strong>{" "}
+                          {i?.franchise?.enquiryButton ? "Yes" : "No"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ================= VISIBILITY ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Visibility</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <span
+                          className={
+                            i?.visibility?.featured
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Featured
+                        </span>
+
+                        <span
+                          className={
+                            i?.visibility?.verifiedBadge
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Verified Badge
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ================= SUPPORT ================= */}
+                    <div className="border-t pt-4 flex justify-between items-center">
+                      <span className="font-semibold">Support</span>
+
+                      <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
+                        {i?.support}
+                      </span>
+                    </div>
+
+                    {/* ================= FAQ ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold text-lg mb-3">FAQs</h2>
+
+                      <div className="space-y-3">
+                        {i?.faqs?.map((faq, faqIndex) => (
+                          <div key={faq?._id || faqIndex} className="text-xs">
+                            <p className="font-semibold">
+                              {faqIndex + 1}. {faq?.question}
+                            </p>
+
+                            <p className="text-gray-600 mt-1">{faq?.answer}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ================= FOOTER ================= */}
+                  <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
+                    <div className="text-white text-sm text-center">
+                      {i?.validity?.months === 0
+                        ? ""
+                        : `${i?.validity?.months} months`}
+                      {" • "}
+                      {i?.validity?.renewalType === "oneTime"
+                        ? "One Time Purchase"
+                        : i?.validity?.renewalType === "monthly"
+                          ? "Monthly Plan"
+                          : i?.validity?.renewalType === "yearly"
+                            ? "Yearly"
+                            : ""}
+                    </div>
+
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      LabelName={
+                        purchasingPlanId === i?._id
+                          ? "Opening payment..."
+                          : "Get Plan"
+                      }
+                      onClick={() => purchasePlan(i)}
+                      disabled={purchasingPlanId !== null}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition">
               {/* ================= HEADER ================= */}
               <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
                 <h1 className="text-3xl uppercase font-semibold">
-                  {i?.planName}
+                  {data?.subscription?.planName}{" "}
+                  <span className="capitalize bg-green-300 p-2 text-green-700 rounded-full text-xs">
+                    Purchased
+                  </span>
                 </h1>
 
-                <p className="font-light text-sm mt-1">{i?.tagline}</p>
+                <p className="font-light text-sm mt-1">
+                  {data?.subscription?.tagline}
+                </p>
 
                 <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
-                  {i?.planFor}
+                  {data?.subscription?.planFor}
                 </span>
               </div>
 
@@ -1094,39 +1416,39 @@ const Overview = ({ data, role, userId, callData }) => {
                 <div className="flex flex-col items-center gap-1">
                   <div className="flex justify-center items-center flex-col gap-2">
                     <div className="flex justify-center items-center gap-3">
-                      {i?.price?.discount > 0 && (
+                      {data?.subscription?.price?.discount > 0 && (
                         <span className="text-sm line-through text-gray-400 flex items-center">
                           <FaRupeeSign />
-                          {i?.price?.mrp}
+                          {data?.subscription?.price?.mrp}
                         </span>
                       )}
 
-                      {i?.price?.discount > 0 && (
+                      {data?.subscription?.price?.discount > 0 && (
                         <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
-                          {i?.price?.discount}% OFF
+                          {data?.subscription?.price?.discount}% OFF
                         </span>
                       )}
                     </div>
                     <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
                       <FaRupeeSign />
-                      {i?.price?.sellingPrice}
+                      {data?.subscription?.price?.sellingPrice}
                     </span>
                   </div>
 
                   <p className="text-xs text-gray-500">
-                    ₹{i?.price?.sellingPrice} / month
+                    ₹{data?.subscription?.price?.sellingPrice} / month
                   </p>
 
-                  {i?.validity?.months === 0 ? (
+                  {data?.subscription?.validity?.months === 0 ? (
                     ""
                   ) : (
                     <p className="text-sm font-semibold text-[#8B2954]">
-                      Valid for {i?.validity?.months} months
+                      Valid for {data?.subscription?.validity?.months} months
                     </p>
                   )}
 
                   <p className="text-xs text-gray-500 capitalize">
-                    Renewal: {i?.validity?.renewalType}
+                    Renewal: {data?.subscription?.validity?.renewalType}
                   </p>
                 </div>
 
@@ -1135,16 +1457,18 @@ const Overview = ({ data, role, userId, callData }) => {
                   <h2 className="font-semibold text-lg mb-2">Plan Features</h2>
 
                   <div className="space-y-1 text-sm">
-                    {i?.features?.map((feature, featureIndex) => (
-                      <div
-                        key={featureIndex}
-                        className="flex items-start gap-2"
-                      >
-                        <span className="text-[#8B2954] font-bold">✓</span>
+                    {data?.subscription?.features?.map(
+                      (feature, featureIndex) => (
+                        <div
+                          key={featureIndex}
+                          className="flex items-start gap-2"
+                        >
+                          <span className="text-[#8B2954] font-bold">✓</span>
 
-                        <span>{feature}</span>
-                      </div>
-                    ))}
+                          <span>{feature}</span>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </div>
 
@@ -1155,12 +1479,14 @@ const Overview = ({ data, role, userId, callData }) => {
                   <div className="text-sm space-y-1">
                     <p>
                       <strong>Status:</strong>{" "}
-                      {i?.booking?.enabled ? "Enabled" : "Disabled"}
+                      {data?.subscription?.booking?.enabled
+                        ? "Enabled"
+                        : "Disabled"}
                     </p>
 
                     <p>
                       <strong>Advanced Booking:</strong>{" "}
-                      {i?.booking?.advancedBooking
+                      {data?.subscription?.booking?.advancedBooking
                         ? "Available"
                         : "Not Available"}
                     </p>
@@ -1174,7 +1500,7 @@ const Overview = ({ data, role, userId, callData }) => {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <span
                       className={
-                        i?.managementTools?.analytics
+                        data?.subscription?.managementTools?.analytics
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1184,7 +1510,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.managementTools?.inventory
+                        data?.subscription?.managementTools?.inventory
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1194,7 +1520,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.managementTools?.staffAttendance
+                        data?.subscription?.managementTools?.staffAttendance
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1204,7 +1530,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.managementTools?.commissionTracking
+                        data?.subscription?.managementTools?.commissionTracking
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1221,7 +1547,7 @@ const Overview = ({ data, role, userId, callData }) => {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <span
                       className={
-                        i?.marketing?.couponManager
+                        data?.subscription?.marketing?.couponManager
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1231,7 +1557,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.marketing?.reviews
+                        data?.subscription?.marketing?.reviews
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1241,7 +1567,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.marketing?.smsWhatsapp
+                        data?.subscription?.marketing?.smsWhatsapp
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1251,7 +1577,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.marketing?.socialPromotion
+                        data?.subscription?.marketing?.socialPromotion
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1268,16 +1594,16 @@ const Overview = ({ data, role, userId, callData }) => {
                   <div className="grid grid-cols-2 gap-2 text-sm">
                     <p>
                       <strong>Photos:</strong>{" "}
-                      {i?.mediaLimit?.unlimitedPhotos
+                      {data?.subscription?.mediaLimit?.unlimitedPhotos
                         ? "Unlimited"
-                        : i?.mediaLimit?.photos}
+                        : data?.subscription?.mediaLimit?.photos}
                     </p>
 
                     <p>
                       <strong>Videos:</strong>{" "}
-                      {i?.mediaLimit?.unlimitedVideos
+                      {data?.subscription?.mediaLimit?.unlimitedVideos
                         ? "Unlimited"
-                        : i?.mediaLimit?.videos}
+                        : data?.subscription?.mediaLimit?.videos}
                     </p>
                   </div>
                 </div>
@@ -1289,12 +1615,14 @@ const Overview = ({ data, role, userId, callData }) => {
                   <div className="text-sm space-y-1">
                     <p>
                       <strong>Enabled:</strong>{" "}
-                      {i?.franchise?.enabled ? "Yes" : "No"}
+                      {data?.subscription?.franchise?.enabled ? "Yes" : "No"}
                     </p>
 
                     <p>
                       <strong>Enquiry Button:</strong>{" "}
-                      {i?.franchise?.enquiryButton ? "Yes" : "No"}
+                      {data?.subscription?.franchise?.enquiryButton
+                        ? "Yes"
+                        : "No"}
                     </p>
                   </div>
                 </div>
@@ -1306,7 +1634,7 @@ const Overview = ({ data, role, userId, callData }) => {
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <span
                       className={
-                        i?.visibility?.featured
+                        data?.subscription?.visibility?.featured
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1316,7 +1644,7 @@ const Overview = ({ data, role, userId, callData }) => {
 
                     <span
                       className={
-                        i?.visibility?.verifiedBadge
+                        data?.subscription?.visibility?.verifiedBadge
                           ? "text-green-600"
                           : "text-gray-400"
                       }
@@ -1331,7 +1659,7 @@ const Overview = ({ data, role, userId, callData }) => {
                   <span className="font-semibold">Support</span>
 
                   <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
-                    {i?.support}
+                    {data?.subscription?.support}
                   </span>
                 </div>
 
@@ -1340,7 +1668,7 @@ const Overview = ({ data, role, userId, callData }) => {
                   <h2 className="font-semibold text-lg mb-3">FAQs</h2>
 
                   <div className="space-y-3">
-                    {i?.faqs?.map((faq, faqIndex) => (
+                    {data?.subscription?.faqs?.map((faq, faqIndex) => (
                       <div key={faq?._id || faqIndex} className="text-xs">
                         <p className="font-semibold">
                           {faqIndex + 1}. {faq?.question}
@@ -1356,335 +1684,20 @@ const Overview = ({ data, role, userId, callData }) => {
               {/* ================= FOOTER ================= */}
               <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
                 <div className="text-white text-sm text-center">
-                  {i?.validity?.months === 0
+                  {data?.subscription?.validity?.months === 0
                     ? ""
-                    : `${i?.validity?.months} months`}
+                    : `${data?.subscription?.validity?.months} months`}
                   {" • "}
-                  {i?.validity?.renewalType === "oneTime"
+                  {data?.subscription?.validity?.renewalType === "oneTime"
                     ? "One Time Purchase"
-                    : i?.validity?.renewalType === "monthly"
+                    : data?.subscription?.validity?.renewalType === "monthly"
                       ? "Monthly Plan"
-                      : i?.validity?.renewalType === "yearly"
+                      : data?.subscription?.validity?.renewalType === "yearly"
                         ? "Yearly"
                         : ""}
                 </div>
 
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  LabelName={
-                    purchasingPlanId === i?._id
-                      ? "Opening payment..."
-                      : "Get Plan"
-                  }
-                  onClick={() => purchasePlan(i)}
-                  disabled={purchasingPlanId !== null}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition">
-          {/* ================= HEADER ================= */}
-          <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
-            <h1 className="text-3xl uppercase font-semibold">
-              {data?.subscription?.planName}{" "}
-              <span className="capitalize bg-green-300 p-2 text-green-700 rounded-full text-xs">
-                Purchased
-              </span>
-            </h1>
-
-            <p className="font-light text-sm mt-1">
-              {data?.subscription?.tagline}
-            </p>
-
-            <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
-              {data?.subscription?.planFor}
-            </span>
-          </div>
-
-          {/* ================= BODY ================= */}
-          <div className="px-5 py-6 flex flex-col w-full gap-6">
-            {/* ================= PRICE ================= */}
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex justify-center items-center flex-col gap-2">
-                <div className="flex justify-center items-center gap-3">
-                  {data?.subscription?.price?.discount > 0 && (
-                    <span className="text-sm line-through text-gray-400 flex items-center">
-                      <FaRupeeSign />
-                      {data?.subscription?.price?.mrp}
-                    </span>
-                  )}
-
-                  {data?.subscription?.price?.discount > 0 && (
-                    <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
-                      {data?.subscription?.price?.discount}% OFF
-                    </span>
-                  )}
-                </div>
-                <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
-                  <FaRupeeSign />
-                  {data?.subscription?.price?.sellingPrice}
-                </span>
-              </div>
-
-              <p className="text-xs text-gray-500">
-                ₹{data?.subscription?.price?.sellingPrice} / month
-              </p>
-
-              {data?.subscription?.validity?.months === 0 ? (
-                ""
-              ) : (
-                <p className="text-sm font-semibold text-[#8B2954]">
-                  Valid for {data?.subscription?.validity?.months} months
-                </p>
-              )}
-
-              <p className="text-xs text-gray-500 capitalize">
-                Renewal: {data?.subscription?.validity?.renewalType}
-              </p>
-            </div>
-
-            {/* ================= FEATURES ================= */}
-            <div>
-              <h2 className="font-semibold text-lg mb-2">Plan Features</h2>
-
-              <div className="space-y-1 text-sm">
-                {data?.subscription?.features?.map((feature, featureIndex) => (
-                  <div key={featureIndex} className="flex items-start gap-2">
-                    <span className="text-[#8B2954] font-bold">✓</span>
-
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* ================= BOOKING ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold mb-2">Booking</h2>
-
-              <div className="text-sm space-y-1">
-                <p>
-                  <strong>Status:</strong>{" "}
-                  {data?.subscription?.booking?.enabled
-                    ? "Enabled"
-                    : "Disabled"}
-                </p>
-
-                <p>
-                  <strong>Advanced Booking:</strong>{" "}
-                  {data?.subscription?.booking?.advancedBooking
-                    ? "Available"
-                    : "Not Available"}
-                </p>
-              </div>
-            </div>
-
-            {/* ================= MANAGEMENT TOOLS ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold mb-2">Management Tools</h2>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <span
-                  className={
-                    data?.subscription?.managementTools?.analytics
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Analytics
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.managementTools?.inventory
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Inventory
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.managementTools?.staffAttendance
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Staff Attendance
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.managementTools?.commissionTracking
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Commission Tracking
-                </span>
-              </div>
-            </div>
-
-            {/* ================= MARKETING ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold mb-2">Marketing</h2>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <span
-                  className={
-                    data?.subscription?.marketing?.couponManager
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Coupon Manager
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.marketing?.reviews
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Reviews
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.marketing?.smsWhatsapp
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● SMS / WhatsApp
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.marketing?.socialPromotion
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Social Promotion
-                </span>
-              </div>
-            </div>
-
-            {/* ================= MEDIA LIMIT ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold mb-2">Media Limits</h2>
-
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <p>
-                  <strong>Photos:</strong>{" "}
-                  {data?.subscription?.mediaLimit?.unlimitedPhotos
-                    ? "Unlimited"
-                    : data?.subscription?.mediaLimit?.photos}
-                </p>
-
-                <p>
-                  <strong>Videos:</strong>{" "}
-                  {data?.subscription?.mediaLimit?.unlimitedVideos
-                    ? "Unlimited"
-                    : data?.subscription?.mediaLimit?.videos}
-                </p>
-              </div>
-            </div>
-
-            {/* ================= FRANCHISE ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold mb-2">Franchise</h2>
-
-              <div className="text-sm space-y-1">
-                <p>
-                  <strong>Enabled:</strong>{" "}
-                  {data?.subscription?.franchise?.enabled ? "Yes" : "No"}
-                </p>
-
-                <p>
-                  <strong>Enquiry Button:</strong>{" "}
-                  {data?.subscription?.franchise?.enquiryButton ? "Yes" : "No"}
-                </p>
-              </div>
-            </div>
-
-            {/* ================= VISIBILITY ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold mb-2">Visibility</h2>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <span
-                  className={
-                    data?.subscription?.visibility?.featured
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Featured
-                </span>
-
-                <span
-                  className={
-                    data?.subscription?.visibility?.verifiedBadge
-                      ? "text-green-600"
-                      : "text-gray-400"
-                  }
-                >
-                  ● Verified Badge
-                </span>
-              </div>
-            </div>
-
-            {/* ================= SUPPORT ================= */}
-            <div className="border-t pt-4 flex justify-between items-center">
-              <span className="font-semibold">Support</span>
-
-              <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
-                {data?.subscription?.support}
-              </span>
-            </div>
-
-            {/* ================= FAQ ================= */}
-            <div className="border-t pt-4">
-              <h2 className="font-semibold text-lg mb-3">FAQs</h2>
-
-              <div className="space-y-3">
-                {data?.subscription?.faqs?.map((faq, faqIndex) => (
-                  <div key={faq?._id || faqIndex} className="text-xs">
-                    <p className="font-semibold">
-                      {faqIndex + 1}. {faq?.question}
-                    </p>
-
-                    <p className="text-gray-600 mt-1">{faq?.answer}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* ================= FOOTER ================= */}
-          <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
-            <div className="text-white text-sm text-center">
-              {data?.subscription?.validity?.months === 0
-                ? ""
-                : `${data?.subscription?.validity?.months} months`}
-              {" • "}
-              {data?.subscription?.validity?.renewalType === "oneTime"
-                ? "One Time Purchase"
-                : data?.subscription?.validity?.renewalType === "monthly"
-                  ? "Monthly Plan"
-                  : data?.subscription?.validity?.renewalType === "yearly"
-                    ? "Yearly"
-                    : ""}
-            </div>
-
-            {/* <Button
+                {/* <Button
               variant="secondary"
               className="w-full"
               LabelName={
@@ -1695,7 +1708,9 @@ const Overview = ({ data, role, userId, callData }) => {
               onClick={() => purchasePlan(i)}
               disabled={purchasingPlanId !== null}
             /> */}
-          </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
