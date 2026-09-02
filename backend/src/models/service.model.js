@@ -11,8 +11,6 @@ const serviceSchema = new mongoose.Schema(
       ref: "Category",
       required: true,
     },
-
-    // _id of the subcategory embedded inside Category
     subcategory: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -23,6 +21,7 @@ const serviceSchema = new mongoose.Schema(
         brand: { type: String, trim: true },
       },
     ],
+    description: String,
     serviceInclusion: [{ type: String, trim: true }],
     serviceExclusion: [{ type: String, trim: true }],
     duration: { type: Number, default: 1 },

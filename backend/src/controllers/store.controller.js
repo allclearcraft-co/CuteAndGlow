@@ -750,10 +750,10 @@ const dashboardData = asyncHandler(async (req, res) => {
         );
     }
 
-    case "service-bookings": {
+    case "bookings": {
       const bookings = await ServiceBookings.find({
         store: storeId,
-      });
+      }).populate("address store customer");
 
       return res
         .status(200)
