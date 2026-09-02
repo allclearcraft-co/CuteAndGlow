@@ -33,6 +33,7 @@ const createStoreService = asyncHandler(async (req, res) => {
     mrp,
     discount,
     sellingPrice,
+    description,
   } = req.body;
 
   if (!name || !category || !subcategory || !mrp || !sellingPrice) {
@@ -119,6 +120,7 @@ const createStoreService = asyncHandler(async (req, res) => {
     coverImage: uploadedImages,
     serviceArea,
     serviceRequirements,
+    description,
     // sponsor: "first",
   });
   if (!service)
