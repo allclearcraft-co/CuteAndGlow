@@ -19,6 +19,8 @@ const StoreServiceCard = ({ service, onEdit, onDelete }) => {
   const role = localStorage.getItem("role")?.toLowerCase();
   const isStoreRole = role === "store";
 
+  if (!service || !service._id) return null;
+
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow hover:shadow-xl transition-all duration-300 w-full md:w-[50vw] lg:w-[30vw]">
       {/* Cover Image */}
