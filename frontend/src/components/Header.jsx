@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "./hooks/ToastContext";
 import { BsGeoAlt } from "react-icons/bs";
 import InputBox from "./Input";
+import { saveCoordinates } from "../utils/location-service";
 
 const AccordionCard = ({ children, isScrolled }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -141,6 +142,10 @@ const Header = () => {
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        saveCoordinates({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
         reverseGeocode(position.coords.latitude, position.coords.longitude);
       },
       (error) => {
@@ -174,7 +179,9 @@ const Header = () => {
   };
 
   useEffect(() => {
-    if (!city) detectLocation();
+    if (!sessionStorage.getItem("userCity")) {
+      detectLocation();
+    }
   }, []);
 
   useEffect(() => {

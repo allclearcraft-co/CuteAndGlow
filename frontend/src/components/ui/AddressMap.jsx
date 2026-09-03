@@ -1,20 +1,46 @@
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMap,
+  useMapEvents,
+} from "react-leaflet";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  getInitialCoordinates,
+  getStoredCoordinates,
+  requestCurrentLocation,
+  saveCoordinates,
+} from "../../utils/location-service";
 
-function DraggableMarker({ setCoordinates }) {
-  const [position, setPosition] = useState([28.6139, 77.209]);
+const coordinatesToPosition = ({ latitude, longitude }) => [
+  latitude,
+  longitude,
+];
+
+function MapController({ position }) {
+  const map = useMap();
+
+  useEffect(() => {
+    map.flyTo(position, 15, { animate: true, duration: 0.8 });
+  }, [map, position]);
+
+  return null;
+}
+
+function DraggableMarker({ position, setPosition, setCoordinates }) {
+  const updateLocation = (latitude, longitude) => {
+    const coordinates = saveCoordinates({ latitude, longitude });
+    const nextPosition = coordinatesToPosition(coordinates);
+
+    setPosition(nextPosition);
+    setCoordinates(coordinates);
+  };
 
   useMapEvents({
     click(e) {
-      const pos = [e.latlng.lat, e.latlng.lng];
-
-      setPosition(pos);
-
-      setCoordinates({
-        latitude: e.latlng.lat,
-        longitude: e.latlng.lng,
-      });
+      updateLocation(e.latlng.lat, e.latlng.lng);
     },
   });
 
@@ -28,12 +54,7 @@ function DraggableMarker({ setCoordinates }) {
 
           const latlng = marker.getLatLng();
 
-          setPosition([latlng.lat, latlng.lng]);
-
-          setCoordinates({
-            latitude: latlng.lat,
-            longitude: latlng.lng,
-          });
+          updateLocation(latlng.lat, latlng.lng);
         },
       }}
     />
@@ -41,9 +62,36 @@ function DraggableMarker({ setCoordinates }) {
 }
 
 export default function AddressMap({ setCoordinates }) {
+  const initialCoordinates = getInitialCoordinates();
+  const [position, setPosition] = useState(
+    coordinatesToPosition(initialCoordinates),
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    requestCurrentLocation()
+      .then((coordinates) => {
+        if (!isMounted) return;
+
+        const nextPosition = coordinatesToPosition(coordinates);
+        setPosition(nextPosition);
+        setCoordinates(coordinates);
+      })
+      .catch(() => {
+        setCoordinates(
+          getStoredCoordinates() || { latitude: null, longitude: null },
+        );
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [setCoordinates]);
+
   return (
     <MapContainer
-      center={[28.6139, 77.209]}
+      center={position}
       zoom={14}
       style={{
         height: "100%",
@@ -56,7 +104,12 @@ export default function AddressMap({ setCoordinates }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <DraggableMarker setCoordinates={setCoordinates} />
+      <MapController position={position} />
+      <DraggableMarker
+        position={position}
+        setPosition={setPosition}
+        setCoordinates={setCoordinates}
+      />
     </MapContainer>
   );
 }
