@@ -383,7 +383,7 @@ const deleteAddress = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid request, please try again later");
 
   const address = await Address.findByIdAndDelete(addressId);
-  if (!address) throw new ApiError(400, "Unable to delete address");
+  // if (!address) throw new ApiError(400, "Unable to delete address");
 
   return res
     .status(200)
