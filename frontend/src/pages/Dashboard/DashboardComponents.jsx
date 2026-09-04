@@ -1732,11 +1732,9 @@ const SavedAddress = ({ data, role, userId, handleReload, callData }) => {
 
   const addNewAddress = async (e) => {
     e.preventDefault();
-    if (coordinates.longitude === null && coordinates.latitude === null) {
+    if (coordinates.longitude === null || coordinates.latitude === null) {
       alertError("Unable to fetch location, please try again !");
-      setShowForm(false);
-      formRef.current.reset();
-      setCoordinates({ latitude: null, longitude: null });
+      return;
     }
     try {
       const formData = new FormData(formRef.current);

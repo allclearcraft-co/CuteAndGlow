@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   FaSearch,
   FaFilter,
@@ -55,6 +55,8 @@ const ServiceFilters = ({ filters, setFilters }) => {
 
   const clearFilters = () => {
     setSearch("");
+    setFilters("");
+    localStorage.clear("homeClickedCategory");
 
     setFilters({
       page: 1,
@@ -65,6 +67,11 @@ const ServiceFilters = ({ filters, setFilters }) => {
       sortBy: "latest",
     });
   };
+
+  const catName = useMemo(() => {
+    const q = filters?.category;
+    return categories.filter((cat) => `${cat?._id}`.includes(q));
+  }, [filters, categories]);
 
   return (
     <div className="bg-white rounded-2xl shadow border border-neutral-200 p-5 mb-8">
@@ -112,7 +119,7 @@ const ServiceFilters = ({ filters, setFilters }) => {
               >
                 <option value="">All Categories</option>
                 {categories?.map((i, index) => (
-                  <option key={index} value={i?.title}>
+                  <option key={index} value={i?._id}>
                     {i?.title}
                   </option>
                 ))}
@@ -139,8 +146,7 @@ const ServiceFilters = ({ filters, setFilters }) => {
               </select>
               <Button
                 onClick={() => {
-                  setFilters("");
-                  localStorage.clear("homeClickedCategory");
+                  clearFilters();
                 }}
                 variant="secondary"
                 LabelName={
@@ -160,7 +166,7 @@ const ServiceFilters = ({ filters, setFilters }) => {
           <div>
             {filters.category && (
               <span className="px-3 py-1 rounded-full bg-pink-100 text-pink-700 text-xs">
-                Category : {filters.category}
+                Category : {catName[0]?.title}
               </span>
             )}
           </div>
