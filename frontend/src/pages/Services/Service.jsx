@@ -17,7 +17,7 @@ const Service = () => {
     limit: 20,
     category: localStorage.getItem("homeClickedCategory") || "",
     serviceFor: "",
-    search: "",
+    search: localStorage.getItem("homeClickedSearch") || "",
     sortBy: "latest",
   });
 

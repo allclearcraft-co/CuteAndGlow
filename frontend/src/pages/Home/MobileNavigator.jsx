@@ -135,6 +135,7 @@ const prepareCategories = (categories = []) => {
 
 const MobileServiceTags = () => {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
   const [categories, setCategories] = useState([]);
   useEffect(() => {
     const getAllCategories = async () => {
@@ -154,15 +155,6 @@ const MobileServiceTags = () => {
   }, []);
 
   const { items: sanitizedCategories, columns } = prepareCategories(categories);
-
-  // const sanitizedCategory = () => {
-  //   if (!categories) return;
-  //   if (categories?.length === 8) return categories;
-
-  //   if(categories?.length%2 === 0){
-
-  //   }
-  // };
 
   const [city, setCity] = useState(sessionStorage.getItem("userCity") || "");
   const [locationMessage, setLocationMessage] = useState(
@@ -291,6 +283,12 @@ const MobileServiceTags = () => {
     return () => clearTimeout(timer);
   }, [manualCity]);
 
+  const onSearchSubmit = () => {
+    localStorage.setItem("homeClickedSearch", search.toLowerCase());
+    navigate("/services/all");
+    setSearch("");
+  };
+
   return (
     <div className="w-full h-full px-4 py-4">
       {/* Location */}
@@ -359,10 +357,19 @@ const MobileServiceTags = () => {
       </div>
 
       {/* Search */}
-      <div className="w-full relative">
-        <InputBox placeholder="Search your desired service here" type="text" />
-        <BsSearch className="absolute top-6 right-5 text-neutral-700" />
-      </div>
+      <form className="w-full relative" onSubmit={onSearchSubmit}>
+        <InputBox
+          placeholder="Search your desired service here"
+          type="text"
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <button
+          className="absolute top-[1.12rem] rounded-full right-2 text-neutral-700 bg-neutral-200 p-2"
+          type="submit"
+        >
+          <BsSearch />
+        </button>
+      </form>
 
       {/* Categories */}
       <div
