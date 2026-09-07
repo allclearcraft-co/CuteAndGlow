@@ -19,9 +19,13 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
   const formRef = useRef();
   const navigate = useNavigate();
   const storeId = service?.store?._id;
+
   const handleBookAppointment = async (e) => {
     e.preventDefault();
-
+    if (!customerDefaultAddress) {
+      alertInfo("Please add an address first to proceed !");
+      return;
+    }
     try {
       startLoading();
 

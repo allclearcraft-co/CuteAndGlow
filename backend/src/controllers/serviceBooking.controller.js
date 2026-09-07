@@ -14,6 +14,9 @@ const createAppointment = asyncHandler(async (req, res) => {
   if (!serviceId || !customerId || !dateForBooking || !modeOfPayment)
     throw new ApiError(400, "Something went wrong, please try again ");
 
+  if (!address)
+    throw new ApiError(400, "Please add an address first to proceed");
+
   const newService = await ServiceBookings.create({
     service: serviceId,
     customer: customerId,
