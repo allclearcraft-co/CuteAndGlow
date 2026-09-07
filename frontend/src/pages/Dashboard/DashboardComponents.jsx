@@ -2609,72 +2609,76 @@ const FavoriteStore = ({ data, role }) => {
       </div>
 
       {/* Store List */}
+      {data?.length === 0 ? (
+        ""
+      ) : (
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden">
+            {/* Image */}
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition overflow-hidden">
-          {/* Image */}
+            <img
+              src={`https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500`}
+              className="w-full h-52 object-cover"
+            />
 
-          <img
-            src={`https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500`}
-            className="w-full h-52 object-cover"
-          />
+            {/* Content */}
 
-          {/* Content */}
+            <div className="p-5">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    {data?.name || "Glow Beauty Studio"}
+                  </h2>
 
-          <div className="p-5">
-            <div className="flex justify-between items-start">
-              <div>
-                <h2 className="text-xl font-semibold">
-                  {data?.name || "Glow Beauty Studio"}
-                </h2>
+                  <div className="flex items-center gap-2 mt-2">
+                    <FaStar className="text-yellow-400" />
+                    <span>{data?.rating || "2.1k"}</span>
+                    <span className="text-gray-500">
+                      ({data?.reviews || "4.5"} Reviews)
+                    </span>
+                  </div>
+                </div>
 
-                <div className="flex items-center gap-2 mt-2">
-                  <FaStar className="text-yellow-400" />
-                  <span>{data?.rating || "2.1k"}</span>
-                  <span className="text-gray-500">
-                    ({data?.reviews || "4.5"} Reviews)
-                  </span>
+                <button className="text-red-500 hover:text-red-600">
+                  <FaHeart size={22} />
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <div className="flex items-center gap-3 text-gray-600">
+                  <FaMapMarkerAlt className="text-[#8B2954]" />
+                  {data?.location || "Ranchi"}
+                </div>
+
+                <div className="flex items-center gap-3 text-gray-600">
+                  <FaClock className="text-[#8B2954]" />
+                  {data?.timing || "4:00"}
                 </div>
               </div>
 
-              <button className="text-red-500 hover:text-red-600">
-                <FaHeart size={22} />
-              </button>
-            </div>
+              {/* Buttons */}
 
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center gap-3 text-gray-600">
-                <FaMapMarkerAlt className="text-[#8B2954]" />
-                {data?.location || "Ranchi"}
+              <div className="flex gap-3 mt-6">
+                <button className="flex-1 flex items-center justify-center gap-2 border border-[#8B2954] text-[#8B2954] py-2 rounded-lg hover:bg-[#8B2954] hover:text-white transition">
+                  <FaEye />
+                  View
+                </button>
+
+                <button className="flex-1 flex items-center justify-center gap-2 bg-[#8B2954] text-white py-2 rounded-lg hover:bg-[#742247] transition">
+                  <FaCalendarCheck />
+                  Book Now
+                </button>
               </div>
-
-              <div className="flex items-center gap-3 text-gray-600">
-                <FaClock className="text-[#8B2954]" />
-                {data?.timing || "4:00"}
-              </div>
-            </div>
-
-            {/* Buttons */}
-
-            <div className="flex gap-3 mt-6">
-              <button className="flex-1 flex items-center justify-center gap-2 border border-[#8B2954] text-[#8B2954] py-2 rounded-lg hover:bg-[#8B2954] hover:text-white transition">
-                <FaEye />
-                View
-              </button>
-
-              <button className="flex-1 flex items-center justify-center gap-2 bg-[#8B2954] text-white py-2 rounded-lg hover:bg-[#742247] transition">
-                <FaCalendarCheck />
-                Book Now
-              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
 const FavoriteProfessional = ({ data, role }) => {
+  if (!data) return;
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -2690,73 +2694,76 @@ const FavoriteProfessional = ({ data, role }) => {
       </div>
 
       {/* Professional Cards */}
+      {data?.length === 0 ? (
+        ""
+      ) : (
+        <div className="grid lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6">
+            <div className="flex gap-5">
+              {/* Image */}
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6">
-          <div className="flex gap-5">
-            {/* Image */}
+              <img
+                src={
+                  data?.image ||
+                  `https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500`
+                }
+                className="w-28 h-28 rounded-full object-cover "
+              />
 
-            <img
-              src={
-                data?.image ||
-                `https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=500`
-              }
-              className="w-28 h-28 rounded-full object-cover "
-            />
+              {/* Details */}
 
-            {/* Details */}
+              <div className="flex-1">
+                <div className="flex justify-between">
+                  <h2 className="text-xl font-semibold">
+                    {data?.name || "Prachi Sharma"}
+                  </h2>
 
-            <div className="flex-1">
-              <div className="flex justify-between">
-                <h2 className="text-xl font-semibold">
-                  {data?.name || "Prachi Sharma"}
-                </h2>
+                  <button className="text-red-500 hover:text-red-600">
+                    <FaHeart size={22} />
+                  </button>
+                </div>
 
-                <button className="text-red-500 hover:text-red-600">
-                  <FaHeart size={22} />
-                </button>
-              </div>
+                <p className="text-[#8B2954] font-medium mt-1">
+                  {data?.specialization || "Bridal Makeup Artist"}
+                </p>
 
-              <p className="text-[#8B2954] font-medium mt-1">
-                {data?.specialization || "Bridal Makeup Artist"}
-              </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <FaStar className="text-yellow-400" />
+                  <span>{data?.rating || "4.9"}</span>
 
-              <div className="flex items-center gap-2 mt-2">
-                <FaStar className="text-yellow-400" />
-                <span>{data?.rating || "4.9"}</span>
+                  <span className="text-gray-500">
+                    ({data?.reviews || "1.8k"} Reviews)
+                  </span>
+                </div>
 
-                <span className="text-gray-500">
-                  ({data?.reviews || "1.8k"} Reviews)
-                </span>
-              </div>
+                <div className="flex items-center gap-2 mt-3 text-gray-600">
+                  <FaBriefcase className="text-[#8B2954]" />
+                  {data?.experience || "7 years"} Experience
+                </div>
 
-              <div className="flex items-center gap-2 mt-3 text-gray-600">
-                <FaBriefcase className="text-[#8B2954]" />
-                {data?.experience || "7 years"} Experience
-              </div>
-
-              <div className="flex items-center gap-2 mt-2 text-gray-600">
-                <FaDatabase className="text-[#8B2954]" />
-                {data?.store || "Glow Beauty Studio"}
+                <div className="flex items-center gap-2 mt-2 text-gray-600">
+                  <FaDatabase className="text-[#8B2954]" />
+                  {data?.store || "Glow Beauty Studio"}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Buttons */}
+            {/* Buttons */}
 
-          <div className="flex gap-3 mt-6">
-            <button className="flex-1 flex items-center justify-center gap-2 border border-[#8B2954] text-[#8B2954] py-2 rounded-lg hover:bg-[#8B2954] hover:text-white transition">
-              <FaEye />
-              View Profile
-            </button>
+            <div className="flex gap-3 mt-6">
+              <button className="flex-1 flex items-center justify-center gap-2 border border-[#8B2954] text-[#8B2954] py-2 rounded-lg hover:bg-[#8B2954] hover:text-white transition">
+                <FaEye />
+                View Profile
+              </button>
 
-            <button className="flex-1 flex items-center justify-center gap-2 bg-[#8B2954] text-white py-2 rounded-lg hover:bg-[#742247] transition">
-              <FaCalendarCheck />
-              Book Now
-            </button>
+              <button className="flex-1 flex items-center justify-center gap-2 bg-[#8B2954] text-white py-2 rounded-lg hover:bg-[#742247] transition">
+                <FaCalendarCheck />
+                Book Now
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
