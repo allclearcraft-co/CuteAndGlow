@@ -277,6 +277,7 @@ const dashboardData = asyncHandler(async (req, res) => {
       const services = await Services.find({ isActive: false })
         .select("category serviceFor inHouse")
         .populate({ path: "store", select: "name" })
+        .populate({ path: "category", select: "title" })
         .sort({
           createdAt: -1,
         });
@@ -288,6 +289,7 @@ const dashboardData = asyncHandler(async (req, res) => {
     case "active_services": {
       const services = await Services.find({ isActive: true })
         .populate({ path: "store", select: "storeName" })
+        .populate({ path: "category", select: "title" })
         .select("category serviceFor inHouse")
         .sort({
           createdAt: -1,
