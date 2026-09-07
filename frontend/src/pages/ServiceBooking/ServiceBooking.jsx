@@ -232,7 +232,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
           <InputBox
             type="number"
             name="bookingAmount"
-            value={110 + 20 + service?.price?.sellingPrice}
+            value={service?.price?.sellingPrice}
             className="hidden"
             required={false}
           />

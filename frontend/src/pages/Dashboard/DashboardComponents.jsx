@@ -2495,6 +2495,8 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
     callData();
   }, []);
 
+  console.log(data);
+
   return (
     <div className="space-y-6 h-full">
       {/* Header */}
@@ -2541,7 +2543,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
               </div>
 
               {/* Details */}
-              <div className="grid md:grid-cols-2 gap-5 mt-6">
+              <div className="grid md:grid-cols-2 gap-1 mt-6">
                 <div className="flex items-center gap-3">
                   <FaCalendarAlt className="text-[#8B2954]" />
                   {formatDateString(booking?.dateForBooking)}
@@ -2566,10 +2568,33 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                   <FaRupeeSign className="text-[#8B2954]" />{" "}
                   {booking?.bookingAmount || "--"}
                 </div>
+
+                <div className="flex items-center gap-3">
+                  <FaUser className="text-[#8B2954]" />{" "}
+                  <strong className="heading">Customer: </strong>
+                  <span className="text-sm">
+                    {booking?.customer?.name} |{" "}
+                    {booking?.customer?.contactNumber}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <FaStore className="text-[#8B2954]" />{" "}
+                  <strong className="heading">Store: </strong>
+                  <span className="text-sm">
+                    {booking?.store?.storeName} |{" "}
+                    {booking?.store?.storeContactNumber}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3 heading">
+                  <FaRupeeSign className="text-[#8B2954]" />{" "}
+                  {booking?.bookingAmount || "--"}
+                </div>
               </div>
 
               {/* Buttons */}
-
+              {/* 
               <div className="flex flex-wrap gap-3 mt-8">
                 {booking.status === "Upcoming" && (
                   <button className="flex items-center gap-2 bg-red-100 text-red-600 px-5 py-2 rounded-lg hover:bg-red-200">
@@ -2584,7 +2609,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                     Rate & Review
                   </button>
                 )}
-              </div>
+              </div> */}
             </div>
           ))}
         </div>
