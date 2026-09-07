@@ -7,7 +7,6 @@ import { FetchData } from "../../utils/FetchFromApi";
 import { useToast } from "../../components/hooks/ToastContext";
 
 const SubscriptionModelForm = ({ onClose, adminId, initialData, onSaved }) => {
-  console.log(initialData);
   const formRef = useRef();
   const { alertInfo, alertError, alertSuccess } = useToast();
   const [features, setFeatures] = useState([""]);
@@ -177,7 +176,6 @@ const SubscriptionModelForm = ({ onClose, adminId, initialData, onSaved }) => {
       onSaved?.(response.data.data);
       onClose?.();
     } catch (err) {
-      console.log(err.response || err);
       alertError(err.response.data);
     }
   };

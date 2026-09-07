@@ -144,10 +144,8 @@ const MobileServiceTags = () => {
           "category-subcategory/get/categories/all",
           "get",
         );
-        console.log(response);
         setCategories(response.data.data);
       } catch (err) {
-        console.log(err.response.data);
       }
     };
 

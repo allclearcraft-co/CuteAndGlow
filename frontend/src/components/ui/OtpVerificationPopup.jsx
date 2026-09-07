@@ -108,7 +108,6 @@ function OtpVerificationPopup({
             <Countdown
               duration={1}
               onComplete={() => {
-                console.log("Time over");
                 // resendOTP();
                 setShowButton(true);
               }}

@@ -37,7 +37,7 @@ const CustomerProfileCard = ({
       );
       reload();
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     } finally {
       stopLoading();
     }

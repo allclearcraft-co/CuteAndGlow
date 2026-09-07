@@ -74,7 +74,7 @@ const Overview = ({ data, role, userId, callData }) => {
       );
       setSubscription(response.data.data);
     } catch (err) {
-      console.log(err.response);
+      // console.log(err.response);
     }
   };
 
@@ -2972,7 +2972,7 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
 
         setCategories(response.data.data || []);
       } catch (err) {
-        console.error("Error fetching categories:", err);
+        // console.error("Error fetching categories:", err);
         alertError(
           err?.response?.data?.message || "Unable to fetch categories",
         );
@@ -4046,7 +4046,7 @@ const KycDetails = ({ data, role, storeId, handleReload, callData }) => {
         formData,
         true,
       );
-      console.log(response);
+      // console.log(response);
       formRef.current.reset();
       setImagePreview(null);
       setImagePreview2(null);
@@ -4066,7 +4066,6 @@ const KycDetails = ({ data, role, storeId, handleReload, callData }) => {
     }
   };
 
-  console.log(data);
   return (
     <div className="w-full space-y-6">
       {/* Header */}

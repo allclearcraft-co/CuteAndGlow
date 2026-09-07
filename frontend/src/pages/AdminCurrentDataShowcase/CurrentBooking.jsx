@@ -1,7 +1,6 @@
 import React from "react";
 
 const CurrentBooking = ({ data }) => {
-  console.log(data);
 
   const formatDate = (date) => {
     if (!date) return "N/A";

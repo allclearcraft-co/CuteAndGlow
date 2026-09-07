@@ -58,7 +58,7 @@ function Dashboard() {
         );
       }
     } catch (err) {
-      console.log(err.response);
+      // console.log(err.response);
     }
   };
 
@@ -70,7 +70,7 @@ function Dashboard() {
       );
       setSubscriptionDetails(response.data.data);
     } catch (err) {
-      console.log(err.response.data);
+      // console.log(err.response.data);
     }
   };
 
@@ -111,11 +111,11 @@ function Dashboard() {
         formData,
       );
       formRef.current.reset();
-      console.log(response);
+      // console.log(response);
       alertSuccess(response.data.message);
       setShowPasswordModal(false);
     } catch (err) {
-      console.log(err.response.data);
+      // console.log(err.response.data);
       setShowPasswordModal(false);
     }
   };
