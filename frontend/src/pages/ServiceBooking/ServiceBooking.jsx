@@ -138,11 +138,12 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
 
   const displayChargesData = [
     { label: "Amount", value: service?.price?.sellingPrice },
-    { label: "Surge Fee", value: 110 },
-    { label: "Platform fee", value: 20 },
+    // { label: "Surge Fee", value: 110 },
+    // { label: "Platform fee", value: 20 },
     {
       label: "Grand Total",
-      value: 110 + 20 + service?.price?.sellingPrice,
+      value: service?.price?.sellingPrice,
+      // value: 110 + 20 + service?.price?.sellingPrice,
     },
   ];
 
@@ -196,11 +197,11 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
 
           <div className="w-full border-[0.5px] border-[#8B2954]" />
 
-          <p className="text-xs flex justify-start items-center">
+          {/* <p className="text-xs flex justify-start items-center">
             <span className="heading">Platform fee:</span>
             This small fee helps us pay bills so that we can keep Cute & Glow
             running.
-          </p>
+          </p> */}
         </div>
 
         {/* Booking Form */}
