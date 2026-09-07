@@ -150,9 +150,9 @@ const loginCustomer = asyncHandler(async (req, res) => {
 
 const passwordLogin = asyncHandler(async (req, res) => {
   const { contactNumber, email, password } = req.body;
-  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
 
   if (contactNumber) {
+    if (!contactNumber) throw new ApiError(400, "Invalid request ");
     const user = await Customer.findOne({ contactNumber });
     if (!user) throw new ApiError(401, "Invalid credentials");
 
@@ -173,6 +173,7 @@ const passwordLogin = asyncHandler(async (req, res) => {
       );
   }
   if (email) {
+    if (!email) throw new ApiError(400, "Invalid request ");
     const user = await Customer.findOne({ email });
     if (!user) throw new ApiError(401, "Invalid credentials");
 
@@ -841,6 +842,50 @@ const getCustomerById = asyncHandler(async (req, res) => {
     );
 });
 
+const actionsForStore = asyncHandler(async (req, res) => {
+  const { action, keyId, customerId } = req.params;
+  console.log(action, keyId, customerId);
+
+  if (!action || !keyId || !customerId) {
+    throw new ApiError(
+      400,
+      "Invalid request, please reload or try again later!",
+    );
+  }
+
+  const customer = await Customer.findById(customerId);
+  if (!customer) {
+    throw new ApiError(400, "Unable to authenticate you");
+  }
+
+  const allowedActions = {
+    favStore: "favStore",
+    favProfessional: "favProfessional",
+    quickServices: "quickServices",
+    wishListServices: "wishListServices",
+  };
+
+  const field = allowedActions[action];
+  if (!field) {
+    throw new ApiError(400, "Invalid dashboard query");
+  }
+
+  const exists = customer[field].some(
+    (id) => id.toString() === keyId.toString(),
+  );
+  if (exists) {
+    customer[field] = customer[field].filter(
+      (id) => id.toString() !== keyId.toString(),
+    );
+  } else {
+    customer[field].push(keyId);
+  }
+
+  await customer.save();
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
+});
+
 export {
   registerCustomer,
   loginCustomer,
@@ -859,6 +904,7 @@ export {
   addUPIid,
   deleteBankDetails,
   getCustomerById,
+  actionsForStore,
   dashboardData,
   reLoginToken,
 };
