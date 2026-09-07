@@ -45,7 +45,7 @@ function AdminDashboard() {
       setData(res.data.data);
       // console.log(res.data.data);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   };
 
@@ -80,8 +80,6 @@ function AdminDashboard() {
         true,
       );
 
-      console.log("CREATE CATEGORY:", response);
-
       if (response?.data?.success) {
         alert("Category added successfully.");
 
@@ -96,8 +94,6 @@ function AdminDashboard() {
         alert(response?.data?.message || "Unable to add category.");
       }
     } catch (error) {
-      console.error("CREATE CATEGORY ERROR:", error);
-
       alert(
         error?.response?.data?.message ||
           "Something went wrong while adding the category.",
@@ -123,8 +119,6 @@ function AdminDashboard() {
         true,
       );
 
-      console.log("CREATE SUBCATEGORY:", response);
-
       if (response?.data?.success) {
         alert("Subcategory added successfully.");
 
@@ -139,8 +133,6 @@ function AdminDashboard() {
         alert(response?.data?.message || "Unable to add subcategory.");
       }
     } catch (error) {
-      console.error("CREATE SUBCATEGORY ERROR:", error);
-
       alert(
         error?.response?.data?.message ||
           "Something went wrong while adding the subcategory.",
@@ -230,7 +222,6 @@ function AdminDashboard() {
                   />
                 </div>
               </div>
-              {console.log(data)}
               <DashboardTable tableRole="categories" TableData={data} />
 
               <AddCategoryForm

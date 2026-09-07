@@ -1,9 +1,11 @@
 import React from "react";
 import Button from "../../components/Button";
 import { FetchData } from "../../utils/FetchFromApi";
+import { useToast } from "../../components/hooks/ToastContext";
 
 const CurrentServices = ({ data }) => {
-  console.log(data);
+  const { alertSuccess, alertError } = useToast();
+  // console.log(data);
   const TableData = [
     {
       id: 1,
@@ -120,22 +122,22 @@ const CurrentServices = ({ data }) => {
     if (typeof value === "string" || typeof value === "number") return value;
 
     if (Array.isArray(value)) {
-  if (value.length === 0) return "N/A";
+      if (value.length === 0) return "N/A";
 
-  return (
-    <ul className="list-disc list-inside space-y-1">
-      {value.map((item, index) => (
-        <li key={item?._id || index}>
-          {typeof item === "object" && item !== null
-            ? item.productType && item.brand
-              ? `${item.brand} - ${item.productType}`
-              : item.name || item.storeName || JSON.stringify(item)
-            : item}
-        </li>
-      ))}
-    </ul>
-  );
-}
+      return (
+        <ul className="list-disc list-inside space-y-1">
+          {value.map((item, index) => (
+            <li key={item?._id || index}>
+              {typeof item === "object" && item !== null
+                ? item.productType && item.brand
+                  ? `${item.brand} - ${item.productType}`
+                  : item.name || item.storeName || JSON.stringify(item)
+                : item}
+            </li>
+          ))}
+        </ul>
+      );
+    }
 
     if (typeof value === "object") {
       // Populated MongoDB documents
@@ -164,11 +166,10 @@ const CurrentServices = ({ data }) => {
         `services/update/service-status/${action}/${serviceId}`,
         "post",
       );
-      console.log(response);
       window.location.reload();
       alertSuccess(response.data.message);
     } catch (err) {
-      console.log(err.response.data);
+      alertError("Something went wrong, please try again later !");
     }
   };
 

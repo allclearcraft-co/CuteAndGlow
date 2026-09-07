@@ -24,9 +24,7 @@ const ServiceFilters = ({ filters, setFilters }) => {
           "get",
         );
         setCategories(response.data.data);
-      } catch (err) {
-        console.log(err);
-      }
+      } catch (err) {}
     };
 
     getAllCategoriesName();

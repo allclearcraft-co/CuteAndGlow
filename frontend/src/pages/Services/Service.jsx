@@ -37,7 +37,6 @@ const Service = () => {
       setServices(response.data.data.services);
       setPagination(response.data.data.pagination);
     } catch (err) {
-      console.log(err.response?.data || err);
     } finally {
       setLoading(false);
     }

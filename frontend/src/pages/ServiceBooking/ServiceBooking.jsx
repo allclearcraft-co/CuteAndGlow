@@ -33,11 +33,11 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
         formData,
       );
 
-      console.log(response);
+      // console.log(response);
       navigate("/dashboard");
       alertSuccess("Appointment booked successfully !");
     } catch (err) {
-      console.log(err.response.data);
+      // console.log(err.response.data);
       alertError(err.response.data);
     } finally {
       stopLoading();
@@ -86,20 +86,14 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
   const handleMarkAddressAsDefault = async ({ addressId }) => {
     try {
       startLoading();
-
-      console.log(addressId);
-
       const response = await FetchData(
         `customer/update/add-address/${userId}/${addressId}`,
         "post",
       );
-
-      console.log(response);
-
       getServiceById();
       getCustomerById();
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     } finally {
       stopLoading();
     }

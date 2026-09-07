@@ -1,7 +1,6 @@
 import React from "react";
 
 const CurrentAdmin = ({ data }) => {
-  console.log(data);
   const TableData = [
     {
       id: 1,

@@ -207,7 +207,7 @@ const CurrentService = () => {
       );
       setServices(response.data.data);
     } catch (err) {
-      console.log(err.response.data);
+      // console.log(err.response.data);
     } finally {
       setLoading(false);
     }

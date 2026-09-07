@@ -24,16 +24,6 @@ const createAdmin = asyncHandler(async (req, res) => {
     sectionList = [],
   } = req.body;
 
-  console.log(
-    name,
-    contactNumber,
-    email,
-    password,
-    employeeId,
-    role,
-    sectionList,
-  );
-
   // // Verify creator admin exists
   // const creatorAdmin = await Admin.findById(adminId);
   // if (!creatorAdmin) throw new ApiError(404, "Admin not found.");
