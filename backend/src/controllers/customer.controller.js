@@ -252,7 +252,6 @@ const otpVerification = asyncHandler(async (req, res) => {
     if (now > user.otpExpiry)
       throw new ApiError(403, "OTP expired, please try again");
     console.log(otp, user.otp);
-    console.log(user);
 
     if (otp != user.otp) throw new ApiError(400, "Invalid OTP");
 
@@ -425,7 +424,6 @@ const addAddress = asyncHandler(async (req, res) => {
 
 const markAddressDefault = asyncHandler(async (req, res) => {
   const { addressId, customerId } = req.params;
-  console.log(addressId, customerId);
 
   if (!addressId || !customerId) {
     throw new ApiError(400, "Something went wrong please try again later");
@@ -521,8 +519,22 @@ const deleteAddress = asyncHandler(async (req, res) => {
   if (!addressId || !customerId)
     throw new ApiError(400, "Something went wrong");
 
-  const address = await Address.findOneAndDelete({ customer: customerId });
-  if (!address) throw new ApiError(400, "Unable to process the request");
+  const customer = await Customer.findById(customerId);
+  if (!customer)
+    throw new ApiError(400, "Invalid request, please try again later");
+
+  const exists = customer.address.some(
+    (id) => id.toString() === addressId.toString(),
+  );
+  if (exists) {
+    customer.address = customer.address.filter(
+      (id) => id.toString() !== addressId.toString(),
+    );
+  }
+  await customer.save();
+
+  const address = await Address.findByIdAndDelete(addressId);
+  // if (!address) throw new ApiError(400, "Unable to process the request");
 
   return res.status(200).json(new ApiResponse(200, {}, "Deleted successfully"));
 });
@@ -815,7 +827,6 @@ const reLoginToken = asyncHandler(async (req, res) => {
 
 const getCustomerById = asyncHandler(async (req, res) => {
   const { customerId } = req.params;
-  console.log(customerId);
   if (!customerId) throw new ApiError(400, "Invalid request");
 
   const customer = await Customer.findById(customerId).populate("address");
@@ -844,8 +855,6 @@ const getCustomerById = asyncHandler(async (req, res) => {
 
 const actionsForStore = asyncHandler(async (req, res) => {
   const { action, keyId, customerId } = req.params;
-  console.log(action, keyId, customerId);
-
   if (!action || !keyId || !customerId) {
     throw new ApiError(
       400,

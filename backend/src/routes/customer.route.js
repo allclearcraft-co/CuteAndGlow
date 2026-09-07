@@ -60,7 +60,7 @@ router
   .post(VerifyCustomer, actionsForStore);
 router
   .route("/update/delete-address/:addressId/:customerId")
-  .post(VerifyCustomer, deleteAddress);
+  .delete(VerifyCustomer, deleteAddress);
 router
   .route("/update/add-bank-details/:customerId")
   .post(VerifyCustomer, addBankDetails);
