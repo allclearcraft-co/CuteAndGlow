@@ -49,7 +49,7 @@ const TABLE_CONFIG = {
     searchKeys: ["category", "serviceFor", "store.storeName"],
     viewRoute: (id) => `/admin/current/${"service"}/${id}`,
     columns: [
-      { header: "Category", key: "category" },
+      { header: "Category", key: "category.title" },
       { header: "Service For", key: "serviceFor" },
       {
         header: "In House",
@@ -66,7 +66,7 @@ const TABLE_CONFIG = {
     searchKeys: ["category", "serviceFor", "store.storeName"],
     viewRoute: (id) => `/admin/current/${"service"}/${id}`,
     columns: [
-      { header: "Category", key: "category" },
+      { header: "Category", key: "category.title" },
       { header: "Service For", key: "serviceFor" },
       {
         header: "In House",
@@ -181,6 +181,7 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
       ),
     );
   }, [search, TableData, TableHeader]);
+  console.log(TableData);
 
   return (
     <div className="h-full">
