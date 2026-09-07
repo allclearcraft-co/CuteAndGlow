@@ -22,7 +22,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
 
   const handleBookAppointment = async (e) => {
     e.preventDefault();
-    if (!customerDefaultAddress) {
+    if (customerDefaultAddress?.length === 0) {
       alertInfo("Please add an address first to proceed !");
       return;
     }
@@ -241,6 +241,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
             name="address"
             value={customerDefaultAddress[0]?._id}
             className="hidden"
+            required={customerDefaultAddress?.length === 0 ? false : true}
           />
 
           <Button
@@ -269,75 +270,82 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
         ===================================================== */}
         <div className=" w-full overflow-x-auto overflow-y-hidden flex snap-x snap-mandatory scroll-smooth pb-2 scrollbar-thin">
           {/* Default Address */}
-          <div className=" gap-1 mx-1 flex-shrink-0 w-[85vw] sm:w-64 text-xs select-none cursor-pointer snap-start">
-            <div className="bg-neutral-200 rounded-2xl  shadow-md  border border-gray-200  p-3  hover:shadow-lg  transition  w-full  min-h-[180px]">
-              {/* Top */}
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-1 min-w-0">
-                  <div className=" w-8 h-8 flex-shrink-0 rounded-full bg-pink-100 flex justify-center items-center text-[#8B2954]text-xl">
-                    {customerDefaultAddress?.[0]?.icon || <FaUser />}
+          {customerDefaultAddress?.length === 0 ? (
+            <Button
+              LabelName="add address"
+              onClick={() => navigate("/dashboard")}
+            />
+          ) : (
+            <div className=" gap-1 mx-1 flex-shrink-0 w-[85vw] sm:w-64 text-xs select-none cursor-pointer snap-start">
+              <div className="bg-neutral-200 rounded-2xl  shadow-md  border border-gray-200  p-3  hover:shadow-lg  transition  w-full  min-h-[180px]">
+                {/* Top */}
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center gap-1 min-w-0">
+                    <div className=" w-8 h-8 flex-shrink-0 rounded-full bg-pink-100 flex justify-center items-center text-[#8B2954]text-xl">
+                      {customerDefaultAddress?.[0]?.icon || <FaUser />}
+                    </div>
+
+                    <div className="min-w-0">
+                      <h2 className="font-semibold text-lg truncate">
+                        {customerDefaultAddress?.[0]?.addressType || "Na"}
+                      </h2>
+
+                      {customerDefaultAddress?.[0]?.defaultAddress && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          Default
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="min-w-0">
-                    <h2 className="font-semibold text-lg truncate">
-                      {customerDefaultAddress?.[0]?.addressType || "Na"}
-                    </h2>
-
-                    {customerDefaultAddress?.[0]?.defaultAddress && (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                        Default
-                      </span>
-                    )}
-                  </div>
+                  <FaMapMarkerAlt className="text-xl flex-shrink-0" />
                 </div>
 
-                <FaMapMarkerAlt className="text-xl flex-shrink-0" />
+                {/* Details */}
+                <div className="mt-2 space-y-2">
+                  <h3 className="font-semibold truncate">
+                    {customerDefaultAddress?.[0]?.contactDetails?.name} |{" "}
+                    {customerDefaultAddress?.[0]?.contactDetails?.contact}
+                  </h3>
+
+                  <p className="text-gray-500 heading">Your Address:</p>
+                </div>
+
+                <p className="leading-4 line-clamp-5">
+                  {customerDefaultAddress?.[0]?.flatNumber}{" "}
+                  {customerDefaultAddress?.[0]?.floor}{" "}
+                  {customerDefaultAddress?.[0]?.block},{" "}
+                  {customerDefaultAddress?.[0]?.societyName} <br />{" "}
+                  {customerDefaultAddress?.[0]?.street1}{" "}
+                  {customerDefaultAddress?.[0]?.street2
+                    ? customerDefaultAddress?.[0]?.street2
+                    : ""}{" "}
+                  <br />
+                  {customerDefaultAddress?.[0]?.area}, near{" "}
+                  {customerDefaultAddress?.[0]?.locality} <br />{" "}
+                  {customerDefaultAddress?.[0]?.sector ? (
+                    <span>Sector: {customerDefaultAddress?.[0]?.sector}</span>
+                  ) : (
+                    ""
+                  )}{" "}
+                  <br />
+                  {customerDefaultAddress?.[0]?.city},{" "}
+                  {customerDefaultAddress?.[0]?.state}
+                  <br />{" "}
+                  <span className="heading">
+                    {customerDefaultAddress?.[0]?.country}
+                    {customerDefaultAddress?.[0]?.pincode
+                      ? `-${customerDefaultAddress?.[0]?.pincode}`
+                      : ""}
+                  </span>
+                </p>
               </div>
-
-              {/* Details */}
-              <div className="mt-2 space-y-2">
-                <h3 className="font-semibold truncate">
-                  {customerDefaultAddress?.[0]?.contactDetails?.name} |{" "}
-                  {customerDefaultAddress?.[0]?.contactDetails?.contact}
-                </h3>
-
-                <p className="text-gray-500 heading">Your Address:</p>
-              </div>
-
-              <p className="leading-4 line-clamp-5">
-                {customerDefaultAddress?.[0]?.flatNumber}{" "}
-                {customerDefaultAddress?.[0]?.floor}{" "}
-                {customerDefaultAddress?.[0]?.block},{" "}
-                {customerDefaultAddress?.[0]?.societyName} <br />{" "}
-                {customerDefaultAddress?.[0]?.street1}{" "}
-                {customerDefaultAddress?.[0]?.street2
-                  ? customerDefaultAddress?.[0]?.street2
-                  : ""}{" "}
-                <br />
-                {customerDefaultAddress?.[0]?.area}, near{" "}
-                {customerDefaultAddress?.[0]?.locality} <br />{" "}
-                {customerDefaultAddress?.[0]?.sector ? (
-                  <span>Sector: {customerDefaultAddress?.[0]?.sector}</span>
-                ) : (
-                  ""
-                )}{" "}
-                <br />
-                {customerDefaultAddress?.[0]?.city},{" "}
-                {customerDefaultAddress?.[0]?.state}
-                <br />{" "}
-                <span className="heading">
-                  {customerDefaultAddress?.[0]?.country}
-                  {customerDefaultAddress?.[0]?.pincode
-                    ? `-${customerDefaultAddress?.[0]?.pincode}`
-                    : ""}
-                </span>
-              </p>
             </div>
-          </div>
+          )}
 
           {/* Other Address */}
           {customer?.address?.length === 0 ? (
-            "No address found"
+            ""
           ) : Array.isArray(customer?.address) ? (
             <div className="flex text-xs select-none cursor-pointer">
               {customerAddress?.map((d, index) => (
