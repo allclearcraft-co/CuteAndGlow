@@ -388,7 +388,7 @@ const addAddress = asyncHandler(async (req, res) => {
     name,
     contact,
   } = req.body;
-  if (!street1 || !area || !city || !state || !country || !name || !contact)
+  if (!street1 || !area || !city || !state || !country)
     throw new ApiError(400, "Please fill the required inputs");
 
   const newAddress = await Address.create({
