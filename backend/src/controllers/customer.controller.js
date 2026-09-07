@@ -842,6 +842,50 @@ const getCustomerById = asyncHandler(async (req, res) => {
     );
 });
 
+const actionsForStore = asyncHandler(async (req, res) => {
+  const { action, keyId, customerId } = req.params;
+  console.log(action, keyId, customerId);
+
+  if (!action || !keyId || !customerId) {
+    throw new ApiError(
+      400,
+      "Invalid request, please reload or try again later!",
+    );
+  }
+
+  const customer = await Customer.findById(customerId);
+  if (!customer) {
+    throw new ApiError(400, "Unable to authenticate you");
+  }
+
+  const allowedActions = {
+    favStore: "favStore",
+    favProfessional: "favProfessional",
+    quickServices: "quickServices",
+    wishListServices: "wishListServices",
+  };
+
+  const field = allowedActions[action];
+  if (!field) {
+    throw new ApiError(400, "Invalid dashboard query");
+  }
+
+  const exists = customer[field].some(
+    (id) => id.toString() === keyId.toString(),
+  );
+  if (exists) {
+    customer[field] = customer[field].filter(
+      (id) => id.toString() !== keyId.toString(),
+    );
+  } else {
+    customer[field].push(keyId);
+  }
+
+  await customer.save();
+
+  return res.status(200).json(new ApiResponse(200, {}, "Success"));
+});
+
 export {
   registerCustomer,
   loginCustomer,
@@ -860,6 +904,7 @@ export {
   addUPIid,
   deleteBankDetails,
   getCustomerById,
+  actionsForStore,
   dashboardData,
   reLoginToken,
 };

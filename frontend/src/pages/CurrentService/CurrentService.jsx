@@ -23,7 +23,7 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { MdOutlineAccessTime } from "react-icons/md";
-import { HiOutlineOfficeBuilding } from "react-icons/hi";
+import { HiHeart, HiOutlineOfficeBuilding } from "react-icons/hi";
 import ServiceDetailsSkeleton from "./CurrentServiceSkeleton";
 import Button from "../../components/Button";
 import { useDispatch, useSelector } from "react-redux";
@@ -216,7 +216,7 @@ const CurrentService = () => {
   useEffect(() => {
     getServiceById();
   }, [serviceId]);
-  console.log(services);
+
   return (
     <div className="space-y-6">
       {loading ? (
@@ -230,6 +230,9 @@ const CurrentService = () => {
               <div>
                 {/* Main Image */}
                 <div className="relative group overflow-hidden rounded-xl">
+                  {/* <div className="absolute top-4 left-4 bg-white/90 px-1 py-1 rounded-full text-sm font-semibold">
+                    <HiHeart className="" />
+                  </div> */}
                   <img
                     src={services?.coverImage?.[selectedImage]?.url}
                     alt={services?.name}
@@ -266,7 +269,7 @@ const CurrentService = () => {
                 <div className=" flex flex-col items gap-6">
                   {/* Header */}
                   <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mt-3 heading">
+                    <h1 className="text-2xl font-bold text-gray-900 mt-3 heading w-fit">
                       {services?.name}
                     </h1>
 

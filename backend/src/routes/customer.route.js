@@ -19,6 +19,7 @@ import {
   updateProfile,
   passwordLogin,
   updatePassword,
+  actionsForStore,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
@@ -54,6 +55,9 @@ router
 router
   .route("/update/modify-address/:customerId/:addressId")
   .post(VerifyCustomer, updateAddress);
+router
+  .route("/update/action-on-store/:action/:keyId/:customerId")
+  .post(VerifyCustomer, actionsForStore);
 router
   .route("/update/delete-address/:addressId/:customerId")
   .post(VerifyCustomer, deleteAddress);
