@@ -753,7 +753,11 @@ const dashboardData = asyncHandler(async (req, res) => {
     case "bookings": {
       const bookings = await ServiceBookings.find({
         store: storeId,
-      }).populate("address store customer");
+      })
+        .populate({ path: "address", select: "city state" })
+        .populate({ path: "customer", select: "name contactNumber" })
+        .populate({ path: "store", select: "storeName storeContactNumber" })
+        .populate({ path: "service", select: "name duration executive" });
 
       return res
         .status(200)
