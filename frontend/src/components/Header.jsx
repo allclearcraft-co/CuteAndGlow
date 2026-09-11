@@ -221,12 +221,19 @@ const Header = () => {
         <a href="/" className="h-full flex justify-center items-center gap-2">
           <img
             src={
-              "https://ik.imagekit.io/parikrama/media-library-export-18-7-2026-10-8-9-690%20(1)/Logo.png?updatedAt=1784349570750"
+              "https://ik.imagekit.io/cuteandglow/WhatsApp%20Image%202026-09-11%20at%208.26.34%20AM.jpeg"
             }
+            // src={
+            //   "https://ik.imagekit.io/parikrama/media-library-export-18-7-2026-10-8-9-690%20(1)/Logo.png?updatedAt=1784349570750"
+            // }
             alt="Logo"
-            className="h-16 w-16"
+            className="h-16 w-16 object-contain"
           />
-          <span className="logo_style">Cute & Glow</span>
+          <span
+            className={`logo_style ${isScrolled ? " text-[#F3DB8F]" : "text-black"}`}
+          >
+            Cute & Glow
+          </span>
         </a>
         <AccordionCard isScrolled={isScrolled}>
           <div className="flex items-center justify-between md:gap-4 gap-2 bg-[#8B2954] rounded-full h-11 px-1 w-fit">
