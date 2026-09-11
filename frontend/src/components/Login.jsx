@@ -81,8 +81,11 @@ const Login = ({ onRegister }) => {
             <div className="flex justify-center">
               <img
                 src={
-                  "https://ik.imagekit.io/parikrama/media-library-export-18-7-2026-10-8-9-690%20(1)/Logo.png?updatedAt=1784349570750"
+                  "https://ik.imagekit.io/cuteandglow/WhatsApp%20Image%202026-09-11%20at%208.26.34%20AM.jpeg"
                 }
+                // src={
+                //   "https://ik.imagekit.io/parikrama/media-library-export-18-7-2026-10-8-9-690%20(1)/Logo.png?updatedAt=1784349570750"
+                // }
                 alt="Logo"
                 className="w-24 h-24 object-contain"
               />

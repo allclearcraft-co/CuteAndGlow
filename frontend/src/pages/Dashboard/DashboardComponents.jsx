@@ -2494,8 +2494,10 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
   useEffect(() => {
     callData();
   }, []);
-
-  console.log(data);
+  function getDateOnly(mongoDate) {
+    return new Date(mongoDate).toISOString().slice(0, 10);
+  }
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="space-y-6 h-full">
@@ -2511,107 +2513,98 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
       {/* Cards */}
       {Array.isArray(data) ? (
         <div className="space-y-5 pb-40 md:pb-20 lg:pb-0">
-          {data?.map((booking, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
-            >
-              {/* Top */}
+          {data.map((booking, index) => {
+            // ONLY DATE: YYYY-MM-DD
+            const bookingDate = new Date(booking?.dateForBooking)
+              .toISOString()
+              .slice(0, 10);
 
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-2xl font-semibold">
-                    {booking?.service?.name}
-                  </h2>
+            let status;
 
-                  <p className="text-gray-500">{booking?.store?.storeName}</p>
-                </div>
+            if (bookingDate < today) {
+              status = "Completed";
+            } else if (bookingDate === today) {
+              status = "Today";
+            } else {
+              status = "Upcoming";
+            }
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
+              >
+                {/* Top */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h2 className="text-2xl font-semibold">
+                      {booking?.service?.name}
+                    </h2>
 
-                <span
-                  className={`px-4 py-1 rounded-full text-sm font-medium
-                  ${
-                    booking?.dateForBooking < Date.now()
-                      ? "bg-yellow-100 text-yellow-700"
-                      : booking.dateForBooking === Date.now()
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-yellow-600"
-                  }
-                  `}
-                >
-                  {booking?.dateForBooking > Date.now() ? "Today" : "Upcoming"}
-                </span>
-              </div>
+                    <p className="text-gray-500">{booking?.store?.storeName}</p>
+                  </div>
 
-              {/* Details */}
-              <div className="grid md:grid-cols-2 gap-1 mt-6">
-                <div className="flex items-center gap-3">
-                  <FaCalendarAlt className="text-[#8B2954]" />
-                  {formatDateString(booking?.dateForBooking)}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <FaClock className="text-[#8B2954]" />
-                  {booking?.service?.duration || "--"} min
-                </div>
-
-                {/* <div className="flex items-center gap-3">
-                  <FaUserTie className="text-[#8B2954]" />
-                  {booking.professional}
-                </div> */}
-
-                <div className="flex items-center gap-3 heading">
-                  <FaMapMarkerAlt className="text-[#8B2954]" />
-                  {booking?.address?.city}, {booking?.address?.state}
-                </div>
-
-                <div className="flex items-center gap-3 heading">
-                  <FaRupeeSign className="text-[#8B2954]" />{" "}
-                  {booking?.bookingAmount || "--"}
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <FaUser className="text-[#8B2954]" />{" "}
-                  <strong className="heading">Customer: </strong>
-                  <span className="text-sm">
-                    {booking?.customer?.name} |{" "}
-                    {booking?.customer?.contactNumber}
+                  <span
+                    className={`px-4 py-1 rounded-full text-sm font-medium ${
+                      status === "Past"
+                        ? "bg-gray-100 text-gray-700"
+                        : status === "Today"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {status}
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <FaStore className="text-[#8B2954]" />{" "}
-                  <strong className="heading">Store: </strong>
-                  <span className="text-sm">
-                    {booking?.store?.storeName} |{" "}
-                    {booking?.store?.storeContactNumber}
-                  </span>
-                </div>
+                {/* Details */}
+                <div className="grid md:grid-cols-2 gap-1 mt-6">
+                  <div className="flex items-center gap-3">
+                    <FaCalendarAlt className="text-[#8B2954]" />
 
-                <div className="flex items-center gap-3 heading">
-                  <FaRupeeSign className="text-[#8B2954]" />{" "}
-                  {booking?.bookingAmount || "--"}
+                    {formatDateString(booking?.dateForBooking)}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <FaClock className="text-[#8B2954]" />
+                    {booking?.service?.duration || "--"} min
+                  </div>
+
+                  <div className="flex items-center gap-3 heading">
+                    <FaMapMarkerAlt className="text-[#8B2954]" />
+                    {booking?.address?.city}, {booking?.address?.state}
+                  </div>
+
+                  <div className="flex items-center gap-3 heading">
+                    <FaRupeeSign className="text-[#8B2954]" />
+
+                    {booking?.bookingAmount || "--"}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <FaUser className="text-[#8B2954]" />
+
+                    <strong className="heading">Customer:</strong>
+
+                    <span className="text-sm">
+                      {booking?.customer?.name} |{" "}
+                      {booking?.customer?.contactNumber}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <FaStore className="text-[#8B2954]" />
+
+                    <strong className="heading">Store:</strong>
+
+                    <span className="text-sm">
+                      {booking?.store?.storeName} |{" "}
+                      {booking?.store?.storeContactNumber}
+                    </span>
+                  </div>
                 </div>
               </div>
-
-              {/* Buttons */}
-              {/* 
-              <div className="flex flex-wrap gap-3 mt-8">
-                {booking.status === "Upcoming" && (
-                  <button className="flex items-center gap-2 bg-red-100 text-red-600 px-5 py-2 rounded-lg hover:bg-red-200">
-                    <FaTimesCircle />
-                    Cancel Booking
-                  </button>
-                )}
-
-                {booking.status === "Completed" && (
-                  <button className="flex items-center gap-2 bg-yellow-100 text-yellow-700 px-5 py-2 rounded-lg hover:bg-yellow-200">
-                    <FaStar />
-                    Rate & Review
-                  </button>
-                )}
-              </div> */}
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         ""
