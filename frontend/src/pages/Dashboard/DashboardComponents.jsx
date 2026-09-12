@@ -2494,10 +2494,10 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
   useEffect(() => {
     callData();
   }, []);
-  function getDateOnly(mongoDate) {
-    return new Date(mongoDate).toISOString().slice(0, 10);
-  }
-  const today = new Date().toISOString().slice(0, 10);
+  // function getDateOnly(mongoDate) {
+  //   return new Date(mongoDate).toISOString().slice(0, 10);
+  // }
+  const today = new Date()?.toISOString()?.slice(0, 10);
 
   return (
     <div className="space-y-6 h-full">
@@ -2516,8 +2516,8 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
           {data.map((booking, index) => {
             // ONLY DATE: YYYY-MM-DD
             const bookingDate = new Date(booking?.dateForBooking)
-              .toISOString()
-              .slice(0, 10);
+              ?.toISOString()
+              ?.slice(0, 10);
 
             let status;
 
@@ -2552,7 +2552,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                           : "bg-yellow-100 text-yellow-700"
                     }`}
                   >
-                    {status}
+                    {status || "Updating..."}
                   </span>
                 </div>
 
