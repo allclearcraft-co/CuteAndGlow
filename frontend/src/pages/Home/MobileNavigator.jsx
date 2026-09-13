@@ -1,88 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { GiBodyBalance, GiDress } from "react-icons/gi";
-import { FaHandSparkles, FaPaintBrush, FaRegStar } from "react-icons/fa";
-import { PiHairDryerFill } from "react-icons/pi";
 import { useNavigate } from "react-router-dom";
 import InputBox from "../../components/Input";
 import { BsGeoAlt, BsSearch } from "react-icons/bs";
-import {
-  GiLipstick,
-  GiHairStrands,
-  GiNails,
-  GiRazor,
-  GiMeditation,
-  GiMirrorMirror,
-} from "react-icons/gi";
-import { FaSpa, FaEye } from "react-icons/fa";
 import { saveCoordinates } from "../../utils/location-service";
 import { FetchData } from "../../utils/FetchFromApi";
-
-// const serviceTags = [
-//   {
-//     id: 1,
-//     tagName: "Bridal & Event Makeup",
-//     query: "Hair",
-//     icon: GiLipstick,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_34_09%20PM.png",
-//   },
-//   {
-//     id: 2,
-//     tagName: "Hair Styling & Treatments",
-//     query: "Hair",
-//     icon: GiHairStrands,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_46_27%20PM.png",
-//   },
-//   {
-//     id: 3,
-//     tagName: "Skin Care & Facials",
-//     query: "Skin",
-//     icon: FaSpa,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_24_29%20PM.png",
-//   },
-//   {
-//     id: 4,
-//     tagName: "Hand & Feet Care",
-//     query: "Body",
-//     icon: GiNails,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_31_30%20PM.png",
-//   },
-//   {
-//     id: 5,
-//     tagName: "Waxing & Hair Removal",
-//     query: "Nails",
-//     icon: GiRazor,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2001_05_29%20PM.png",
-//   },
-//   {
-//     id: 6,
-//     tagName: "Eye & Brow Enhancements",
-//     query: "Makeup",
-//     icon: FaEye,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_40_22%20PM.png",
-//   },
-//   {
-//     id: 7,
-//     tagName: "Body Wellness",
-//     query: "Bride",
-//     icon: GiMeditation,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_43_17%20PM.png",
-//   },
-//   {
-//     id: 8,
-//     tagName: "Pre-Grooming Packages",
-//     query: "Bride",
-//     icon: GiMirrorMirror,
-//     image:
-//       "https://ik.imagekit.io/cuteandglow/ChatGPT%20Image%20Aug%2019,%202026,%2012_46_27%20PM.png",
-//   },
-// ];
+import Button from "../../components/Button";
+import { useToast } from "../../components/hooks/ToastContext";
 
 const prepareCategories = (categories = []) => {
   if (!Array.isArray(categories)) {
@@ -135,6 +58,7 @@ const prepareCategories = (categories = []) => {
 
 const MobileServiceTags = () => {
   const navigate = useNavigate();
+  const { alertInfo } = useToast();
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState([]);
   useEffect(() => {
@@ -145,8 +69,7 @@ const MobileServiceTags = () => {
           "get",
         );
         setCategories(response.data.data);
-      } catch (err) {
-      }
+      } catch (err) {}
     };
 
     getAllCategories();
@@ -403,6 +326,17 @@ const MobileServiceTags = () => {
             </div>
           );
         })}
+      </div>
+      <div className="flex justify-between items-center w-full py-5 px-10">
+        <Button
+          LabelName="Avail franchise"
+          onClick={() => alertInfo("This option will be soon available")}
+        />
+
+        <Button
+          LabelName="beauty course"
+          onClick={() => alertInfo("This option will be soon available")}
+        />
       </div>
     </div>
   );
