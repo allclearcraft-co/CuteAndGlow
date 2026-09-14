@@ -41,8 +41,7 @@ const Footer = () => {
             </h2>
 
             <p className="text-sm text-pink-100 leading-6 max-w-sm">
-              Experience luxury beauty and wellness services designed to
-              rejuvenate your mind, body, and confidence.
+              Any parlour near you, now at your fingertips.
             </p>
           </div>
 
