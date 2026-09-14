@@ -757,7 +757,8 @@ const dashboardData = asyncHandler(async (req, res) => {
         .populate({ path: "address", select: "city state" })
         .populate({ path: "customer", select: "name contactNumber" })
         .populate({ path: "store", select: "storeName storeContactNumber" })
-        .populate({ path: "service", select: "name duration executive" });
+        .populate({ path: "service", select: "name duration executive" })
+        .sort({ createdAt: -1 });
 
       return res
         .status(200)
