@@ -177,7 +177,7 @@ const Overview = ({ data, role, userId, callData }) => {
   };
 
   const purchasePlan = async (plan) => {
-    if (!window.Razorpay || role !== "Store") {
+    if (role !== "Store") {
       alertError(
         "Subscription payments are currently available for stores only",
       );
@@ -186,6 +186,17 @@ const Overview = ({ data, role, userId, callData }) => {
 
     setPurchasingPlanId(plan._id);
     try {
+      if (Number(plan.price?.sellingPrice) === 0) {
+        await FetchData(`subscription/purchase/${plan._id}/${userId}`, "post");
+        alertSuccess("Basic subscription activated successfully");
+        await callData();
+        return;
+      }
+
+      if (!window.Razorpay) {
+        throw new Error("Payment gateway is unavailable");
+      }
+
       const response = await FetchData("payment/create", "post", {
         module: "Subscription",
         moduleId: plan._id,
@@ -1117,9 +1128,9 @@ const Overview = ({ data, role, userId, callData }) => {
                         </span>
                       </div>
 
-                      <p className="text-xs text-gray-500">
+                      {/* <p className="text-xs text-gray-500">
                         ₹{i?.price?.sellingPrice} / month
-                      </p>
+                      </p> */}
 
                       {i?.validity?.months === 0 ? (
                         ""
@@ -1288,6 +1299,16 @@ const Overview = ({ data, role, userId, callData }) => {
                       </div>
                     </div>
 
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Service Limits</h2>
+                      <p className="text-sm">
+                        <strong>Services:</strong>{" "}
+                        {i?.serviceLimit?.unlimited
+                          ? "Unlimited"
+                          : (i?.serviceLimit?.count ?? 0)}
+                      </p>
+                    </div>
+
                     {/* ================= FRANCHISE ================= */}
                     <div className="border-t pt-4">
                       <h2 className="font-semibold mb-2">Franchise</h2>
@@ -1435,9 +1456,9 @@ const Overview = ({ data, role, userId, callData }) => {
                     </span>
                   </div>
 
-                  <p className="text-xs text-gray-500">
+                  {/* <p className="text-xs text-gray-500">
                     ₹{data?.subscription?.price?.sellingPrice} / month
-                  </p>
+                  </p> */}
 
                   {data?.subscription?.validity?.months === 0 ? (
                     ""
@@ -1606,6 +1627,16 @@ const Overview = ({ data, role, userId, callData }) => {
                         : data?.subscription?.mediaLimit?.videos}
                     </p>
                   </div>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h2 className="font-semibold mb-2">Service Limits</h2>
+                  <p className="text-sm">
+                    <strong>Services:</strong>{" "}
+                    {data?.subscription?.serviceLimit?.unlimited
+                      ? "Unlimited"
+                      : (data?.subscription?.serviceLimit?.count ?? 0)}
+                  </p>
                 </div>
 
                 {/* ================= FRANCHISE ================= */}

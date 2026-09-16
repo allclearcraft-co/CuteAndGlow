@@ -4,7 +4,9 @@ import {
   getSubscriptionByMadeFor,
   getSubscriptionById,
   updateSubscription,
+  purchaseSubscription,
 } from "../controllers/subscription.controller.js";
+import { VerifyStore } from "../middlewares/store.middleware.js";
 
 const router = Router();
 
@@ -14,5 +16,8 @@ router
   .route("/get/subscription/details/by-id/:subscriptionId")
   .get(getSubscriptionById);
 router.route("/update/:subscriptionId").post(updateSubscription);
+router
+  .route("/purchase/:subscriptionId/:userId")
+  .post(VerifyStore, purchaseSubscription);
 
 export default router;

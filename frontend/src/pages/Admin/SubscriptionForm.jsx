@@ -130,6 +130,11 @@ const SubscriptionModelForm = ({ onClose, adminId, initialData, onSaved }) => {
             unlimitedVideos: formData.get("unlimitedVideos") === "on",
           },
 
+          serviceLimit: {
+            count: Number(formData.get("serviceLimit")),
+            unlimited: formData.get("unlimitedServices") === "on",
+          },
+
           booking: {
             enabled: formData.get("bookingEnabled") === "on",
             advancedBooking: formData.get("advancedBooking") === "on",
@@ -479,6 +484,27 @@ const SubscriptionModelForm = ({ onClose, adminId, initialData, onSaved }) => {
                   defaultChecked={initialData?.mediaLimit?.unlimitedVideos}
                 />
                 Unlimited Videos
+              </label>
+            </div>
+          </div>
+          <div className="col-span-3 w-full border rounded-xl p-4">
+            <h2 className="font-semibold mb-4">Service Limits</h2>
+
+            <div className="grid grid-cols-2 gap-4">
+              <InputBox
+                label="Services"
+                name="serviceLimit"
+                type="number"
+                defaultValue={initialData?.serviceLimit?.count || 0}
+              />
+
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  name="unlimitedServices"
+                  defaultChecked={initialData?.serviceLimit?.unlimited}
+                />
+                Unlimited Services
               </label>
             </div>
           </div>

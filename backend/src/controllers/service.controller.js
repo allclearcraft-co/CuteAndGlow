@@ -8,6 +8,7 @@ import {
   DeleteImage,
 } from "../utils/imageKit.io.js";
 import { Services } from "../models/service.model.js";
+import { Subscription } from "../models/subscription.model.js";
 import { Store } from "../models/store.model.js";
 import { Professional } from "../models/professional.model.js";
 import { Customer } from "../models/customer.model.js";
@@ -61,6 +62,27 @@ const createStoreService = asyncHandler(async (req, res) => {
 
   const store = await Store.findById(storeId);
   if (!store) throw new ApiError(400, "Invalid access !");
+
+  const plan = await Subscription.findById(
+    store.subscription?.subscriptionModel,
+  );
+  if (
+    !store.subscription?.subscriptionPurchased ||
+    !store.subscription?.subscriptionValidity ||
+    store.subscription.subscriptionValidity <= new Date() ||
+    !plan?.isActive
+  ) {
+    throw new ApiError(403, "Purchase an active subscription to add services");
+  }
+
+  const serviceCount = await Services.countDocuments({ store: storeId });
+  const serviceLimit = plan.serviceLimit?.count || 0;
+  if (!plan.serviceLimit?.unlimited && serviceCount >= serviceLimit) {
+    throw new ApiError(
+      403,
+      `This plan allows ${serviceLimit} service${serviceLimit === 1 ? "" : "s"}`,
+    );
+  }
 
   const sanitize = (str = "") =>
     str

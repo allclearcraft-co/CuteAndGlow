@@ -47,7 +47,13 @@ const createPayment = asyncHandler(async (req, res) => {
     metadata = {},
   } = req.body;
 
-  if (!module || !moduleId || !user || !amount) {
+  if (
+    !module ||
+    !moduleId ||
+    !user ||
+    amount === undefined ||
+    amount === null
+  ) {
     throw new ApiError(400, "module, moduleId, user and amount are required");
   }
 
@@ -56,8 +62,15 @@ const createPayment = asyncHandler(async (req, res) => {
   }
 
   const numericAmount = Number(amount);
-  if (Number.isNaN(numericAmount) || numericAmount <= 0) {
+  if (Number.isNaN(numericAmount) || numericAmount < 0) {
     throw new ApiError(400, "Invalid amount");
+  }
+
+  if (numericAmount === 0) {
+    throw new ApiError(
+      400,
+      "Zero-priced subscriptions must use the complimentary purchase flow",
+    );
   }
 
   if (module === PAYMENT_MODULES.SUBSCRIPTION) {

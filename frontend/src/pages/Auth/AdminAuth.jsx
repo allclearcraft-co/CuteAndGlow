@@ -43,6 +43,7 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
       formRef.current.reset();
       navigate("/admin/dashboard");
     } catch (err) {
+      alertError(err.response.data);
     }
   };
 
@@ -66,7 +67,7 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
       setSelectedSections([]);
       alertSuccess(response.data.message);
     } catch (err) {
-      // console.log(err.response || err);
+      alertError(err.response.data);
     }
   };
 
@@ -82,7 +83,7 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
       alertInfo(response.data.message);
       setOtp(true);
     } catch (err) {
-      // console.log(err.response || err);
+      alertError(err.response.data);
     }
   };
 
@@ -98,7 +99,7 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
       alertInfo(response.data.message);
       navigate("/admin/login");
     } catch (err) {
-      // console.log(err.response || err);
+      alertError(err.response.data);
     }
   };
 
