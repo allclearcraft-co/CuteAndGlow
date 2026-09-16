@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+import { BOOKING_STATUS } from "../constants/payment.constants.js";
+
 const bookingSchema = new mongoose.Schema(
   {
     service: { type: mongoose.Schema.Types.ObjectId, ref: "Services" },
@@ -14,6 +16,24 @@ const bookingSchema = new mongoose.Schema(
     bookingAmount: Number,
 
     modeOfPayment: { type: String, enum: ["Online Payment", "Cash Payment"] },
+    status: {
+      type: String,
+      enum: Object.values(BOOKING_STATUS),
+      default: BOOKING_STATUS.CREATED,
+      index: true,
+    },
+    cancellation: {
+      reason: { type: String, trim: true },
+      cancelledAt: Date,
+      cancelledBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: "cancelledByModel",
+      },
+      cancelledByModel: {
+        type: String,
+        enum: ["Customer", "Store"],
+      },
+    },
   },
   { timestamps: true },
 );
