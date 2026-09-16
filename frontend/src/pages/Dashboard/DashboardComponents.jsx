@@ -2529,6 +2529,31 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
   //   return new Date(mongoDate).toISOString().slice(0, 10);
   // }
   const today = new Date()?.toISOString()?.slice(0, 10);
+  const formRef = useRef();
+  const [loading, setLoading] = useState(false);
+  const { alertSuccess, alertError } = useToast();
+  const [cancellationBookingId, setCancellationBookingId] = useState(null);
+
+  const handleCancelBooking = async (bookingId) => {
+    try {
+      setLoading(true);
+      const formData = new FormData(formRef.current);
+      const cancellationPath =
+        role?.toLowerCase() === "store"
+          ? `service-booking/cancel/store/${bookingId}/${userId}`
+          : `service-booking/cancel/${bookingId}/${userId}`;
+      const response = await FetchData(cancellationPath, "post", {
+        reason: formData.get("reason"),
+      });
+      alertSuccess(response.data.message);
+      setCancellationBookingId(null);
+      callData();
+    } catch (err) {
+      alertError(err.response?.data?.message || "Unable to cancel booking");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6 h-full">
@@ -2545,6 +2570,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
       {Array.isArray(data) ? (
         <div className="space-y-5 pb-40 md:pb-20 lg:pb-0">
           {data.map((booking, index) => {
+            const isCancellationOpen = cancellationBookingId === booking?._id;
             // ONLY DATE: YYYY-MM-DD
             const bookingDate = new Date(booking?.dateForBooking)
               ?.toISOString()
@@ -2552,7 +2578,9 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
 
             let status;
 
-            if (bookingDate < today) {
+            if (booking?.status === "Cancelled") {
+              status = "Cancelled";
+            } else if (bookingDate < today) {
               status = "Completed";
             } else if (bookingDate === today) {
               status = "Today";
@@ -2576,7 +2604,7 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
 
                   <span
                     className={`px-4 py-1 rounded-full text-sm font-medium ${
-                      status === "Past"
+                      status === "Cancelled"
                         ? "bg-gray-100 text-gray-700"
                         : status === "Today"
                           ? "bg-green-100 text-green-700"
@@ -2633,6 +2661,31 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
                     </span>
                   </div>
                 </div>
+                {isCancellationOpen && (
+                  <form ref={formRef}>
+                    <InputBox
+                      label="reason to cancel"
+                      placeholder="Please specify reason for cancellation"
+                      name="reason"
+                    />
+                  </form>
+                )}
+                {status === "Completed"
+                  ? ""
+                  : booking?.status !== "Cancelled" && (
+                      <Button
+                        onClick={() =>
+                          isCancellationOpen
+                            ? handleCancelBooking(booking?._id)
+                            : setCancellationBookingId(booking?._id)
+                        }
+                        LabelName={
+                          isCancellationOpen ? "submit" : "Cancel booking"
+                        }
+                        variant="secondary"
+                        disabled={loading}
+                      />
+                    )}
               </div>
             );
           })}
@@ -3064,7 +3117,8 @@ const Services = ({ data, role, userId, handleReload, callData }) => {
       resetServiceForm();
       handleReload();
     } catch (err) {
-      alertError(err.response?.data?.message || "Unable to save service");
+      alertError(err.response?.data);
+      // alertInfo("Please upgrade plan for adding more services");
     } finally {
       setLoading(false);
     }
