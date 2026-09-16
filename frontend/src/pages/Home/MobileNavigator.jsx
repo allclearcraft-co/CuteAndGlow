@@ -11,7 +11,7 @@ const prepareCategories = (categories = []) => {
   if (!Array.isArray(categories)) {
     return {
       items: [],
-      columns: 4,
+      columns: 3,
     };
   }
 
@@ -29,10 +29,12 @@ const prepareCategories = (categories = []) => {
     return result;
   };
 
-  if (items.length >= 8) {
+  console.log(categories)
+
+  if (items.length >= 9) {
     return {
-      items: removeRandomItems(items, 8),
-      columns: 4,
+      items: removeRandomItems(items, 9),
+      columns: 3,
     };
   }
 
@@ -45,8 +47,8 @@ const prepareCategories = (categories = []) => {
 
   if (items.length >= 4) {
     return {
-      items: removeRandomItems(items, 4),
-      columns: 4,
+      items: removeRandomItems(items, 3),
+      columns: 3,
     };
   }
 
@@ -295,7 +297,7 @@ const MobileServiceTags = () => {
       {/* Categories */}
       <div
         className={`grid ${
-          columns === 3 ? "grid-cols-3" : "grid-cols-4"
+          columns === 3 ? "grid-cols-3" : "grid-cols-3"
         } gap-y-4 border py-5 rounded-xl shadow-md border-neutral-200`}
       >
         {sanitizedCategories.map((item) => {
