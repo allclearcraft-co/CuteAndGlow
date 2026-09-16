@@ -69,14 +69,14 @@ const createStoreService = asyncHandler(async (req, res) => {
   if (
     !store.subscription?.subscriptionPurchased ||
     !store.subscription?.subscriptionValidity ||
-    store.subscription.subscriptionValidity <= new Date() ||
+    // store.subscription.subscriptionValidity <= new Date() ||
     !plan?.isActive
   ) {
     throw new ApiError(403, "Purchase an active subscription to add services");
   }
 
   const serviceCount = await Services.countDocuments({ store: storeId });
-  const serviceLimit = plan.serviceLimit?.count || 0;
+  const serviceLimit = plan.serviceLimit?.count || 2;
   if (!plan.serviceLimit?.unlimited && serviceCount >= serviceLimit) {
     throw new ApiError(
       403,
