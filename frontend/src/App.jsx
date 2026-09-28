@@ -20,6 +20,8 @@ import TermsAndConditions from "./pages/CMS/TermsAndConditions";
 import Policy from "./pages/CMS/Policy";
 import AdminAuth from "./pages/Auth/AdminAuth";
 import CurrentDataShowcase from "./pages/AdminCurrentDataShowcase/page";
+import BeautyAcademy from "./pages/BeautyCourse/BeautyAcademy";
+import FranchiseModels from "./pages/Franchise/FranchiseModels";
 
 function App() {
   const location = useLocation();
@@ -85,6 +87,13 @@ function App() {
 
         <Routes>
           <Route path="/" element={<Home />} />
+
+          <Route
+            path="/franchise/franchise-info"
+            element={<FranchiseModels />}
+          />
+          <Route path="/course/course-info" element={<BeautyAcademy />} />
+
           <Route path="/auth/:type/:userType" element={<Authentication />} />
           <Route path="/services/all" element={<Service />} />
           <Route

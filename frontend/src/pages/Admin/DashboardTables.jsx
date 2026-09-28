@@ -1,12 +1,6 @@
-import React from "react";
-import { useEffect, useState, useMemo, useRef } from "react";
-import Button from "../../components/Button";
+import { useState, useMemo } from "react";
 import InputBox from "../../components/Input";
-import { FetchData } from "../../utils/FetchFromApi";
-import { parseErrorMessage } from "../../utils/parseErrorMessage";
-import { motion, AnimatePresence } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import { truncateString } from "../../utils/utility-functions";
+import { Link } from "react-router-dom";
 
 const TABLE_CONFIG = {
   customer: {
@@ -162,6 +156,7 @@ const TABLE_CONFIG = {
 
 const DashboardTable = ({ TableData, tableRole = "", Text }) => {
   const TableHeader = TABLE_CONFIG[tableRole];
+  console.log(TableData);
 
   const [search, setSearch] = useState("");
 
@@ -181,7 +176,6 @@ const DashboardTable = ({ TableData, tableRole = "", Text }) => {
       ),
     );
   }, [search, TableData, TableHeader]);
-  console.log(TableData);
 
   return (
     <div className="h-full">
