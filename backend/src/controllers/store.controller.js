@@ -170,36 +170,6 @@ const updatePassword = asyncHandler(async (req, res) => {
   }
 });
 
-const changePassword = asyncHandler(async (req, res) => {
-  const { contactNumber, email, password } = req.body;
-  if (!contactNumber || !email || !password)
-    throw new ApiError(400, "Please fill all the required fields");
-
-  // const isPasswordValid = validatePassword(password);
-  // if (!isPasswordValid) {
-  //   throw new ApiError(400, "Invalid password");
-  // }
-
-  const user = await Store.findOne({
-    storeContactNumber: contactNumber,
-    // storeEmail: email,
-  });
-  if (!user)
-    throw new ApiError(
-      400,
-      "Unable process this request at the moment please try again later",
-    );
-
-  user.password = password;
-  await user.save();
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, {}, "Password changed successfully !, please login"),
-    );
-});
-
 const passwordLogin = asyncHandler(async (req, res) => {
   const { contactNumber, email, password } = req.body;
   if (!contactNumber) throw new ApiError(400, "Invalid request ");
@@ -1093,7 +1063,6 @@ export {
   deleteGalleryImage,
   getStaffForService,
   registrationFeePaid,
-  changePassword,
   getStoreById,
   dashboardData,
 };

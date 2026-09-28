@@ -23,6 +23,7 @@ const Login = ({ onRegister }) => {
   const [otpNumber, setOTPNumber] = useState("");
   const [loginWithPassword, setLoginWithPassword] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetRequested, setResetRequested] = useState(false);
   const [popup, setPopup] = useState(false);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
@@ -69,22 +70,41 @@ const Login = ({ onRegister }) => {
     }
   };
 
-  const handleChangePassword = async (e) => {
+  const handleRequestPasswordReset = async (e) => {
+    e.preventDefault();
     try {
       setLoading(true);
-      const formData = new FormData(formRef.current);
+      const formData = Object.fromEntries(new FormData(formRef.current));
       const response = await FetchData(
-        `${userType}/update/change-password`,
+        `${userType}/password-reset/request`,
         "post",
         formData,
       );
-      console.log(response.data.data);
-      alertSuccess(response.data.message);
-      navigate("/");
-      formRef.current.reset();
+      alertInfo(response.data.message);
+      setResetRequested(true);
     } catch (err) {
-      console.log(err.response.data);
-      alertError(err.response.data);
+      alertError(err?.response?.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirmPasswordReset = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const formData = Object.fromEntries(new FormData(formRef.current));
+      const response = await FetchData(
+        `${userType}/password-reset/confirm`,
+        "post",
+        formData,
+      );
+      alertSuccess(response.data.message);
+      formRef.current.reset();
+      setResetRequested(false);
+      setPopup(false);
+    } catch (err) {
+      alertError(err?.response?.data);
     } finally {
       setLoading(false);
     }
@@ -198,13 +218,38 @@ const Login = ({ onRegister }) => {
         <div className="w-full h-screen z-50 bg-black/80 flex justify-center items-center absolute top-0 left-0">
           <form
             ref={formRef}
-            onSubmit={handleChangePassword}
+            onSubmit={
+              resetRequested
+                ? handleConfirmPasswordReset
+                : handleRequestPasswordReset
+            }
             className="bg-white rounded-xl p-5 w-[85vw] lg:w-96"
           >
-            <h1>Forget password</h1>
-            <InputBox label="contact number" name="contactNumber" type="text" />
-            <InputBox label="email" name="email" type="email" />
-            <InputBox label="new password" name="password" type="password" />
+            <h1>{resetRequested ? "Reset password" : "Forgot password"}</h1>
+            <InputBox
+              label={
+                userType === "store" ? "Store contact number" : "Contact number"
+              }
+              name="contactNumber"
+              type="text"
+            />
+            <InputBox label="Email" name="email" type="email" />
+            {resetRequested && (
+              <>
+                <InputBox label="Email reset code" name="otp" type="text" />
+                <InputBox
+                  label="New password"
+                  name="newPassword"
+                  type="password"
+                  passwordHint
+                />
+                <InputBox
+                  label="Confirm password"
+                  name="confirmPassword"
+                  type="password"
+                />
+              </>
+            )}
             <div className="flex justify-center items-center gap-2">
               <Button
                 variant="secondary"
@@ -212,11 +257,19 @@ const Login = ({ onRegister }) => {
                 onClick={() => {
                   formRef.current.reset();
                   setPopup(false);
+                  setResetRequested(false);
                 }}
               />
               <Button
-                LabelName={loading ? "Please wait" : "Reset"}
+                LabelName={
+                  loading
+                    ? "Please wait"
+                    : resetRequested
+                      ? "Reset password"
+                      : "Send reset code"
+                }
                 type="submit"
+                disabled={loading}
               />
             </div>
           </form>

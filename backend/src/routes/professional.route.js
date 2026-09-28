@@ -16,21 +16,33 @@ import {
   dashboardData,
   reLoginToken,
   passwordLogin,
-  changePassword,
   updatePassword,
 } from "../controllers/professional.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
 import { VerifyProfessional } from "../middlewares/professional.middleware.js";
+import { Professional } from "../models/professional.model.js";
+import { createPasswordResetHandlers } from "../controllers/passwordReset.controller.js";
 
 const router = Router();
+const passwordReset = createPasswordResetHandlers({
+  Model: Professional,
+  identityFields: { contactNumber: "contactNumber", email: "email" },
+  emailField: "email",
+  nameField: "name",
+});
 
 router.route("/register").post(registerProfessional);
 router.route("/login").post(loginProfessional);
 router.route("/login/via/password").post(passwordLogin);
 router.route("/auth/re-login").post(reLoginToken);
 router.route("/update/password/:userId").post(updatePassword);
-router.route("/update/change-password").post(changePassword);
+router
+  .route("/password-reset/request")
+  .post(passwordReset.requestPasswordReset);
+router
+  .route("/password-reset/confirm")
+  .post(passwordReset.confirmPasswordReset);
 
 router
   .route("/otp/authentication/:verificationType/:professionalId")
