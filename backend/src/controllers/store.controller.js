@@ -20,6 +20,7 @@ import { Subscription } from "../models/subscription.model.js";
 import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import sendEmail from "../services/mail.service.js";
 import otpTemplate from "../template/otp.mail.template.js";
+import accountCreation from "../template/accountCreation.mail.template.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
 import { validatePassword } from "../validators/password.validator.js";
 
@@ -79,7 +80,7 @@ const registerStore = asyncHandler(async (req, res) => {
   await sendEmail({
     to: newUser?.storeEmail,
     subject: "OTP Verification",
-    html: otpTemplate(newUser?.storeName, otp),
+    html: accountCreation(newUser?.storeName, otp),
   });
 
   const user = await Store.findOne({

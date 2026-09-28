@@ -12,6 +12,7 @@ import { Services } from "../models/service.model.js";
 import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import sendEmail from "../services/mail.service.js";
 import otpTemplate from "../template/otp.mail.template.js";
+import accountCreation from "../template/accountCreation.mail.template.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
 import {
   validateAadhaar,
@@ -75,7 +76,7 @@ const registerProfessional = asyncHandler(async (req, res) => {
   await sendEmail({
     to: user?.email,
     subject: "OTP Verification",
-    html: otpTemplate(user?.name, otp),
+    html: accountCreation(user?.name, otp),
   });
 
   return res
