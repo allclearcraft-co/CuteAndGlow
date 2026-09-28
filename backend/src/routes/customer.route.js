@@ -20,12 +20,19 @@ import {
   passwordLogin,
   updatePassword,
   actionsForStore,
-  changePassword,
 } from "../controllers/customer.controller.js";
 
 import { VerifyCustomer } from "../middlewares/customer.middleware.js";
+import { Customer } from "../models/customer.model.js";
+import { createPasswordResetHandlers } from "../controllers/passwordReset.controller.js";
 
 const router = Router();
+const passwordReset = createPasswordResetHandlers({
+  Model: Customer,
+  identityFields: { contactNumber: "contactNumber", email: "email" },
+  emailField: "email",
+  nameField: "name",
+});
 
 //public routes
 router.route("/register").post(registerCustomer);
@@ -34,7 +41,12 @@ router.route("/login/via/password").post(passwordLogin);
 router.route("/auth/re-login").post(reLoginToken);
 router.route("/get/customer/data/:customerId").get(getCustomerById);
 router.route("/update/password/:userId").post(updatePassword);
-router.route("/update/change-password").post(changePassword);
+router
+  .route("/password-reset/request")
+  .post(passwordReset.requestPasswordReset);
+router
+  .route("/password-reset/confirm")
+  .post(passwordReset.confirmPasswordReset);
 
 //private routes
 router

@@ -18,21 +18,36 @@ import {
   passwordLogin,
   updatePassword,
   deleteAddress,
-  changePassword,
   getStoreById,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
 import { VerifyStore } from "../middlewares/store.middleware.js";
+import { Store } from "../models/store.model.js";
+import { createPasswordResetHandlers } from "../controllers/passwordReset.controller.js";
 
 const router = Router();
+const passwordReset = createPasswordResetHandlers({
+  Model: Store,
+  identityFields: {
+    contactNumber: "storeContactNumber",
+    email: "storeEmail",
+  },
+  emailField: "storeEmail",
+  nameField: "storeName",
+});
 
 router.route("/register").post(registerStore);
 router.route("/login").post(loginStore);
 router.route("/login/via/password").post(passwordLogin);
 router.route("/auth/re-login").post(reLoginToken);
 router.route("/update/password/:userId").post(updatePassword);
-router.route("/update/change-password").post(changePassword);
+router
+  .route("/password-reset/request")
+  .post(passwordReset.requestPasswordReset);
+router
+  .route("/password-reset/confirm")
+  .post(passwordReset.confirmPasswordReset);
 router
   .route("/otp/authentication/:verificationType/:storeId")
   .post(otpVerification);
