@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Button from "../../components/Button";
 import { FaUser, FaStar, FaPlus } from "react-icons/fa";
 
@@ -186,6 +186,37 @@ const CurrentStore = ({ data }) => {
       id: 16,
       Label: "Promotion Level",
       Value: data?.promotionLevel || "None",
+    },
+
+    {
+      id: 35,
+      Label: "Subscription plan details",
+      Value:
+        (
+          <div>
+            <h1>
+              <strong>Plan name: </strong>
+              <span className="uppercase heading">
+                {data?.subscription?.subscriptionModel?.planName}
+              </span>
+            </h1>
+            <h1>
+              <strong>Plan price: </strong>
+              <span className="line-through">
+                {data?.subscription?.subscriptionModel?.price?.mrp}
+              </span>
+              <span className="bg-green-300 text-green-700 heading p-1 rounded-md">
+                {data?.subscription?.subscriptionModel?.price?.discount}%
+              </span>
+            </h1>
+            <h1>
+              <strong>Selling price: </strong>
+              <span>
+                {data?.subscription?.subscriptionModel?.price?.sellingPrice}
+              </span>
+            </h1>
+          </div>
+        ) || "None",
     },
 
     // =====================================================
