@@ -8,6 +8,7 @@ import { Store } from "../models/store.model.js";
 import { Services } from "../models/service.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
+import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import jwt from "jsonwebtoken";
 import { Category } from "../models/category.model.js";
 
@@ -397,9 +398,12 @@ const getCurrentRequestData = asyncHandler(async (req, res) => {
     }
 
     case "store": {
-      const store = await Store.findById(keyId).populate(
-        "address storeStaffs services bookings",
-      );
+      const store = await Store.findById(keyId)
+        .populate("address storeStaffs services bookings")
+        .populate({
+          path: "subscription.subscriptionModel",
+          select: "planName price serviceLimit ",
+        });
       if (!store) throw new ApiError(400, "Unable to fetch data");
 
       return res
