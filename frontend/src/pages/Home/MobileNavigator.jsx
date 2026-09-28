@@ -331,14 +331,14 @@ const MobileServiceTags = () => {
       </div>
       <div className="flex justify-between items-center w-full py-5 px-10">
         <Button
-          LabelName="Avail franchise"
-          onClick={() => alertInfo("This option will be soon available")}
-        />
+              LabelName="Avail franchise"
+              onClick={() => navigate("/franchise/franchise-info")}
+            />
 
-        <Button
-          LabelName="beauty course"
-          onClick={() => alertInfo("This option will be soon available")}
-        />
+            <Button
+              LabelName="beauty course"
+              onClick={() => navigate("/course/course-info")}
+            />
       </div>
     </div>
   );
