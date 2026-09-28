@@ -76,10 +76,12 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
 
     try {
       const data = formToObject(formRef.current);
-      const response = await FetchData("admin/reset-password", "post", data);
+      const response = await FetchData(
+        "admin/password-reset/request",
+        "post",
+        data,
+      );
 
-      // console.log(response);
-      formRef.current.reset();
       alertInfo(response.data.message);
       setOtp(true);
     } catch (err) {
@@ -92,9 +94,12 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
 
     try {
       const data = formToObject(formRef.current);
-      const response = await FetchData("admin/reset-password", "post", data);
+      const response = await FetchData(
+        "admin/password-reset/confirm",
+        "post",
+        data,
+      );
 
-      // console.log(response);
       formRef.current.reset();
       alertInfo(response.data.message);
       navigate("/admin/login");
@@ -297,57 +302,52 @@ const AdminAuth = ({ resetPassword = false, login = true, adminId }) => {
                 label="Email"
                 type="email"
                 name="email"
-                required={false}
                 placeholder="Enter your email"
               />
               <InputBox
-                required={false}
                 label="Employee Id"
                 type="text"
                 name="employeeId"
                 placeholder="Eg: ADM123"
               />
               <InputBox
-                required={false}
                 label="Contact number"
                 type="text"
                 name="contactNumber"
                 placeholder="Enter your contact number"
               />
-              <InputBox
-                required={false}
-                label="New Password"
-                type="text"
-                name="password"
-                placeholder="Password"
-              />
-              <InputBox
-                required={false}
-                label="Confirm Password"
-                type="text"
-                name="employeeId"
-                placeholder="Confirm password"
-              />
+              {otp && (
+                <>
+                  <InputBox
+                    label="New Password"
+                    type="password"
+                    name="newPassword"
+                    placeholder="Password"
+                    passwordHint
+                  />
+                  <InputBox
+                    label="Confirm Password"
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm password"
+                  />
+                </>
+              )}
             </div>
             {otp && (
               <div>
                 <InputBox
-                  required={false}
-                  placeholder="Email OTP"
-                  label="Email OTP"
-                  name="mailOtp"
-                  type="password"
-                />
-                <InputBox
-                  required={false}
-                  placeholder="Contact number OTP"
-                  label="Contact number OTP"
-                  name="contactNumberOtp"
-                  type="password"
+                  placeholder="Enter the code sent to your email"
+                  label="Email reset code"
+                  name="otp"
+                  type="text"
                 />
               </div>
             )}
-            <Button LabelName="Submit" type="submit" />
+            <Button
+              LabelName={otp ? "Reset password" : "Send reset code"}
+              type="submit"
+            />
           </form>
         </div>
       )}
