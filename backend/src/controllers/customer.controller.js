@@ -9,6 +9,7 @@ import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import { validatePhone } from "../validators/contactNumber.validator.js";
 import otpTemplate from "../template/otp.mail.template.js";
+import accountCreation from "../template/accountCreation.mail.template.js";
 import sendEmail from "../services/mail.service.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
 import { validateBankDetails } from "../validators/bankDetails.validator.js";
@@ -71,7 +72,7 @@ const registerCustomer = asyncHandler(async (req, res) => {
   await sendEmail({
     to: user?.email,
     subject: "OTP Verification",
-    html: otpTemplate(user?.name, otp),
+    html: accountCreation(user?.name, otp),
   });
 
   return res
