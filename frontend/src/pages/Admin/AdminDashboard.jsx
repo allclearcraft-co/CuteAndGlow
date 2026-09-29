@@ -38,10 +38,10 @@ function AdminDashboard() {
   const fetchDashboard = async ({ query }) => {
     if (!query) return;
     try {
-      const res = await FetchData(
-        `admin/get/data/dashboard-data/${query}`,
-        "get",
-      );
+      const res =
+        query === "enquiries"
+          ? await FetchData("enquiries/admin/list", "get")
+          : await FetchData(`admin/get/data/dashboard-data/${query}`, "get");
       setData(res.data.data);
       // console.log(res.data.data);
     } catch (err) {
@@ -185,6 +185,9 @@ function AdminDashboard() {
         </aside>
 
         <main className="flex-1 overflow-y-auto p-5 h-full">
+          {activeSection === "enquiries" && (
+            <DashboardTable tableRole="enquiries" TableData={data} />
+          )}
           {activeSection === "customer" && (
             <DashboardTable tableRole="customer" TableData={data} />
           )}

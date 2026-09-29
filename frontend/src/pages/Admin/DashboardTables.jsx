@@ -3,6 +3,22 @@ import InputBox from "../../components/Input";
 import { Link } from "react-router-dom";
 
 const TABLE_CONFIG = {
+  enquiries: {
+    text: "Verified Enquiries",
+    searchKeys: ["name", "email", "contactNumber", "type", "interest"],
+    columns: [
+      { header: "Type", key: "type" },
+      { header: "Interest", key: "interest" },
+      { header: "Name", key: "name" },
+      { header: "Email", key: "email" },
+      { header: "Contact Number", key: "contactNumber" },
+      {
+        header: "Received",
+        key: "createdAt",
+        render: (value) => new Date(value).toLocaleString("en-IN"),
+      },
+    ],
+  },
   customer: {
     text: "Customer",
     searchKeys: ["name", "contactNumber", "email"],
