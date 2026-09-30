@@ -64,6 +64,7 @@ import adminRoutes from "./routes/admin.route.js";
 import paymentRoutes from "./routes/payment.route.js";
 import subscriptionRoutes from "./routes/subscription.route.js";
 import categoryRoutes from "./routes/category.route.js";
+import enquiryRoutes from "./routes/enquiry.route.js";
 
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/professional", professionalRoutes);
@@ -74,5 +75,6 @@ app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/payment", paymentRoutes);
 app.use("/api/v1/subscription", subscriptionRoutes);
 app.use("/api/v1/category-subcategory", categoryRoutes);
+app.use("/api/v1/enquiries", enquiryRoutes);
 
 export { app };

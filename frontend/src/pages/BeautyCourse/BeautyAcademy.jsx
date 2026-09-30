@@ -1,18 +1,17 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import EnquiryModalForm from "../../components/EnquiryModal";
 import {
   FaAward,
   FaBookOpen,
   FaCalendarDays,
-  FaCheck,
   FaChevronDown,
   FaClock,
   FaGift,
   FaGraduationCap,
   FaIndianRupeeSign,
   FaArrowUpRightFromSquare,
-//   FaSparkles,
+  //   FaSparkles,
   FaStar,
   FaUsers,
   FaPaintbrush,
@@ -249,7 +248,7 @@ const stagger = {
   },
 };
 
-const CourseCard = ({ course, index }) => {
+const CourseCard = ({ course, index, onEnquire }) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -473,12 +472,14 @@ const CourseCard = ({ course, index }) => {
 
         {/* CTA */}
         <motion.button
+          type="button"
           whileHover={{
             x: 3,
           }}
           whileTap={{
             scale: 0.98,
           }}
+          onClick={() => onEnquire(course)}
           className="
             mt-6 flex w-full
             items-center justify-center gap-2
@@ -657,7 +658,33 @@ const DetailedCourse = ({ course, index }) => {
   );
 };
 
-export default function BeautyAcademy() {
+const EnquiryModal = ({ course, onClose }) => {
+  return (
+    <EnquiryModalForm
+      type="course"
+      interest={course.name}
+      context={{
+        courseId: course.id,
+        duration: course.duration,
+        classes: course.classes,
+        fee: course.finalFee,
+      }}
+      onClose={onClose}
+    />
+  );
+};
+
+const BeautyAcademy = () => {
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
+  const handleEnquire = (course) => {
+    setSelectedCourse(course);
+  };
+
+  const closeEnquiry = () => {
+    setSelectedCourse(null);
+  };
+
   return (
     <section className="min-h-screen overflow-hidden bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
@@ -694,14 +721,7 @@ export default function BeautyAcademy() {
 
           <motion.div variants={fadeUp}>
             <span
-              className="
-                inline-flex items-center gap-2
-                rounded-full
-                px-4 py-2
-                text-[10px] font-bold
-                uppercase tracking-[0.2em]
-                sm:text-xs
-              "
+              className="inline-flex items-center gap-2rounded-fullpx-4 py-2text-[10px] font-bolduppercase tracking-[0.2em]sm:text-xs"
               style={{
                 color: BRAND,
                 backgroundColor: `${BRAND}09`,
@@ -714,29 +734,14 @@ export default function BeautyAcademy() {
 
           <motion.h1
             variants={fadeUp}
-            className="
-              mt-6
-              text-3xl font-black
-              tracking-tight
-              text-gray-950
-              sm:text-4xl
-              md:text-5xl
-              lg:text-6xl
-            "
+            className=" mt-6 text-3xl font-black tracking-tight text-gray-950 sm:text-4xl md:text-5xl lg:text-6xl "
           >
             Learn. Create. <span style={{ color: BRAND }}>Transform.</span>
           </motion.h1>
 
           <motion.p
             variants={fadeUp}
-            className="
-              mx-auto mt-5
-              max-w-2xl
-              text-sm leading-6
-              text-gray-500
-              sm:mt-6 sm:text-base sm:leading-7
-              lg:text-lg
-            "
+            className=" mx-auto mt-5 max-w-2xl text-sm leading-6 text-gray-500 sm:mt-6 sm:text-base sm:leading-7 lg:text-lg"
           >
             Professional beauty courses designed to help you develop skills
             across makeup, hair, nails, skincare and cosmetology.
@@ -769,13 +774,7 @@ export default function BeautyAcademy() {
           >
             <div className="flex items-center gap-3">
               <div
-                className="
-                  flex h-10 w-10
-                  items-center justify-center
-                  rounded-xl
-                  text-white
-                  sm:h-11 sm:w-11
-                "
+                className=" flex h-10 w-10 items-center justify-center rounded-xl text-white sm:h-11 sm:w-11"
                 style={{
                   backgroundColor: BRAND,
                 }}
@@ -816,7 +815,12 @@ export default function BeautyAcademy() {
             "
           >
             {courses.map((course, index) => (
-              <CourseCard key={course.id} course={course} index={index} />
+              <CourseCard
+                key={course.id}
+                course={course}
+                index={index}
+                onEnquire={handleEnquire}
+              />
             ))}
           </motion.div>
         </section>
@@ -1069,7 +1073,13 @@ export default function BeautyAcademy() {
             </motion.button>
           </div>
         </motion.div>
+        {/* Enquiry Modal */}
+        {selectedCourse && (
+          <EnquiryModal course={selectedCourse} onClose={closeEnquiry} />
+        )}
       </div>
     </section>
   );
-}
+};
+
+export default BeautyAcademy;

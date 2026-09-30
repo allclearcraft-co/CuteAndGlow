@@ -1,5 +1,6 @@
-import React from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import EnquiryModal from "../../components/EnquiryModal";
 
 import {
   FaBuilding,
@@ -600,6 +601,8 @@ const FranchiseChecklist = () => {
 };
 
 export default function FranchiseModels() {
+  const [showEnquiry, setShowEnquiry] = useState(false);
+
   return (
     <section className="min-h-screen bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
@@ -717,6 +720,24 @@ export default function FranchiseModels() {
             the available budget and location.
           </p>
         </motion.div>
+        <div className="mt-6 text-center">
+          <button
+            type="button"
+            onClick={() => setShowEnquiry(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#8B2954] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#702044]"
+          >
+            Enquire About a Franchise
+            <FaArrowUpRightFromSquare />
+          </button>
+        </div>
+        {showEnquiry && (
+          <EnquiryModal
+            type="franchise"
+            interest="Beauty parlour franchise"
+            context={{}}
+            onClose={() => setShowEnquiry(false)}
+          />
+        )}
       </div>
     </section>
   );

@@ -178,6 +178,11 @@ export const activeBookings = [
 
 export const adminDashboardSection = [
   {
+    query: "enquiries",
+    label: "Enquiries",
+    count: 0,
+  },
+  {
     query: "customer",
     label: "Customer",
     count: 0,
