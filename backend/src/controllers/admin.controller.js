@@ -23,10 +23,10 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
   const { store: storeData, address, services } = req.body;
   const { storeName, storeContactNumber, storeEmail, password } = storeData || {};
   const normalizedContactNumber = storeContactNumber?.trim();
-  const normalizedEmail = storeEmail?.trim().toLowerCase();
+  const normalizedEmail = storeEmail?.trim().toLowerCase() || "";
 
-  if (!storeName?.trim() || !normalizedContactNumber || !normalizedEmail || !password) {
-    throw new ApiError(400, "Store name, contact number, email, and password are required.");
+  if (!storeName?.trim() || !normalizedContactNumber || !password) {
+    throw new ApiError(400, "Store name, contact number, and password are required.");
   }
   if (storeName.trim().length > 50) {
     throw new ApiError(400, "Store name must be 50 characters or fewer.");
@@ -51,12 +51,9 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Exactly two services are required.");
   }
 
-  const existingStore = await Store.findOne({
-    $or: [
-      { storeContactNumber: normalizedContactNumber },
-      { storeEmail: normalizedEmail },
-    ],
-  });
+  const duplicateQuery = [{ storeContactNumber: normalizedContactNumber }];
+  if (normalizedEmail) duplicateQuery.push({ storeEmail: normalizedEmail });
+  const existingStore = await Store.findOne({ $or: duplicateQuery });
   if (existingStore) {
     throw new ApiError(409, "A store with this contact number or email already exists.");
   }
@@ -119,7 +116,7 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
           {
             storeName: storeName.trim(),
             storeContactNumber: normalizedContactNumber,
-            storeEmail: normalizedEmail,
+            storeEmail: normalizedEmail || undefined,
             password,
             isTemporaryRegistered: false,
             subscription: {

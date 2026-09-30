@@ -23,6 +23,7 @@ import { validateBankDetails } from "../validators/bankDetails.validator.js";
 
 const registerProfessional = asyncHandler(async (req, res) => {
   const { contactNumber, name, email, password } = req.body;
+  const normalizedEmail = email?.trim() || "";
 
   // contact number validation
   if (!contactNumber) throw new ApiError(400, "Please enter contact number");
@@ -50,27 +51,42 @@ const registerProfessional = asyncHandler(async (req, res) => {
   if (existingUser)
     throw new ApiError(403, "You are already registered please login");
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  if (!otp) throw new ApiError(500, "Internal server error");
-  const otpStatus = otp ? true : false;
-  const currentDate = new Date();
-  const fiveMinutes = 5 * 60 * 1000;
-  const expiresAt = new Date(currentDate.getTime() + fiveMinutes);
+  const otp = normalizedEmail
+    ? Math.floor(100000 + Math.random() * 900000).toString()
+    : null;
+  if (normalizedEmail && !otp) throw new ApiError(500, "Internal server error");
+  const otpStatus = Boolean(otp);
+  const expiresAt = otp ? new Date(Date.now() + 5 * 60 * 1000) : null;
 
   const newUser = await Professional.create({
     name: name,
     password: password,
     contactNumber: contactNumber,
-    email: email,
+    email: normalizedEmail || undefined,
     otp: otp,
     otpExpiry: expiresAt,
+    isTemporaryRegistered: Boolean(otp),
   });
 
-  const user = await Professional.findOne({
-    contactNumber: contactNumber,
-  }).select("name contactNumber email");
+  const user = await Professional.findById(newUser._id).select(
+    "name contactNumber email role",
+  );
   if (!user)
     throw new ApiError(400, "Registration incomplete. Please try again later");
+
+  if (!otp) {
+    const accessToken = newUser.generateAccessToken();
+    const refreshToken = newUser.generateRefreshToken();
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          { user, otpStatus: false, tokens: { accessToken, refreshToken } },
+          "Registration successful.",
+        ),
+      );
+  }
 
   await sendEmail({
     to: user?.email,
@@ -97,6 +113,11 @@ const loginProfessional = asyncHandler(async (req, res) => {
 
   const user = await Professional.findOne({ contactNumber: contactNumber });
   if (!user) throw new ApiError(404, "Invalid user");
+  if (!user.email)
+    throw new ApiError(
+      400,
+      "This account has no email address. Please log in with your password.",
+    );
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   if (!otp) throw new ApiError(500, "Internal server error");
@@ -155,7 +176,7 @@ const updatePassword = asyncHandler(async (req, res) => {
 
 const passwordLogin = asyncHandler(async (req, res) => {
   const { contactNumber, email, password } = req.body;
-  if (!contactNumber || !email) throw new ApiError(400, "Invalid request ");
+  if (!contactNumber) throw new ApiError(400, "Invalid request ");
 
   if (contactNumber) {
     const user = await Professional.findOne({ contactNumber });
@@ -287,8 +308,8 @@ const updateProfile = asyncHandler(async (req, res) => {
     paymentOptions,
   } = req.body;
   const { professionalId } = req.params;
-  if (!professionalId || !name || !contactNumber || !email)
-    throw new ApiError(400, "Name, contact number and email are required");
+  if (!professionalId || !name || !contactNumber)
+    throw new ApiError(400, "Name and contact number are required");
   if (!validatePhone(contactNumber))
     throw new ApiError(400, "Invalid contact number");
   if (name.length > 50) throw new ApiError(400, "Name length is too long");
@@ -305,7 +326,7 @@ const updateProfile = asyncHandler(async (req, res) => {
 
   user.name = name;
   user.contactNumber = contactNumber;
-  user.email = email;
+  user.email = email?.trim() || null;
   user.about = about;
   user.specialization = specialServiceName;
   user.gender = gender;
