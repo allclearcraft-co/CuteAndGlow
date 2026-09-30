@@ -12,6 +12,7 @@ import {
   FaIndianRupeeSign,
   FaArrowUpRightFromSquare,
   //   FaSparkles,
+  FaXmark,
   FaStar,
   FaUsers,
   FaPaintbrush,
