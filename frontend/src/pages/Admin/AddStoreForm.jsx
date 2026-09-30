@@ -232,6 +232,7 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                 value={form.store.storeEmail}
                 onChange={updateStore}
                 type="email"
+                required={false}
               />
               <Field
                 label="Password"
