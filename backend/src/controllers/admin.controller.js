@@ -11,6 +11,186 @@ import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { PaymentTransaction } from "../models/paymentTransaction.models.js";
 import jwt from "jsonwebtoken";
 import { Category } from "../models/category.model.js";
+import { Address } from "../models/address.model.js";
+import mongoose from "mongoose";
+import { validatePassword } from "../validators/password.validator.js";
+
+const createStoreWithServices = asyncHandler(async (req, res) => {
+  if (!["admin", "subAdmin", "sales", "marketing"].includes(req.user?.role)) {
+    throw new ApiError(403, "You are not authorized to create stores.");
+  }
+
+  const { store: storeData, address, services } = req.body;
+  const { storeName, storeContactNumber, storeEmail, password } = storeData || {};
+  const normalizedContactNumber = storeContactNumber?.trim();
+  const normalizedEmail = storeEmail?.trim().toLowerCase();
+
+  if (!storeName?.trim() || !normalizedContactNumber || !normalizedEmail || !password) {
+    throw new ApiError(400, "Store name, contact number, email, and password are required.");
+  }
+  if (storeName.trim().length > 50) {
+    throw new ApiError(400, "Store name must be 50 characters or fewer.");
+  }
+  if (!validatePhone(normalizedContactNumber)) {
+    throw new ApiError(400, "Invalid contact number.");
+  }
+  if (!validatePassword(password)) {
+    throw new ApiError(400, "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
+  }
+  if (
+    !address?.street1?.trim() ||
+    !address?.area?.trim() ||
+    !address?.pincode?.trim() ||
+    !address?.city?.trim() ||
+    !address?.state?.trim() ||
+    !address?.country?.trim()
+  ) {
+    throw new ApiError(400, "Street, area, pincode, city, state, and country are required.");
+  }
+  if (!Array.isArray(services) || services.length !== 2) {
+    throw new ApiError(400, "Exactly two services are required.");
+  }
+
+  const existingStore = await Store.findOne({
+    $or: [
+      { storeContactNumber: normalizedContactNumber },
+      { storeEmail: normalizedEmail },
+    ],
+  });
+  if (existingStore) {
+    throw new ApiError(409, "A store with this contact number or email already exists.");
+  }
+
+  const basePlan = await Subscription.findOne({
+    planFor: "store",
+    planName: "basic",
+    isActive: true,
+    "price.sellingPrice": 0,
+  });
+  if (!basePlan ) {
+    throw new ApiError(400, "An active complimentary basic store plan with a validity period must be configured first.");
+  }
+  const serviceLimit = basePlan.serviceLimit?.count || 2;
+  if (!basePlan.serviceLimit?.unlimited && serviceLimit < 2) {
+    throw new ApiError(400, "The complimentary basic plan must allow at least two services.");
+  }
+
+  for (const service of services) {
+    if (
+      !service?.name?.trim() ||
+      !mongoose.Types.ObjectId.isValid(service.category) ||
+      !mongoose.Types.ObjectId.isValid(service.subcategory) ||
+      service.mrp === "" ||
+      service.sellingPrice === "" ||
+      !Number.isFinite(Number(service.mrp)) ||
+      !Number.isFinite(Number(service.sellingPrice)) ||
+      Number(service.mrp) < 0 ||
+      Number(service.sellingPrice) < 0
+    ) {
+      throw new ApiError(400, "Each service needs a name, category, subcategory, and valid prices.");
+    }
+
+    const category = await Category.findOne({
+      _id: service.category,
+      status: "Verified",
+      isActive: true,
+      subcategories: {
+        $elemMatch: {
+          _id: service.subcategory,
+          status: "Verified",
+          isActive: true,
+        },
+      },
+    });
+    if (!category) {
+      throw new ApiError(400, "Each service must use an active, verified category and subcategory.");
+    }
+  }
+
+  const session = await mongoose.startSession();
+  let createdStore;
+  try {
+    await session.withTransaction(async () => {
+      const validity = new Date();
+      validity.setMonth(validity.getMonth() + basePlan.validity.months);
+
+      [createdStore] = await Store.create(
+        [
+          {
+            storeName: storeName.trim(),
+            storeContactNumber: normalizedContactNumber,
+            storeEmail: normalizedEmail,
+            password,
+            isTemporaryRegistered: false,
+            subscription: {
+              subscriptionModel: basePlan._id,
+              subscriptionPurchased: true,
+              subscriptionValidity: validity,
+            },
+          },
+        ],
+        { session },
+      );
+
+      const [createdAddress] = await Address.create(
+        [
+          {
+            flatNumber: address.flatNumber?.trim(),
+            floor: address.floor?.trim(),
+            street1: address.street1.trim(),
+            street2: address.street2?.trim(),
+            area: address.area.trim(),
+            locality: address.locality?.trim(),
+            pincode: address.pincode.trim(),
+            city: address.city.trim(),
+            state: address.state.trim(),
+            country: address.country.trim(),
+            location: null,
+            store: createdStore._id,
+            defaultAddress: true,
+            addressType: address.addressType || "Home",
+          },
+        ],
+        { session },
+      );
+      createdStore.address = [createdAddress._id];
+
+      const createdServices = await Services.create(
+        services.map((service) => ({
+          name: service.name.trim(),
+          store: createdStore._id,
+          category: service.category,
+          subcategory: service.subcategory,
+          duration: Number(service.duration) || 30,
+          serviceFor: service.serviceFor || "Both",
+          bookingDays: service.bookingDays || "Whole week",
+          bookingAcceptingHours: {
+            from: service.bookingFrom || "",
+            till: service.bookingTill || "",
+          },
+          onSite: Boolean(service.onSite),
+          inHouse: Boolean(service.inHouse),
+          serviceArea: service.serviceArea || "Inside city",
+          price: {
+            mrp: Number(service.mrp),
+            discount: Number(service.discount) || 0,
+            sellingPrice: Number(service.sellingPrice),
+          },
+          description: service.description || "",
+        })),
+        { session, ordered: true },
+      );
+      createdStore.services = createdServices.map((service) => service._id);
+      await createdStore.save({ session });
+    });
+  } finally {
+    await session.endSession();
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, createdStore, "Store and services created successfully with the basic plan."));
+});
 
 const createAdmin = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
@@ -484,6 +664,7 @@ const getCurrentRequestData = asyncHandler(async (req, res) => {
 });
 
 export {
+  createStoreWithServices,
   createAdmin,
   getAllAdmins,
   getAdminById,
