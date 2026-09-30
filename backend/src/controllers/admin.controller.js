@@ -21,12 +21,16 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
   }
 
   const { store: storeData, address, services } = req.body;
-  const { storeName, storeContactNumber, storeEmail, password } = storeData || {};
+  const { storeName, storeContactNumber, storeEmail, password } =
+    storeData || {};
   const normalizedContactNumber = storeContactNumber?.trim();
   const normalizedEmail = storeEmail?.trim().toLowerCase() || "";
 
   if (!storeName?.trim() || !normalizedContactNumber || !password) {
-    throw new ApiError(400, "Store name, contact number, and password are required.");
+    throw new ApiError(
+      400,
+      "Store name, contact number, and password are required.",
+    );
   }
   if (storeName.trim().length > 50) {
     throw new ApiError(400, "Store name must be 50 characters or fewer.");
@@ -35,7 +39,10 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid contact number.");
   }
   if (!validatePassword(password)) {
-    throw new ApiError(400, "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.");
+    throw new ApiError(
+      400,
+      "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
+    );
   }
   if (
     !address?.street1?.trim() ||
@@ -45,7 +52,10 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
     !address?.state?.trim() ||
     !address?.country?.trim()
   ) {
-    throw new ApiError(400, "Street, area, pincode, city, state, and country are required.");
+    throw new ApiError(
+      400,
+      "Street, area, pincode, city, state, and country are required.",
+    );
   }
   if (!Array.isArray(services) || services.length !== 2) {
     throw new ApiError(400, "Exactly two services are required.");
@@ -55,7 +65,10 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
   if (normalizedEmail) duplicateQuery.push({ storeEmail: normalizedEmail });
   const existingStore = await Store.findOne({ $or: duplicateQuery });
   if (existingStore) {
-    throw new ApiError(409, "A store with this contact number or email already exists.");
+    throw new ApiError(
+      409,
+      "A store with this contact number or email already exists.",
+    );
   }
 
   const basePlan = await Subscription.findOne({
@@ -64,12 +77,18 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
     isActive: true,
     "price.sellingPrice": 0,
   });
-  if (!basePlan ) {
-    throw new ApiError(400, "An active complimentary basic store plan with a validity period must be configured first.");
+  if (!basePlan) {
+    throw new ApiError(
+      400,
+      "An active complimentary basic store plan with a validity period must be configured first.",
+    );
   }
   const serviceLimit = basePlan.serviceLimit?.count || 2;
   if (!basePlan.serviceLimit?.unlimited && serviceLimit < 2) {
-    throw new ApiError(400, "The complimentary basic plan must allow at least two services.");
+    throw new ApiError(
+      400,
+      "The complimentary basic plan must allow at least two services.",
+    );
   }
 
   for (const service of services) {
@@ -84,7 +103,10 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
       Number(service.mrp) < 0 ||
       Number(service.sellingPrice) < 0
     ) {
-      throw new ApiError(400, "Each service needs a name, category, subcategory, and valid prices.");
+      throw new ApiError(
+        400,
+        "Each service needs a name, category, subcategory, and valid prices.",
+      );
     }
 
     const category = await Category.findOne({
@@ -100,7 +122,10 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
       },
     });
     if (!category) {
-      throw new ApiError(400, "Each service must use an active, verified category and subcategory.");
+      throw new ApiError(
+        400,
+        "Each service must use an active, verified category and subcategory.",
+      );
     }
   }
 
@@ -186,7 +211,13 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, createdStore, "Store and services created successfully with the basic plan."));
+    .json(
+      new ApiResponse(
+        201,
+        createdStore,
+        "Store and services created successfully with the basic plan.",
+      ),
+    );
 });
 
 const createAdmin = asyncHandler(async (req, res) => {
