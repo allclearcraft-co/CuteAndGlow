@@ -99,7 +99,7 @@ export const customerRegistrationInputs = [
     placeholder: "Enter your email",
     name: "email",
     type: "email",
-    required: false,
+    // required: false,
   },
   {
     label: "Password",
