@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FetchData } from "../../utils/FetchFromApi";
 import { useToast } from "../../components/hooks/ToastContext";
+import InputBox from "../../components/Input";
+import AddressMap from "../../components/ui/AddressMap";
 
 const initialService = () => ({
   name: "",
@@ -18,6 +20,7 @@ const initialService = () => ({
   onSite: true,
   inHouse: true,
   serviceArea: "Inside city",
+  coverImage: null,
 });
 
 const initialForm = () => ({
@@ -38,12 +41,13 @@ const initialForm = () => ({
     city: "",
     state: "",
     country: "India",
+    coordinates: null,
   },
   services: [initialService(), initialService()],
 });
 
 const inputClass =
-  "w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-[#8B2954] focus:ring-1 focus:ring-[#8B2954]";
+  "w-full px-4 py-2 border border-gray-300 rounded-lg bg-neutral-50 text-gray-700 outline-none focus:ring-1 focus:ring-[#8B2954] focus:border-[#8B2954] transition hover:shadow-md disabled:bg-gray-100 disabled:cursor-not-allowed";
 
 function Field({
   label,
@@ -54,11 +58,13 @@ function Field({
   required = true,
 }) {
   return (
-    <label className="block text-sm font-medium text-gray-700">
-      <span className="mb-1 block">
-        {label}
-        {required && <span className="text-red-500"> *</span>}
-      </span>
+    <div className="w-full py-3">
+      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize ">
+        <span className="mb-1 block">
+          {label}
+          {required && <span className="text-red-500"> *</span>}
+        </span>
+      </label>
       <input
         className={inputClass}
         name={name}
@@ -68,7 +74,7 @@ function Field({
         required={required}
         min={type === "number" ? 0 : undefined}
       />
-    </label>
+    </div>
   );
 }
 
@@ -76,6 +82,7 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
   const [form, setForm] = useState(initialForm);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const geocodeRequest = useRef(0);
   const { alertSuccess, alertError } = useToast();
 
   useEffect(() => {
@@ -98,6 +105,94 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
 
     loadCategories();
   }, [isOpen, alertError]);
+
+  const updateCoordinates = useCallback((coordinates) => {
+    if (
+      !Number.isFinite(coordinates?.latitude) ||
+      !Number.isFinite(coordinates?.longitude)
+    ) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      address: { ...current.address, coordinates },
+    }));
+  }, []);
+
+  useEffect(() => {
+    const coordinates = form.address.coordinates;
+    if (
+      !isOpen ||
+      !Number.isFinite(coordinates?.latitude) ||
+      !Number.isFinite(coordinates?.longitude)
+    ) {
+      return;
+    }
+
+    const requestId = ++geocodeRequest.current;
+    const query = new URLSearchParams({
+      format: "jsonv2",
+      addressdetails: "1",
+      lat: String(coordinates.latitude),
+      lon: String(coordinates.longitude),
+    });
+
+    fetch(`https://nominatim.openstreetmap.org/reverse?${query}`)
+      .then((response) => {
+        if (!response.ok) throw new Error("Address lookup failed");
+        return response.json();
+      })
+      .then((result) => {
+        if (requestId !== geocodeRequest.current) return;
+
+        const place = result.address || {};
+        const street =
+          place.road ||
+          place.pedestrian ||
+          place.residential ||
+          place.path ||
+          "";
+        setForm((current) => ({
+          ...current,
+          address: {
+            ...current.address,
+            flatNumber: place.house_number || "",
+            floor: "",
+            street1: street,
+            street2: "",
+            area:
+              place.neighbourhood ||
+              place.suburb ||
+              place.city_district ||
+              place.district ||
+              "",
+            locality:
+              place.locality ||
+              place.hamlet ||
+              place.suburb ||
+              place.city_district ||
+              "",
+            pincode: place.postcode || "",
+            city:
+              place.city ||
+              place.town ||
+              place.village ||
+              place.municipality ||
+              place.county ||
+              "",
+            state: place.state || "",
+            country: place.country || "",
+            coordinates,
+          },
+        }));
+      })
+      .catch(() => {});
+
+    return () => {
+      if (geocodeRequest.current === requestId) geocodeRequest.current += 1;
+    };
+  }, [form.address.coordinates, isOpen]);
 
   if (!isOpen) return null;
 
@@ -125,7 +220,12 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
         serviceIndex === index
           ? {
               ...service,
-              [name]: type === "checkbox" ? checked : value,
+              [name]:
+                type === "checkbox"
+                  ? checked
+                  : type === "file"
+                    ? event.target.files?.[0] || null
+                    : value,
               ...(name === "category" ? { subcategory: "" } : {}),
               ...(name === "mrp" && !service.discount
                 ? { sellingPrice: value }
@@ -156,10 +256,30 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
     event.preventDefault();
     setLoading(true);
     try {
+      const payload = new FormData();
+      payload.append("store", JSON.stringify(form.store));
+      payload.append("address", JSON.stringify(form.address));
+      payload.append(
+        "services",
+        JSON.stringify(
+          form.services.map((service) => {
+            const serviceData = { ...service };
+            delete serviceData.coverImage;
+            return serviceData;
+          }),
+        ),
+      );
+      form.services.forEach((service, index) => {
+        if (service.coverImage) {
+          payload.append(`serviceImage${index}`, service.coverImage);
+        }
+      });
+
       const response = await FetchData(
         "admin/store/create-with-services",
         "post",
-        form,
+        payload,
+        true,
       );
       alertSuccess(response.data.message);
       setForm(initialForm());
@@ -234,7 +354,7 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                 type="email"
                 required={false}
               />
-              <Field
+              <InputBox
                 label="Password"
                 name="password"
                 value={form.store.password}
@@ -246,71 +366,82 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
 
           <section>
             <h3 className="mb-3 text-lg font-semibold">Store address</h3>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Field
-                label="Street address"
-                name="street1"
-                value={form.address.street1}
-                onChange={updateAddress}
-              />
-              <Field
-                label="Area"
-                name="area"
-                value={form.address.area}
-                onChange={updateAddress}
-              />
-              <Field
-                label="Pincode"
-                name="pincode"
-                value={form.address.pincode}
-                onChange={updateAddress}
-              />
-              <Field
-                label="City"
-                name="city"
-                value={form.address.city}
-                onChange={updateAddress}
-              />
-              <Field
-                label="State"
-                name="state"
-                value={form.address.state}
-                onChange={updateAddress}
-              />
-              <Field
-                label="Country"
-                name="country"
-                value={form.address.country}
-                onChange={updateAddress}
-              />
-              <Field
-                label="Flat / unit"
-                name="flatNumber"
-                value={form.address.flatNumber}
-                onChange={updateAddress}
-                required={false}
-              />
-              <Field
-                label="Floor"
-                name="floor"
-                value={form.address.floor}
-                onChange={updateAddress}
-                required={false}
-              />
-              <Field
-                label="Street address 2"
-                name="street2"
-                value={form.address.street2}
-                onChange={updateAddress}
-                required={false}
-              />
-              <Field
-                label="Locality"
-                name="locality"
-                value={form.address.locality}
-                onChange={updateAddress}
-                required={false}
-              />
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.9fr)]">
+              <div className="h-80 overflow-hidden rounded-lg border border-gray-200 lg:h-full lg:min-h-125">
+                <AddressMap setCoordinates={updateCoordinates} />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Field
+                  label="Street address"
+                  name="street1"
+                  value={form.address.street1}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Area"
+                  name="area"
+                  value={form.address.area}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Pincode"
+                  name="pincode"
+                  value={form.address.pincode}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="City"
+                  name="city"
+                  value={form.address.city}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="State"
+                  name="state"
+                  value={form.address.state}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Country"
+                  name="country"
+                  value={form.address.country}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Flat / unit"
+                  name="flatNumber"
+                  value={form.address.flatNumber}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Floor"
+                  name="floor"
+                  value={form.address.floor}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Street address 2"
+                  name="street2"
+                  value={form.address.street2}
+                  onChange={updateAddress}
+                  required={false}
+                />
+                <Field
+                  label="Locality"
+                  name="locality"
+                  value={form.address.locality}
+                  onChange={updateAddress}
+                  required={false}
+                />
+              </div>
             </div>
           </section>
 
@@ -336,10 +467,12 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                       value={service.name}
                       onChange={(event) => updateService(index, event)}
                     />
-                    <label className="block text-sm font-medium text-gray-700">
-                      <span className="mb-1 block">
-                        Category <span className="text-red-500">*</span>
-                      </span>
+                    <div className="w-full py-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                        <span className="mb-1 block">
+                          Category <span className="text-red-500">*</span>
+                        </span>
+                      </label>
                       <select
                         className={inputClass}
                         name="category"
@@ -360,11 +493,13 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                             </option>
                           ))}
                       </select>
-                    </label>
-                    <label className="block text-sm font-medium text-gray-700">
-                      <span className="mb-1 block">
-                        Subcategory <span className="text-red-500">*</span>
-                      </span>
+                    </div>
+                    <div className="w-full py-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize">
+                        <span className="mb-1 block">
+                          Subcategory <span className="text-red-500">*</span>
+                        </span>
+                      </label>
                       <select
                         className={inputClass}
                         name="subcategory"
@@ -389,7 +524,7 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                             </option>
                           ))}
                       </select>
-                    </label>
+                    </div>
                     <Field
                       label="Duration (minutes)"
                       name="duration"
@@ -419,8 +554,10 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                       onChange={(event) => updateService(index, event)}
                       type="number"
                     />
-                    <label className="block text-sm font-medium text-gray-700">
-                      <span className="mb-1 block">Service for</span>
+                    <div className="w-full py-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize ">
+                        <span className="mb-1 block">Service for</span>
+                      </label>
                       <select
                         className={inputClass}
                         name="serviceFor"
@@ -431,9 +568,11 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                         <option>Female</option>
                         <option>Male</option>
                       </select>
-                    </label>
-                    <label className="block text-sm font-medium text-gray-700">
-                      <span className="mb-1 block">Service area</span>
+                    </div>
+                    <div className="w-full py-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize ">
+                        <span className="mb-1 block">Service area</span>
+                      </label>
                       <select
                         className={inputClass}
                         name="serviceArea"
@@ -444,9 +583,11 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                         <option>Outside city</option>
                         <option>Both</option>
                       </select>
-                    </label>
-                    <label className="block text-sm font-medium text-gray-700">
-                      <span className="mb-1 block">Booking days</span>
+                    </div>
+                    <div className="w-full py-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-2 capitalize ">
+                        <span className="mb-1 block">Booking days</span>
+                      </label>
                       <select
                         className={inputClass}
                         name="bookingDays"
@@ -458,7 +599,7 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                         <option>Monday to Saturday</option>
                         <option>Whole week (All 7 days)</option>
                       </select>
-                    </label>
+                    </div>
                     <Field
                       label="Booking from"
                       name="bookingFrom"
@@ -475,6 +616,21 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
                       type="time"
                       required={false}
                     />
+                    <label className="block text-sm font-medium text-gray-700">
+                      <span className="mb-2 block">Service image</span>
+                      <input
+                        className={inputClass}
+                        name="coverImage"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => updateService(index, event)}
+                      />
+                      {service.coverImage && (
+                        <span className="mt-1 block truncate text-xs text-gray-500">
+                          {service.coverImage.name}
+                        </span>
+                      )}
+                    </label>
                     <label className="md:col-span-2 lg:col-span-3">
                       <span className="mb-1 block text-sm font-medium text-gray-700">
                         Description
