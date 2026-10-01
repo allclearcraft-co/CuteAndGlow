@@ -12,6 +12,7 @@ import {
 } from "../controllers/admin.controller.js";
 
 import { VerifyAdmin } from "../middlewares/admin.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 import { Admin } from "../models/admin.model.js";
 import { createPasswordResetHandlers } from "../controllers/passwordReset.controller.js";
 
@@ -43,7 +44,14 @@ router
   .get(getCurrentRequestData);
 
 //private routes
-router.route("/store/create-with-services").post(VerifyAdmin, createStoreWithServices);
+router.route("/store/create-with-services").post(
+  VerifyAdmin,
+  upload.fields([
+    { name: "serviceImage0", maxCount: 1 },
+    { name: "serviceImage1", maxCount: 1 },
+  ]),
+  createStoreWithServices,
+);
 // router
 //   .route("/otp/authentication/:verificationType/:customerId")
 //   .post(otpVerification);

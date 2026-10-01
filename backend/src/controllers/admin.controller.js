@@ -14,13 +14,24 @@ import { Category } from "../models/category.model.js";
 import { Address } from "../models/address.model.js";
 import mongoose from "mongoose";
 import { validatePassword } from "../validators/password.validator.js";
+import { UploadImages } from "../utils/imageKit.io.js";
 
 const createStoreWithServices = asyncHandler(async (req, res) => {
   if (!["admin", "subAdmin", "sales", "marketing"].includes(req.user?.role)) {
     throw new ApiError(403, "You are not authorized to create stores.");
   }
 
-  const { store: storeData, address, services } = req.body;
+  const parseJsonField = (value, field) => {
+    if (typeof value !== "string") return value;
+    try {
+      return JSON.parse(value);
+    } catch {
+      throw new ApiError(400, `${field} must be valid JSON.`);
+    }
+  };
+  const storeData = parseJsonField(req.body.store, "Store details");
+  const address = parseJsonField(req.body.address, "Store address") || {};
+  const services = parseJsonField(req.body.services, "Services");
   const { storeName, storeContactNumber, storeEmail, password } =
     storeData || {};
   const normalizedContactNumber = storeContactNumber?.trim();
@@ -42,19 +53,6 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
     throw new ApiError(
       400,
       "Password must be at least 8 characters and include uppercase, lowercase, number, and special character.",
-    );
-  }
-  if (
-    !address?.street1?.trim() ||
-    !address?.area?.trim() ||
-    !address?.pincode?.trim() ||
-    !address?.city?.trim() ||
-    !address?.state?.trim() ||
-    !address?.country?.trim()
-  ) {
-    throw new ApiError(
-      400,
-      "Street, area, pincode, city, state, and country are required.",
     );
   }
   if (!Array.isArray(services) || services.length !== 2) {
@@ -129,6 +127,38 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
     }
   }
 
+  const safeStoreName = storeName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-_]/g, "")
+    .replace(/\s+/g, "-");
+  const serviceCoverImages = await Promise.all(
+    services.map(async (_service, index) => {
+      const imageFile = req.files?.[`serviceImage${index}`]?.[0];
+      if (!imageFile) return [];
+      if (!imageFile.mimetype?.startsWith("image/")) {
+        throw new ApiError(400, "Service images must be image files.");
+      }
+
+      const uploaded = await UploadImages(imageFile.filename, {
+        folderStructure: `store/${safeStoreName}/serviceCoverImage`,
+      });
+      return [{ url: uploaded.url, fileId: uploaded.fileId }];
+    }),
+  );
+
+  const addressText = (value) =>
+    typeof value === "string" ? value.trim() || undefined : undefined;
+  const latitude = Number(address.coordinates?.latitude);
+  const longitude = Number(address.coordinates?.longitude);
+  const hasCoordinates =
+    Number.isFinite(latitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    Number.isFinite(longitude) &&
+    longitude >= -180 &&
+    longitude <= 180;
+
   const session = await mongoose.startSession();
   let createdStore;
   try {
@@ -157,17 +187,22 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
       const [createdAddress] = await Address.create(
         [
           {
-            flatNumber: address.flatNumber?.trim(),
-            floor: address.floor?.trim(),
-            street1: address.street1.trim(),
-            street2: address.street2?.trim(),
-            area: address.area.trim(),
-            locality: address.locality?.trim(),
-            pincode: address.pincode.trim(),
-            city: address.city.trim(),
-            state: address.state.trim(),
-            country: address.country.trim(),
-            location: null,
+            flatNumber: addressText(address.flatNumber),
+            floor: addressText(address.floor),
+            street1: addressText(address.street1),
+            street2: addressText(address.street2),
+            area: addressText(address.area),
+            locality: addressText(address.locality),
+            pincode: addressText(address.pincode),
+            city: addressText(address.city),
+            state: addressText(address.state),
+            country: addressText(address.country),
+            ...(hasCoordinates && {
+              location: {
+                type: "Point",
+                coordinates: [latitude, longitude],
+              },
+            }),
             store: createdStore._id,
             defaultAddress: true,
             addressType: address.addressType || "Home",
@@ -178,7 +213,7 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
       createdStore.address = [createdAddress._id];
 
       const createdServices = await Services.create(
-        services.map((service) => ({
+        services.map((service, index) => ({
           name: service.name.trim(),
           store: createdStore._id,
           category: service.category,
@@ -199,6 +234,7 @@ const createStoreWithServices = asyncHandler(async (req, res) => {
             sellingPrice: Number(service.sellingPrice),
           },
           description: service.description || "",
+          coverImage: serviceCoverImages[index],
         })),
         { session, ordered: true },
       );
