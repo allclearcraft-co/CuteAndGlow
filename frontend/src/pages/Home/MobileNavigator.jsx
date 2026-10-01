@@ -29,7 +29,7 @@ const prepareCategories = (categories = []) => {
     return result;
   };
 
-  console.log(categories)
+  console.log(categories);
 
   if (items.length >= 9) {
     return {
@@ -207,6 +207,7 @@ const MobileServiceTags = () => {
   }, [manualCity]);
 
   const onSearchSubmit = () => {
+    localStorage.clear("homeClickedSearch");
     localStorage.setItem("homeClickedSearch", search.toLowerCase());
     navigate("/services/all");
     setSearch("");
@@ -310,6 +311,7 @@ const MobileServiceTags = () => {
             >
               <div
                 onClick={() => {
+                  localStorage.clear("homeClickedCategory");
                   localStorage.setItem("homeClickedCategory", item?._id);
                   navigate("/services/all");
                 }}
@@ -331,14 +333,14 @@ const MobileServiceTags = () => {
       </div>
       <div className="flex justify-between items-center w-full py-5 px-10">
         <Button
-              LabelName="Avail franchise"
-              onClick={() => navigate("/franchise/franchise-info")}
-            />
+          LabelName="Avail franchise"
+          onClick={() => navigate("/franchise/franchise-info")}
+        />
 
-            <Button
-              LabelName="beauty course"
-              onClick={() => navigate("/course/course-info")}
-            />
+        <Button
+          LabelName="beauty course"
+          onClick={() => navigate("/course/course-info")}
+        />
       </div>
     </div>
   );

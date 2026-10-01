@@ -1,20 +1,21 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { IoArrowBack } from "react-icons/io5";
 // import Logo from "../assets/Logo.png";
 import InputBox from "./Input";
 import Button from "./Button";
-import Login from "./Login";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "../components/hooks/ToastContext";
 import { customerRegistrationInputs } from "../constants/constants";
 import { FetchData } from "../utils/FetchFromApi";
-import { parseErrorMessage } from "../utils/parseErrorMessage";
 import OtpVerificationPopup from "../components/ui/OtpVerificationPopup";
+import { useDispatch } from "react-redux";
+import { addUser, clearUser } from "../redux/slice/authSlice";
 
 const Register = () => {
   const navigate = useNavigate();
   const { userType } = useParams("");
   const { alertSuccess, alertError, alertInfo } = useToast();
+  const dispatch = useDispatch();
   const formRef = useRef();
   const [data, setData] = useState();
   const [otpPopup, setOtpPopup] = useState(false);
@@ -51,11 +52,22 @@ const Register = () => {
         "post",
         formData,
       );
-      if (response.data.data.otpStatus === true) {
+      const result = response.data.data;
+      if (result.otpStatus === true) {
         setOtpPopup(true);
         formRef.current.reset();
-        setData(response.data.data);
-        setOTPNumber(response.data.data.otp);
+        setData(result);
+        setOTPNumber(result.otp);
+      } else if (result.tokens && result.user) {
+        localStorage.setItem("accessToken", result.tokens.accessToken);
+        localStorage.setItem("refreshToken", result.tokens.refreshToken);
+        localStorage.setItem("role", result.user.role);
+        dispatch(clearUser());
+        dispatch(addUser(result.user));
+        formRef.current.reset();
+        navigate("/dashboard");
+        alertSuccess(response.data.message);
+        return;
       }
       alertInfo(response.data.message);
     } catch (err) {
@@ -127,6 +139,7 @@ const Register = () => {
               }
               type={data.type}
               name={data.name}
+              required={data.required}
             />
           ))}
           <div className="flex items-start gap-3 py-4">

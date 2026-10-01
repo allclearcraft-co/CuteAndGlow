@@ -75,7 +75,7 @@ const ServiceBooking = ({ startLoading, stopLoading }) => {
         "get",
       );
 
-      setService(response.data.data);
+      setService(response.data.data.service);
     } catch (err) {
     } finally {
       stopLoading();

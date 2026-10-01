@@ -26,6 +26,7 @@ import { validatePassword } from "../validators/password.validator.js";
 
 const registerStore = asyncHandler(async (req, res) => {
   const { name, contactNumber, email, password } = req.body;
+  const normalizedEmail = email?.trim() || "";
   // contact number validation
   if (!contactNumber) throw new ApiError(400, "Please enter contact number");
   if (!validatePhone(contactNumber))
@@ -61,43 +62,65 @@ const registerStore = asyncHandler(async (req, res) => {
   if (existingUser)
     throw new ApiError(403, "You are already registered please login");
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  if (!otp) throw new ApiError(500, "Internal server error");
-  const otpStatus = otp ? true : false;
-  const currentDate = new Date();
-  const fiveMinutes = 5 * 60 * 1000;
-  const expiresAt = new Date(currentDate.getTime() + fiveMinutes);
+  const otp = normalizedEmail
+    ? Math.floor(100000 + Math.random() * 900000).toString()
+    : null;
+  if (normalizedEmail && !otp) throw new ApiError(500, "Internal server error");
+  const otpStatus = Boolean(otp);
+  const expiresAt = otp ? new Date(Date.now() + 5 * 60 * 1000) : null;
 
   const newUser = await Store.create({
     storeName: name,
     password: password,
     storeContactNumber: contactNumber,
-    storeEmail: email,
+    storeEmail: normalizedEmail || undefined,
     otp: otp,
     otpExpiry: expiresAt,
+    isTemporaryRegistered: Boolean(otp),
   });
 
-  await sendEmail({
-    to: newUser?.storeEmail,
-    subject: "OTP Verification",
-    html: accountCreation(newUser?.storeName, otp),
-  });
+  if (email) {
+    await sendEmail({
+      to: newUser?.storeEmail,
+      subject: "OTP Verification",
+      html: accountCreation(newUser?.storeName, otp),
+    });
+  }
 
-  const user = await Store.findOne({
-    storeContactNumber: contactNumber,
-  }).select("name contactNumber email");
+  const user = await Store.findById(newUser._id).select(
+    "storeName storeContactNumber storeEmail role",
+  );
   if (!user)
     throw new ApiError(400, "Registration incomplete. Please try again later");
 
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { user, otpStatus },
-        "Otp has been sent to your contact number",
-      ),
-    );
+  if (!otp) {
+    const accessToken = newUser.generateAccessToken();
+    const refreshToken = newUser.generateRefreshToken();
+    return res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          { user, otpStatus: false, tokens: { accessToken, refreshToken } },
+          "Registration successful.",
+        ),
+      );
+  }
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        user: {
+          _id: user._id,
+          contactNumber: user.storeContactNumber,
+          email: user.storeEmail,
+        },
+        otpStatus,
+      },
+      "Otp has been sent to your contact number",
+    ),
+  );
 });
 
 const loginStore = asyncHandler(async (req, res) => {
@@ -113,6 +136,11 @@ const loginStore = asyncHandler(async (req, res) => {
   });
   if (!storeUser)
     throw new ApiError(404, "Invalid credentials, please register.");
+  if (!storeUser.storeEmail)
+    throw new ApiError(
+      400,
+      "This account has no email address. Please log in with your password.",
+    );
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   if (!otp) throw new ApiError(500, "Internal server error");
@@ -467,11 +495,8 @@ const updateProfile = asyncHandler(async (req, res) => {
     storeTimings,
   } = req.body;
 
-  if (!storeName || !storeContactNumber || !storeEmail)
-    throw new ApiError(
-      400,
-      "Store name, contact number and email are required",
-    );
+  if (!storeName || !storeContactNumber)
+    throw new ApiError(400, "Store name and contact number are required");
   if (!validatePhone(storeContactNumber))
     throw new ApiError(403, "Invalid contact number");
   if (storeName.length > 100)
@@ -482,7 +507,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     {
       storeName,
       storeContactNumber,
-      storeEmail,
+      storeEmail: storeEmail?.trim() || null,
       serviceType,
       paymentOptions,
       storeTimings: {

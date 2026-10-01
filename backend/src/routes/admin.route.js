@@ -8,6 +8,7 @@ import {
   dashboardData,
   adminLogin,
   getCurrentRequestData,
+  createStoreWithServices,
 } from "../controllers/admin.controller.js";
 
 import { VerifyAdmin } from "../middlewares/admin.middleware.js";
@@ -42,6 +43,7 @@ router
   .get(getCurrentRequestData);
 
 //private routes
+router.route("/store/create-with-services").post(VerifyAdmin, createStoreWithServices);
 // router
 //   .route("/otp/authentication/:verificationType/:customerId")
 //   .post(otpVerification);

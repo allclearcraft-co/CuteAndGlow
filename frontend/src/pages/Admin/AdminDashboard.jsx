@@ -16,6 +16,7 @@ import { clearUser } from "../../redux/slice/authSlice";
 import { useToast } from "../../components/hooks/ToastContext";
 import AddCategoryForm from "./AddCategoryForm";
 import AddSubCategoryForm from "./AddSubcategoryForm";
+import AddStoreForm from "./AddStoreForm";
 
 function AdminDashboard() {
   const user = useSelector((state) => state.auth.user);
@@ -31,6 +32,7 @@ function AdminDashboard() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false);
+  const [isAddStoreOpen, setIsAddStoreOpen] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [subCategoryLoading, setSubCategoryLoading] = useState(false);
   const { alertInfo } = useToast();
@@ -195,9 +197,17 @@ function AdminDashboard() {
             <div>
               <Button
                 LabelName="Add new Store"
-                onClick={() => navigate(`/auth/${"register"}/${"store"}`)}
+                onClick={() => setIsAddStoreOpen(true)}
               />
               <DashboardTable tableRole="store" TableData={data} />
+              <AddStoreForm
+                isOpen={isAddStoreOpen}
+                onClose={() => setIsAddStoreOpen(false)}
+                onSuccess={() => {
+                  setIsAddStoreOpen(false);
+                  fetchDashboard({ query: "store" });
+                }}
+              />
             </div>
           )}
           {activeSection === "categories" && (

@@ -7,7 +7,7 @@ const professionalSchema = new mongoose.Schema(
     // initials for registration
     name: { type: String, required: true, trim: true },
     contactNumber: { type: String, required: true, trim: true },
-    email: { type: String, required: true, trim: true },
+    email: { type: String, trim: true },
     password: { type: String },
 
     gender: {
