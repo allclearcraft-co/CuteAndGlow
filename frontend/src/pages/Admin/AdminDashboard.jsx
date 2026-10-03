@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { adminDashboardSection } from "../../constants/constants";
-import { useState } from "react";
 import { HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import DashboardTable from "./DashboardTables";
 import { FetchData } from "../../utils/FetchFromApi";
@@ -24,7 +23,7 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeSection, setActiveSection] = useState(
-    () => localStorage.getItem("adminDashboardQuery") || "customer",
+    () => localStorage.getItem("adminDashboardQuery") || "store",
   );
   const [data, setData] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -53,7 +52,7 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchDashboard({
-      query: localStorage.getItem("adminDashboardQuery") || "customer",
+      query: localStorage.getItem("adminDashboardQuery") || "store",
     });
   }, []);
 
@@ -87,7 +86,7 @@ function AdminDashboard() {
 
         setIsCategoryOpen(false);
         fetchDashboard({
-          query: localStorage.getItem("adminDashboardQuery") || "customer",
+          query: localStorage.getItem("adminDashboardQuery") || "store",
         });
 
         // Refresh category list
@@ -126,7 +125,7 @@ function AdminDashboard() {
 
         setIsSubCategoryOpen(false);
         fetchDashboard({
-          query: localStorage.getItem("adminDashboardQuery") || "customer",
+          query: localStorage.getItem("adminDashboardQuery") || "store",
         });
 
         // Refresh category list
@@ -156,9 +155,30 @@ function AdminDashboard() {
   } else {
     return (
       <div className="relative p-2 flex w-full items-start h-[90vh]">
-        <aside className="hidden md:flex sticky w-[20vw] h-full bg-[#8B2954] rounded-xl flex-col items-start justify-between text-white py-6 px-5">
-          <div className="w-full h-full flex flex-col justify-between">
-            <ul className="flex flex-col gap-2 w-full">
+        {isMenuOpen && (
+          <button
+            type="button"
+            aria-label="Close admin menu"
+            className="fixed inset-0 z-40 bg-black/40 md:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
+        <aside
+          className={`${isMenuOpen ? "flex" : "hidden"} fixed inset-y-2 left-2 z-50 h-[calc(90vh-1rem)] w-[84vw] max-w-xs flex-col items-start justify-between rounded-xl bg-[#8B2954] px-5 py-6 text-white md:sticky md:inset-auto md:z-auto md:flex md:h-full md:w-[20vw] md:shrink-0`}
+        >
+          <div className="mb-4 flex w-full items-center justify-between md:hidden">
+            <span className="font-semibold">Admin menu</span>
+            <button
+              type="button"
+              aria-label="Close admin menu"
+              className="rounded p-2 hover:bg-white/15"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <HiOutlineX size={22} />
+            </button>
+          </div>
+          <div className="flex h-full w-full flex-col items-end justify-start">
+            <ul className="flex w-full flex-col gap-2">
               {filteredSections.map((data, index) => (
                 <li
                   key={index}
@@ -169,9 +189,10 @@ function AdminDashboard() {
                     fetchDashboard({
                       query: localStorage.getItem("adminDashboardQuery"),
                     });
+                    setIsMenuOpen(false);
                   }}
                 >
-                  <div className="flex gap-2 justify-start items-center">
+                  <div className="flex items-center justify-start gap-2">
                     {/* <span>{data.icon}</span> */}
                     <span>{data.label}</span>
                   </div>
@@ -179,6 +200,7 @@ function AdminDashboard() {
               ))}
             </ul>
             <Button
+              className="w-full"
               variant="secondary"
               LabelName="Log out"
               onClick={() => logout()}
@@ -186,7 +208,19 @@ function AdminDashboard() {
           </div>
         </aside>
 
-        <main className="flex-1 overflow-y-auto p-5 h-full">
+        <main className="h-full min-w-0 flex-1 overflow-y-auto p-3 md:p-5">
+          <div className="mb-3 flex items-center justify-between md:hidden">
+            <button
+              type="button"
+              aria-label="Open admin menu"
+              aria-expanded={isMenuOpen}
+              className="rounded-lg border border-gray-200 p-2 text-gray-800"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <HiOutlineMenu size={22} />
+            </button>
+            <span className="font-semibold text-gray-800">Admin dashboard</span>
+          </div>
           {activeSection === "enquiries" && (
             <DashboardTable tableRole="enquiries" TableData={data} />
           )}
