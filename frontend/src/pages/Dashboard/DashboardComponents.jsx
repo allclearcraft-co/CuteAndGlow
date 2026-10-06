@@ -65,10 +65,32 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
   const [profileForm, setProfileForm] = useState({});
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [purchasingPlanId, setPurchasingPlanId] = useState(null);
-  const { alertSuccess, alertError } = useToast();
+  const { alertSuccess, alertInfo, alertError } = useToast();
   const navigate = useNavigate();
   const [openSection, setOpenSection] = useState("features");
   const subscriptionId = data?.store?.subscription?.subscriptionModel;
+  const [loading, setLoading] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const formRef = useRef();
+
+  const addEmail = async () => {
+    try {
+      const formData = new FormData(formRef.current);
+      setLoading(true);
+      const response = await FetchData(
+        `store/update/store-email/${data?._id}`,
+        "post",
+        formData,
+      );
+      alertInfo(response.data.message);
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
+      alertError(err.response.data);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleSection = (section) => {
     setOpenSection((prev) => (prev === section ? null : section));
@@ -266,6 +288,13 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
           />
         ) : (
           <Button LabelName="add service" onClick={activeServices} />
+        )}
+        {role === "Customer" ? (
+          ""
+        ) : displayData?.storeEmail ? (
+          ""
+        ) : (
+          <Button LabelName="Add email" onClick={() => setShowForm(true)} />
         )}
 
         <button
@@ -1715,6 +1744,37 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+      {showForm && (
+        <div className="fixed top-0 left-0 z-50 flex justify-center items-center h-screen w-full bg-black/80">
+          <div>
+            <form
+              ref={formRef}
+              onSubmit={addEmail}
+              className="bg-white rounded-xl p-5 lg:p-10 w-full md:w-96 flex flex-col justify-center items-center gap-4"
+            >
+              <InputBox
+                label="add store Email"
+                name="storeEmail"
+                type="email"
+              />
+              <Button
+                LabelName={loading ? "Please wait..." : "confirm"}
+                className="w-full"
+                type="submit"
+              />
+              <Button
+                LabelName="Cancel"
+                variant="secondary"
+                className="w-full"
+                onClick={() => {
+                  setShowForm(false);
+                  formRef.current.reset();
+                }}
+              />
+            </form>
           </div>
         </div>
       )}

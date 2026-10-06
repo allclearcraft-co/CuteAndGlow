@@ -23,6 +23,7 @@ import otpTemplate from "../template/otp.mail.template.js";
 import accountCreation from "../template/accountCreation.mail.template.js";
 import welcomeTemplate from "../template/welcome.mail.template.js";
 import { validatePassword } from "../validators/password.validator.js";
+import { Admin } from "../models/admin.model.js";
 
 const registerStore = asyncHandler(async (req, res) => {
   const { name, contactNumber, email, password } = req.body;
@@ -1070,6 +1071,47 @@ const getStoreById = asyncHandler(async (req, res) => {
     );
 });
 
+const addEmailByAdmin = asyncHandler(async (req, res) => {
+  const { adminId, storeId } = req.params;
+  if (!adminId || !storeId)
+    throw new ApiError(400, "Invalid request please try again later");
+
+  const { storeEmail } = req.body;
+  if (!storeEmail) throw new ApiError(400, "Email is required");
+
+  const admin = await Admin.findById(adminId);
+  if (!admin) throw new ApiError(400, "Invalid admin");
+
+  const store = await Store.findByIdAndUpdate(storeId, {
+    storeEmail: storeEmail,
+  });
+  if (!store)
+    throw new ApiError(400, "Something went wrong, please try again later");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Email updated successfully !"));
+});
+
+const addEmailByStore = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  if (!storeId)
+    throw new ApiError(400, "Invalid request please try again later");
+
+  const { storeEmail } = req.body;
+  if (!storeEmail) throw new ApiError(400, "Email is required");
+
+  const store = await Store.findByIdAndUpdate(storeId, {
+    storeEmail: storeEmail,
+  });
+  if (!store)
+    throw new ApiError(400, "Something went wrong, please try again later");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Email updated successfully !"));
+});
+
 export {
   registerStore,
   loginStore,
@@ -1089,5 +1131,7 @@ export {
   getStaffForService,
   registrationFeePaid,
   getStoreById,
+  addEmailByAdmin,
+  addEmailByStore,
   dashboardData,
 };

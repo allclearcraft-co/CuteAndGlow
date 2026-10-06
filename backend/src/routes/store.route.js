@@ -19,6 +19,8 @@ import {
   updatePassword,
   deleteAddress,
   getStoreById,
+  addEmailByAdmin,
+  addEmailByStore,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -65,6 +67,8 @@ router
 router
   .route("/update/registration-fee-paid/true/:storeId")
   .post(VerifyStore, registrationFeePaid);
+router.route("/update/store-email/:storeId/:adminId").post(addEmailByAdmin);
+router.route("/update/store-email/:storeId").post(addEmailByStore);
 router.route("/update/submit-kyc/:storeId").post(
   upload.fields([
     { name: "aadharFront", maxCount: 1 },
