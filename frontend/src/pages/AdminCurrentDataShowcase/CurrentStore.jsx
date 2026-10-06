@@ -1,8 +1,37 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Button from "../../components/Button";
 import { FaUser, FaStar, FaPlus } from "react-icons/fa";
+import { FetchData } from "../../utils/FetchFromApi";
+import InputBox from "../../components/Input";
+import { useToast } from "../../components/hooks/ToastContext";
+import { useSelector } from "react-redux";
 
 const CurrentStore = ({ data }) => {
+  const user = useSelector((state) => state.auth.user);
+  const [loading, setLoading] = useState(false);
+  const { alertInfo, alertError } = useToast();
+  const [showForm, setShowForm] = useState(false);
+  const formRef = useRef();
+
+  const addEmail = async () => {
+    try {
+      const formData = new FormData(formRef.current);
+      setLoading(true);
+      const response = await FetchData(
+        `store/update/store-email/${data?._id}/${user?._id}`,
+        "post",
+        formData,
+      );
+      alertInfo(response.data.message);
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
+      alertError(err.response.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const TableData = [
     // =====================================================
     // STORE INFORMATION
@@ -440,6 +469,11 @@ const CurrentStore = ({ data }) => {
   return (
     <div className="space-y-6  h-full w-full p-10 mb-20">
       <h1 className="text-2xl heading">Current store</h1>
+      {data?.storeEmail ? (
+        ""
+      ) : (
+        <Button LabelName="Add email" onClick={() => setShowForm(true)} />
+      )}
       <div className="w-full h-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full border-collapse">
           <tbody>
@@ -462,6 +496,37 @@ const CurrentStore = ({ data }) => {
           </tbody>
         </table>
       </div>
+      {showForm && (
+        <div className="fixed top-0 left-0 z-50 flex justify-center items-center h-screen w-full bg-black/80">
+          <div>
+            <form
+              ref={formRef}
+              onSubmit={addEmail}
+              className="bg-white rounded-xl p-5 lg:p-10 w-full md:w-96 flex flex-col justify-center items-center gap-4"
+            >
+              <InputBox
+                label="add store Email"
+                name="storeEmail"
+                type="email"
+              />
+              <Button
+                LabelName={loading ? "Please wait..." : "confirm"}
+                className="w-full"
+                type="submit"
+              />
+              <Button
+                LabelName="Cancel"
+                variant="secondary"
+                className="w-full"
+                onClick={() => {
+                  setShowForm(false);
+                  formRef.current.reset();
+                }}
+              />
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
