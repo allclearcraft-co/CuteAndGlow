@@ -56,9 +56,11 @@ import { MdOutlineVerified } from "react-icons/md";
 import StoreServiceCard from "../../components/ui/StoreServiceCard";
 import AccordionSection from "../../components/ui/Accordian";
 import { useNavigate } from "react-router-dom";
+import { px } from "framer-motion";
 
 const Overview = ({ data, role, userId, callData, activeServices }) => {
   const [subscription, setSubscription] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [currentSubscriptionModel, setCurrentSubscriptionModel] =
     useState(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
@@ -72,6 +74,14 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const formRef = useRef();
+  const subscriptionRef = useRef(null);
+
+  const scrollDown = () => {
+    subscriptionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   const addEmail = async () => {
     try {
@@ -102,7 +112,13 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
         `subscription/get/subscription/${role}`,
         "get",
       );
-      setSubscription(response.data.data);
+      const plans = response.data.data || [];
+      setSubscription(plans);
+
+      // Select the first plan by default on mobile
+      if (plans.length > 0) {
+        setSelectedPlan(plans[0]);
+      }
     } catch (err) {
       // console.log(err.response);
     }
@@ -287,7 +303,15 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
             onClick={() => navigate("/services/all")}
           />
         ) : (
-          <Button LabelName="add service" onClick={activeServices} />
+          <div className="flex justify-center items-center w-full gap-5">
+            <Button LabelName="add service" onClick={activeServices} />
+            <Button
+              className="lg:hidden block"
+              LabelName="Explore plans"
+              onClick={scrollDown}
+              variant="secondary"
+            />
+          </div>
         )}
         {role === "Customer" ? (
           ""
@@ -1418,7 +1442,370 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
               Upgrade plan
             </h1>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-stretch gap-4 px-5">
+          {/* ================= MOBILE PLAN SELECTOR ================= */}
+          <div ref={subscriptionRef} className="lg:hidden px-5 scroll-mt-6">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide justify-center items-center heading">
+              {subscription?.map((plan, index) => {
+                const isSelected = selectedPlan?._id === plan?._id;
+
+                return (
+                  <button
+                    key={plan?._id || index}
+                    type="button"
+                    onClick={() => setSelectedPlan(plan)}
+                    className={`flex-shrink-0 px-5 py-3 rounded-xl text-sm font-semibold uppercase transition-all duration-300 border ${
+                      isSelected
+                        ? "bg-[#8B2954] text-white border-[#8B2954] shadow-md"
+                        : "bg-white text-[#8B2954] border-[#8B2954]"
+                    }`}
+                  >
+                    {plan?.planName}
+                  </button>
+                );
+              })}
+            </div>
+
+            {selectedPlan && (
+              <div className="mt-4">
+                <div
+                  key={selectedPlan?._id}
+                  className="flex flex-col border border-[#8B2954] rounded-xl overflow-hidden w-full bg-white shadow-sm hover:shadow-lg transition"
+                >
+                  {/* ================= HEADER ================= */}
+                  <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
+                    <h1 className="text-3xl uppercase font-semibold">
+                      {selectedPlan?.planName}
+                    </h1>
+
+                    <p className="font-light text-sm mt-1">
+                      {selectedPlan?.tagline}
+                    </p>
+
+                    <span className="inline-block mt-3 bg-white/20 px-3 py-1 rounded-full text-xs uppercase">
+                      {selectedPlan?.planFor}
+                    </span>
+                  </div>
+
+                  {/* ================= BODY ================= */}
+                  <div className="px-5 py-6 flex flex-col w-full gap-6">
+                    {/* ================= PRICE ================= */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex justify-center items-center flex-col gap-2">
+                        <div className="flex justify-center items-center gap-3">
+                          {selectedPlan?.price?.discount > 0 && (
+                            <span className="text-sm line-through text-gray-400 flex items-center">
+                              <FaRupeeSign />
+                              {selectedPlan?.price?.mrp}
+                            </span>
+                          )}
+
+                          {selectedPlan?.price?.discount > 0 && (
+                            <span className="bg-[#8B2954] text-white px-2 py-1 rounded text-xs">
+                              {selectedPlan?.price?.discount}% OFF
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
+                          <FaRupeeSign />
+                          {selectedPlan?.price?.sellingPrice}
+                        </span>
+                      </div>
+
+                      {/* <p className="text-xs text-gray-500">
+                        ₹{selectedPlan?.price?.sellingPrice} / month
+                      </p> */}
+
+                      {selectedPlan?.validity?.months === 0 ? (
+                        ""
+                      ) : (
+                        <p className="text-sm font-semibold text-[#8B2954]">
+                          Valid for {selectedPlan?.validity?.months} months
+                        </p>
+                      )}
+
+                      <p className="text-xs text-gray-500 capitalize">
+                        Renewal: {selectedPlan?.validity?.renewalType}
+                      </p>
+                    </div>
+
+                    {/* ================= FEATURES ================= */}
+                    <div>
+                      <h2 className="font-semibold text-lg mb-2">
+                        Plan Features
+                      </h2>
+
+                      <div className="space-y-1 text-sm">
+                        {selectedPlan?.features?.map(
+                          (feature, featureIndex) => (
+                            <div
+                              key={featureIndex}
+                              className="flex items-start gap-2"
+                            >
+                              <span className="text-[#8B2954] font-bold">
+                                ✓
+                              </span>
+
+                              <span>{feature}</span>
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ================= BOOKING ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Booking</h2>
+
+                      <div className="text-sm space-y-1">
+                        <p>
+                          <strong>Status:</strong>{" "}
+                          {selectedPlan?.booking?.enabled
+                            ? "Enabled"
+                            : "Disabled"}
+                        </p>
+
+                        <p>
+                          <strong>Advanced Booking:</strong>{" "}
+                          {selectedPlan?.booking?.advancedBooking
+                            ? "Available"
+                            : "Not Available"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ================= MANAGEMENT TOOLS ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Management Tools</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <span
+                          className={
+                            selectedPlan?.managementTools?.analytics
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Analytics
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.managementTools?.inventory
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Inventory
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.managementTools?.staffAttendance
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Staff Attendance
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.managementTools?.commissionTracking
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Commission Tracking
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ================= MARKETING ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Marketing</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <span
+                          className={
+                            selectedPlan?.marketing?.couponManager
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Coupon Manager
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.marketing?.reviews
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Reviews
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.marketing?.smsWhatsapp
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● SMS / WhatsApp
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.marketing?.socialPromotion
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Social Promotion
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ================= MEDIA LIMIT ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Media Limits</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <p>
+                          <strong>Photos:</strong>{" "}
+                          {selectedPlan?.mediaLimit?.unlimitedPhotos
+                            ? "Unlimited"
+                            : selectedPlan?.mediaLimit?.photos}
+                        </p>
+
+                        <p>
+                          <strong>Videos:</strong>{" "}
+                          {selectedPlan?.mediaLimit?.unlimitedVideos
+                            ? "Unlimited"
+                            : selectedPlan?.mediaLimit?.videos}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Service Limits</h2>
+                      <p className="text-sm">
+                        <strong>Services:</strong>{" "}
+                        {selectedPlan?.serviceLimit?.unlimited
+                          ? "Unlimited"
+                          : (selectedPlan?.serviceLimit?.count ?? 0)}
+                      </p>
+                    </div>
+
+                    {/* ================= FRANCHISE ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Franchise</h2>
+
+                      <div className="text-sm space-y-1">
+                        <p>
+                          <strong>Enabled:</strong>{" "}
+                          {selectedPlan?.franchise?.enabled ? "Yes" : "No"}
+                        </p>
+
+                        <p>
+                          <strong>Enquiry Button:</strong>{" "}
+                          {selectedPlan?.franchise?.enquiryButton
+                            ? "Yes"
+                            : "No"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* ================= VISIBILITY ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold mb-2">Visibility</h2>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <span
+                          className={
+                            selectedPlan?.visibility?.featured
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Featured
+                        </span>
+
+                        <span
+                          className={
+                            selectedPlan?.visibility?.verifiedBadge
+                              ? "text-green-600"
+                              : "text-gray-400"
+                          }
+                        >
+                          ● Verified Badge
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* ================= SUPPORT ================= */}
+                    <div className="border-t pt-4 flex justify-between items-center">
+                      <span className="font-semibold">Support</span>
+
+                      <span className="capitalize bg-gray-100 px-3 py-1 rounded-full text-xs">
+                        {selectedPlan?.support}
+                      </span>
+                    </div>
+
+                    {/* ================= FAQ ================= */}
+                    <div className="border-t pt-4">
+                      <h2 className="font-semibold text-lg mb-3">FAQs</h2>
+
+                      <div className="space-y-3">
+                        {selectedPlan?.faqs?.map((faq, faqIndex) => (
+                          <div key={faq?._id || faqIndex} className="text-xs">
+                            <p className="font-semibold">
+                              {faqIndex + 1}. {faq?.question}
+                            </p>
+
+                            <p className="text-gray-600 mt-1">{faq?.answer}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ================= FOOTER ================= */}
+                  <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
+                    <div className="text-white text-sm text-center">
+                      {selectedPlan?.validity?.months === 0
+                        ? ""
+                        : `${selectedPlan?.validity?.months} months`}
+                      {" • "}
+                      {selectedPlan?.validity?.renewalType === "oneTime"
+                        ? "One Time Purchase"
+                        : selectedPlan?.validity?.renewalType === "monthly"
+                          ? "Monthly Plan"
+                          : selectedPlan?.validity?.renewalType === "yearly"
+                            ? "Yearly"
+                            : ""}
+                    </div>
+
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      LabelName={
+                        purchasingPlanId === selectedPlan?._id
+                          ? "Opening payment..."
+                          : "Get Plan"
+                      }
+                      onClick={() => purchasePlan(selectedPlan)}
+                      disabled={purchasingPlanId !== null}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ================= DESKTOP PLAN CARDS ================= */}
+          <div className="hidden lg:grid lg:grid-cols-3 place-items-stretch gap-4 px-5">
             {subscription?.map((i, index) => (
               <div
                 key={i?._id || index}
