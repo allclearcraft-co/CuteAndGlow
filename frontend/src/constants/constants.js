@@ -107,6 +107,7 @@ export const customerRegistrationInputs = [
     placeholder: "",
     name: "password",
     type: "password",
+    passwordIndication: true,
   },
 ];
 
