@@ -72,6 +72,20 @@ const createAppointment = asyncHandler(async (req, res) => {
     ),
   });
 
+  if (store?.storeEmail) {
+    await sendEmail({
+      to: store?.storeEmail,
+      subject: "Appointment booking confirmation",
+      html: serviceBookingTemplate(
+        customer?.name,
+        service?.name,
+        formattedDate,
+        store?.storeName,
+        store?.storeContactNumber,
+      ),
+    });
+  }
+
   return res
     .status(200)
     .json(new ApiResponse(200, {}, "Appointment booked successfully !"));

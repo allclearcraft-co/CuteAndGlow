@@ -334,7 +334,7 @@ const getServiceById = asyncHandler(async (req, res) => {
   if (!service) throw new ApiError(400, "Unable to process request !");
 
   const otherServices = await Services.find({ store: service.store })
-    .select("price coverImage name")
+    .select("price coverImage name serviceFor")
     .limit(10);
 
   return res
