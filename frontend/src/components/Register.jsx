@@ -140,6 +140,13 @@ const Register = () => {
               type={data.type}
               name={data.name}
               required={data.required}
+              onClick={() =>
+                data.passwordIndication === true
+                  ? alertInfo(
+                      "Password should be of min 8 characters, it should include at-least 1 uppercase, 1 lowercase, 1 special character, 1 number",
+                    )
+                  : ""
+              }
             />
           ))}
           <div className="flex items-start gap-3 py-4">
