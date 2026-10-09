@@ -35,7 +35,7 @@ import { BsChevronDown } from "react-icons/bs";
 import CustomerServiceCard from "../../components/ui/CustomerServiceCard";
 
 const AccordionCard = ({ description, isScrolled = false }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(description?.length > 5 ? true : false);
 
   const iconColor = isScrolled ? "text-gray-200" : "text-gray-500";
 
@@ -45,21 +45,14 @@ const AccordionCard = ({ description, isScrolled = false }) => {
         {/* Header */}
         <button
           type="button"
+          // onClick={() =>
+          //   description.length > 5
+          //     ? setIsOpen(true)
+          //     : setIsOpen((prev) => !prev)
+          // }
           onClick={() => setIsOpen((prev) => !prev)}
           aria-expanded={isOpen}
-          className="
-            w-full
-            flex
-            items-center
-            justify-between
-            gap-4
-            px-5
-            py-4
-            text-left
-            cursor-pointer
-            hover:bg-neutral-200/60
-            transition-colors
-          "
+          className=" w-full flex items-center justify-between gap-4 px-5 py-4 text-left cursor-pointer hover:bg-neutral-200/60 transition-colors"
         >
           <span className="font-semibold text-gray-800">Description</span>
 
@@ -272,7 +265,7 @@ const CurrentService = () => {
                 <div className=" flex flex-col items gap-6">
                   {/* Header */}
                   <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900 mt-3 heading w-fit">
+                    <h1 className="text-2xl font-bold text-gray-900 mt-3 heading w-fit capitalize">
                       {services?.name}
                     </h1>
 
@@ -477,7 +470,7 @@ const CurrentService = () => {
                     onClick={() =>
                       navigate(`/stores/${services?.store?._id}/current-store`)
                     }
-                    className="hover:text-blue-500 hover:underline cursor-pointer"
+                    className="hover:text-blue-500 hover:underline cursor-pointer capitalize"
                   >
                     {services?.store?.storeName}
                   </button>
