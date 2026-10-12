@@ -304,12 +304,15 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
           />
         ) : (
           <div className="flex justify-center items-center w-full gap-5">
-            <Button LabelName="add service" onClick={activeServices} />
+            <Button
+              LabelName="add services"
+              onClick={activeServices}
+              variant="secondary"
+            />
             <Button
               className="lg:hidden block"
-              LabelName="Explore plans"
+              LabelName="Select plan"
               onClick={scrollDown}
-              variant="secondary"
             />
           </div>
         )}
@@ -321,13 +324,11 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
           <Button LabelName="Add email" onClick={() => setShowForm(true)} />
         )}
 
-        <button
+        <Button
           onClick={openProfilePopup}
-          className="flex justify-center items-center gap-2 bg-[#8B2954] text-white px-5 py-3 rounded-xl hover:bg-[#742247] transition duration-300"
-        >
-          <FaUserEdit />
-          Update Profile
-        </button>
+          LabelName="Update profile"
+          variant="secondary"
+        />
       </div>
 
       {/* Profile Card */}
@@ -1434,8 +1435,12 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
           )}
 
           {data?.store?.subscription?.subscriptionPurchased === false ? (
-            <h1 className="w-full text-center font-semibold text-2xl heading capitalize py-10">
-              purchase plan
+            <h1 className="w-full text-center font-semibold text-2xl heading capitalize py-10 flex flex-col justify-center items-center">
+              purchase plan{" "}
+              <span className="normal-case paragraph text-sm">
+                ** Note: Any plan purchased will be effective from 1st of April,
+                2027
+              </span>
             </h1>
           ) : (
             <h1 className="w-full text-center font-semibold text-2xl heading capitalize py-10">
@@ -1507,7 +1512,14 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                         </div>
                         <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
                           <FaRupeeSign />
-                          {selectedPlan?.price?.sellingPrice}
+                          {selectedPlan?.price?.sellingPrice}{" "}
+                          {selectedPlan?.price?.sellingPrice === 0 ? (
+                            <p className="bg-[#8B2954] text-white text-sm px-2 py-1 rounded-md mx-2">
+                              Free
+                            </p>
+                          ) : (
+                            ""
+                          )}
                         </span>
                       </div>
 
@@ -1523,9 +1535,9 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                         </p>
                       )}
 
-                      <p className="text-xs text-gray-500 capitalize">
+                      {/* <p className="text-xs text-gray-500 capitalize">
                         Renewal: {selectedPlan?.validity?.renewalType}
-                      </p>
+                      </p> */}
                     </div>
 
                     {/* ================= FEATURES ================= */}
@@ -1773,7 +1785,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
 
                   {/* ================= FOOTER ================= */}
                   <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
-                    <div className="text-white text-sm text-center">
+                    {/* <div className="text-white text-sm text-center">
                       {selectedPlan?.validity?.months === 0
                         ? ""
                         : `${selectedPlan?.validity?.months} months`}
@@ -1785,7 +1797,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                           : selectedPlan?.validity?.renewalType === "yearly"
                             ? "Yearly"
                             : ""}
-                    </div>
+                    </div> */}
 
                     <Button
                       variant="secondary"
@@ -1793,7 +1805,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                       LabelName={
                         purchasingPlanId === selectedPlan?._id
                           ? "Opening payment..."
-                          : "Get Plan"
+                          : "Book Plan"
                       }
                       onClick={() => purchasePlan(selectedPlan)}
                       disabled={purchasingPlanId !== null}
@@ -1845,7 +1857,14 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                       </div>
                       <span className="text-3xl font-semibold flex justify-center items-center gap-1 italic">
                         <FaRupeeSign />
-                        {i?.price?.sellingPrice}
+                        {i?.price?.sellingPrice}{" "}
+                        {i?.price?.sellingPrice === 0 ? (
+                          <p className="bg-[#8B2954] text-white text-sm px-2 py-1 rounded-md mx-2">
+                            Free
+                          </p>
+                        ) : (
+                          ""
+                        )}
                       </span>
                     </div>
 
@@ -1861,9 +1880,9 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                       </p>
                     )}
 
-                    <p className="text-xs text-gray-500 capitalize">
+                    {/* <p className="text-xs text-gray-500 capitalize">
                       Renewal: {i?.validity?.renewalType}
-                    </p>
+                    </p> */}
                   </div>
 
                   {/* ================= FEATURES ================= */}
@@ -2103,7 +2122,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
 
                 {/* ================= FOOTER ================= */}
                 <div className="bg-[#8B2954] w-full flex flex-col justify-center items-center p-4 gap-3 mt-auto">
-                  <div className="text-white text-sm text-center">
+                  {/* <div className="text-white text-sm text-center">
                     {i?.validity?.months === 0
                       ? ""
                       : `${i?.validity?.months} months`}
@@ -2115,7 +2134,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                         : i?.validity?.renewalType === "yearly"
                           ? "Yearly"
                           : ""}
-                  </div>
+                  </div> */}
 
                   <Button
                     variant="secondary"
@@ -2123,7 +2142,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
                     LabelName={
                       purchasingPlanId === i?._id
                         ? "Opening payment..."
-                        : "Get Plan"
+                        : "Book Plan"
                     }
                     onClick={() => purchasePlan(i)}
                     disabled={purchasingPlanId !== null}
