@@ -1112,6 +1112,18 @@ const addEmailByStore = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Email updated successfully !"));
 });
 
+const getStoreListForFranchise = asyncHandler(async (req, res) => {
+  const store = await Store.find({ isActive: true })
+    .select("storeName storeContactNumber")
+    .sort({ createdAt: -1 });
+
+  if (!store) throw new ApiError(400, "No store found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, store, "Data fetched successfully !"));
+});
+
 export {
   registerStore,
   loginStore,
@@ -1133,5 +1145,6 @@ export {
   getStoreById,
   addEmailByAdmin,
   addEmailByStore,
+  getStoreListForFranchise,
   dashboardData,
 };
