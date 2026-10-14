@@ -19,87 +19,10 @@ import {
   FaStar,
 } from "react-icons/fa6";
 import Button from "../../components/Button";
+import { FetchData } from "../../utils/FetchFromApi";
+import { useEffect } from "react";
 
 const BRAND = "#8B2954";
-
-const franchiseModels = [
-  {
-    name: "Express Model",
-    subtitle: "Efficient & Compact",
-    budget: "₹10 Lakhs - ₹15 Lakhs",
-    franchiseFee: "₹2L - ₹3L",
-    interior: "₹4L - ₹5L",
-    equipment: "₹2.5L - ₹3L",
-    stock: "₹1L - ₹1.5L",
-    marketing: "₹50,000",
-    workingCapital: "₹1,00,000",
-    space: "300-500 Sq Ft",
-    staff: "2-3",
-    roi: "14-18 Months",
-
-    location:
-      "Semi-urban areas, small towns (Tier-2/3 cities), or residential societies.",
-
-    services:
-      "Basic hair styling, threading, waxing, standard facials, manicures and pedicures.",
-
-    advantage:
-      "The model is designed around comparatively lower fixed expenses, which the source associates with quicker monthly profitability and lower operational risk.",
-
-    icon: FaBuilding,
-  },
-
-  {
-    name: "Premium Model",
-    subtitle: "Balanced & Modern",
-    budget: "₹15 Lakhs - ₹20 Lakhs",
-    franchiseFee: "₹3L - ₹4L",
-    interior: "₹6L - ₹7L",
-    equipment: "₹3.5L - ₹4L",
-    stock: "₹1.5L - ₹2L",
-    marketing: "₹75,000",
-    workingCapital: "₹1,50,000",
-    space: "500-800 Sq Ft",
-    staff: "4-5",
-    roi: "12-16 Months",
-
-    location: "Busy residential markets in Tier-1 cities or major market hubs.",
-
-    services:
-      "Advanced hair treatments such as Keratin and Smoothing, premium facials, basic nail art and bridal makeup.",
-
-    advantage:
-      "The model combines both lower-margin and higher-margin services to support a steady customer base and profitability.",
-
-    icon: FaStar,
-  },
-
-  {
-    name: "Luxury Model",
-    subtitle: "Premium Experience",
-    budget: "₹20 Lakhs - ₹25 Lakhs",
-    franchiseFee: "₹4L - ₹5L",
-    interior: "₹8L - ₹10L",
-    equipment: "₹4.5L - ₹5L",
-    stock: "₹2L - ₹2.5L",
-    marketing: "₹1,00,000",
-    workingCapital: "₹2,00,000",
-    space: "800-1200 Sq Ft",
-    staff: "6-8",
-    roi: "10-14 Months",
-
-    location:
-      "High-end areas, popular shopping malls or luxury commercial hubs.",
-
-    services:
-      "Specialized skin treatments, luxury spa services, airbrush bridal packages and premium hair rituals.",
-
-    advantage:
-      "The model focuses on higher customer ticket sizes, with the source describing the possibility of generating significant profit even with comparatively lower footfall.",
-
-    icon: FaCrown,
-  },
-];
 
 const fadeUp = {
   hidden: {
@@ -226,7 +149,7 @@ const FranchiseCard = ({ model, index }) => {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-            <motion.div
+            {/* <motion.div
               whileHover={{
                 rotate: 8,
                 scale: 1.08,
@@ -244,7 +167,7 @@ const FranchiseCard = ({ model, index }) => {
               }}
             >
               <Icon className="text-lg sm:text-xl" />
-            </motion.div>
+            </motion.div> */}
 
             <div className="min-w-0">
               <p
@@ -256,8 +179,11 @@ const FranchiseCard = ({ model, index }) => {
                 Model 0{index + 1}
               </p>
 
-              <h3 className="mt-1 truncate text-lg font-bold text-gray-900 sm:text-xl">
-                {model.name}
+              <h3 className="mt-1  text-lg font-bold text-gray-900 sm:text-xl flex flex-col ">
+                {model.name}{" "}
+                <span className="text-sm heading">
+                  Model by : {model.store.storeName}
+                </span>
               </h3>
 
               <p className="text-xs text-gray-400 sm:text-sm">
@@ -603,6 +529,27 @@ const FranchiseChecklist = () => {
 
 export default function FranchiseModels() {
   const [showEnquiry, setShowEnquiry] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [franchiseModels, setFranchiseModels] = useState([]);
+
+  const fetchModels = async () => {
+    try {
+      setLoading(true);
+      const response = await FetchData(
+        "franchise/get/all-models/all-franchise-model",
+        "get",
+      );
+      setFranchiseModels(response.data.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchModels();
+  }, []);
 
   return (
     <section className="min-h-screen bg-white px-4 py-14 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
@@ -681,23 +628,34 @@ export default function FranchiseModels() {
 
         {/* Models */}
         <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{
-            once: true,
-            margin: "-80px",
-          }}
-          variants={stagger}
-          className="
-            mt-12
-            grid gap-5
-            md:grid-cols-2
-            lg:mt-14 lg:grid-cols-3
-          "
+          // initial="hidden"
+          // whileInView="visible"
+          // viewport={{ once: true, margin: "-80px" }}
+          // variants={stagger}
+          className="mt-12 grid gap-5 md:grid-cols-2 lg:mt-14 lg:grid-cols-3"
         >
-          {franchiseModels.map((model, index) => (
-            <FranchiseCard key={model.name} model={model} index={index} />
-          ))}
+          {loading ? (
+            <div className="col-span-full py-12 text-center text-gray-500">
+              Loading franchise models...
+            </div>
+          ) : franchiseModels.length > 0 ? (
+            franchiseModels.map((model, index) => (
+              <FranchiseCard
+                key={model?._id || model?.id || model?.name || index}
+                model={model}
+                index={index}
+              />
+            ))
+          ) : (
+            <div className="col-span-full rounded-2xl border border-gray-200 p-8 text-center">
+              <h3 className="font-semibold text-gray-800">
+                No franchise models found
+              </h3>
+              <p className="mt-2 text-sm text-gray-500">
+                The API returned no usable franchise model records.
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* Checklist */}

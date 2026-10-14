@@ -5,8 +5,9 @@ import { FetchData } from "../../utils/FetchFromApi";
 import { useSelector } from "react-redux";
 import { FaTimes } from "react-icons/fa";
 import { useToast } from "../../components/hooks/ToastContext";
+import { formInputs } from "../../constants/constants";
 
-const AddNewFranchiseForm = ({ onClose }) => {
+const AddNewFranchiseForm = ({ onClose, handleReload }) => {
   const formRef = useRef(null);
   const [store, setStore] = useState({});
   const [storeId, setStoreId] = useState(null);
@@ -18,7 +19,7 @@ const AddNewFranchiseForm = ({ onClose }) => {
   const getStoreForFranchise = async () => {
     try {
       //   setLoading(true);
-      const response = await FetchData(`store/get/store-for-franchise`, "post");
+      const response = await FetchData(`store/get/store-for-franchise`, "get");
       console.log(response);
       setStore(response.data.data);
     } catch (err) {
@@ -45,6 +46,7 @@ const AddNewFranchiseForm = ({ onClose }) => {
       console.log(response);
       alertSuccess(response.data.message);
       onClose();
+      handleReload();
     } catch (err) {
       console.log(err.response.data);
       alertError(err.response.data);
@@ -52,116 +54,6 @@ const AddNewFranchiseForm = ({ onClose }) => {
       setLoading(false);
     }
   };
-
-  const formInputs = [
-    {
-      label: "Name",
-      name: "name",
-      type: "text",
-      required: true,
-      placeholder: "Enter franchise name",
-    },
-    {
-      label: "Subtitle name",
-      name: "subtitle",
-      type: "text",
-      required: true,
-      placeholder: "Eg: Efficient & Compact",
-    },
-    {
-      label: "Total budget",
-      name: "budget",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹10 Lakhs - ₹15 Lakhs",
-    },
-    {
-      label: "Franchise fee",
-      name: "franchiseFee",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹2L - ₹3L",
-    },
-    {
-      label: "interior cost",
-      name: "interior",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹4L - ₹5L",
-    },
-    {
-      label: "equipment provided",
-      name: "equipment",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹2.5L - ₹3L",
-    },
-    {
-      label: "stock provided",
-      name: "stock",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹1L - ₹1.5L",
-    },
-    {
-      label: "marketing expenses",
-      name: "marketing",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹50,000",
-    },
-    {
-      label: "working Capital",
-      name: "workingCapital",
-      type: "text",
-      required: true,
-      placeholder: "Eg: ₹1,00,000",
-    },
-    {
-      label: "space required",
-      name: "space",
-      type: "text",
-      required: true,
-      placeholder: "Eg: 300-500 Sq Ft",
-    },
-    {
-      label: "staff requirement",
-      name: "staff",
-      type: "text",
-      required: true,
-      placeholder: "Eg: 2-3",
-    },
-    {
-      label: "ROI",
-      name: "roi",
-      type: "text",
-      required: true,
-      placeholder: "Eg: 14-18 Months",
-    },
-    {
-      label: "location ",
-      name: "location",
-      type: "text",
-      required: true,
-      placeholder:
-        "Eg: Semi-urban areas, small towns (Tier-2/3 cities), or residential societies.",
-    },
-    {
-      label: "services provided",
-      name: "services",
-      type: "text",
-      required: true,
-      placeholder:
-        "Eg: Basic hair styling, threading, waxing, standard facials, manicures and pedicures.",
-    },
-    {
-      label: "advantage",
-      name: "advantage",
-      type: "text",
-      required: true,
-      placeholder: "Explain all the advantage you are providing",
-    },
-  ];
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 px-4">
@@ -196,32 +88,36 @@ const AddNewFranchiseForm = ({ onClose }) => {
               />
             </div>
           ))}
-          <div className="w-full py-3">
-            <label
-              htmlFor="parentCategory"
-              className="mb-2 block text-sm font-medium capitalize text-gray-700"
-            >
-              Select Store
-              <span className="text-red-500">*</span>
-            </label>
+          {store?.length ? (
+            <div className="w-full py-3">
+              <label
+                htmlFor="parentCategory"
+                className="mb-2 block text-sm font-medium capitalize text-gray-700"
+              >
+                Select Store
+                <span className="text-red-500">*</span>
+              </label>
 
-            <select
-              name="store"
-              id="parentCategory"
-              value={storeId}
-              onChange={(e) => setStoreId(e.target.value)}
-              required
-              className="w-full rounded-lg border border-gray-300 bg-neutral-50 px-4 py-2 text-gray-700 outline-none transition hover:shadow-md focus:border-[#8B2954] focus:ring-1 focus:ring-[#8B2954]"
-            >
-              <option value="">Select a store</option>
+              <select
+                name="storeId"
+                id="parentCategory"
+                value={storeId}
+                onChange={(e) => setStoreId(e.target.value)}
+                required
+                className="w-full rounded-lg border border-gray-300 bg-neutral-50 px-4 py-2 text-gray-700 outline-none transition hover:shadow-md focus:border-[#8B2954] focus:ring-1 focus:ring-[#8B2954]"
+              >
+                <option value="">Select a store</option>
 
-              {/* {store?.map((s) => (
-                <option key={s._id} value={s._id}>
-                  {s.storeName}, {s.storeContactNumber}
-                </option>
-              ))} */}
-            </select>
-          </div>
+                {store?.map((s) => (
+                  <option key={s._id} value={s._id}>
+                    {s.storeName}, {s.storeContactNumber}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            ""
+          )}
 
           {/* Buttons */}
           <div className="col-span-2 mt-6 flex justify-end gap-3 border-t border-gray-200 pt-5">
