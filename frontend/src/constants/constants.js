@@ -237,6 +237,11 @@ export const adminDashboardSection = [
     label: "Admins",
     count: 0,
   },
+  {
+    query: "franchise",
+    label: "Franchise",
+    count: 0,
+  },
 ];
 
 export const homeBanners = [
@@ -265,5 +270,115 @@ export const homeBanners = [
     subtitle: "Hair Care",
     description: "Professional hair spa treatments starting at ₹499.",
     link: "/services/all?category=Hair%20Styling%20%26%20Treatments",
+  },
+];
+
+export const formInputs = [
+  {
+    label: "Name",
+    name: "name",
+    type: "text",
+    required: true,
+    placeholder: "Enter franchise name",
+  },
+  {
+    label: "Subtitle name",
+    name: "subtitle",
+    type: "text",
+    required: false,
+    placeholder: "Eg: Efficient & Compact",
+  },
+  {
+    label: "Total budget",
+    name: "budget",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹10 Lakhs - ₹15 Lakhs",
+  },
+  {
+    label: "Franchise fee",
+    name: "franchiseFee",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹2L - ₹3L",
+  },
+  {
+    label: "interior cost",
+    name: "interior",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹4L - ₹5L",
+  },
+  {
+    label: "equipment provided",
+    name: "equipment",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹2.5L - ₹3L",
+  },
+  {
+    label: "stock provided",
+    name: "stock",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹1L - ₹1.5L",
+  },
+  {
+    label: "marketing expenses",
+    name: "marketing",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹50,000",
+  },
+  {
+    label: "working Capital",
+    name: "workingCapital",
+    type: "text",
+    required: false,
+    placeholder: "Eg: ₹1,00,000",
+  },
+  {
+    label: "space required",
+    name: "space",
+    type: "text",
+    required: false,
+    placeholder: "Eg: 300-500 Sq Ft",
+  },
+  {
+    label: "staff requirement",
+    name: "staff",
+    type: "text",
+    required: false,
+    placeholder: "Eg: 2-3",
+  },
+  {
+    label: "ROI",
+    name: "roi",
+    type: "text",
+    required: false,
+    placeholder: "Eg: 14-18 Months",
+  },
+  {
+    label: "location ",
+    name: "location",
+    type: "text",
+    required: false,
+    placeholder:
+      "Eg: Semi-urban areas, small towns (Tier-2/3 cities), or residential societies.",
+  },
+  {
+    label: "services provided",
+    name: "services",
+    type: "text",
+    required: false,
+    placeholder:
+      "Eg: Basic hair styling, threading, waxing, standard facials, manicures and pedicures.",
+  },
+  {
+    label: "advantage",
+    name: "advantage",
+    type: "text",
+    required: false,
+    placeholder: "Explain all the advantage you are providing",
   },
 ];
