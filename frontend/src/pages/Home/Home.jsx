@@ -16,7 +16,6 @@ import MobileServiceTags from "./MobileNavigator";
 import HomeServiceSection from "./HomeServiceSection";
 import HomeBanner from "../../components/ui/HomeBanner";
 import { homeBanners } from "../../constants/constants";
-import AddNewFranchiseForm from "../Admin/AddFranchiseForm";
 
 function Home() {
   const navigate = useNavigate();
@@ -89,7 +88,6 @@ function Home() {
 
   return (
     <div className="h-full pb-10 gap-10 flex flex-col">
-      <AddNewFranchiseForm/>
       <div className="hidden lg:block h-screen">
         <Landing />
       </div>
