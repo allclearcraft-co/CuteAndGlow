@@ -21,6 +21,7 @@ import {
   getStoreById,
   addEmailByAdmin,
   addEmailByStore,
+  getStoreListForFranchise,
 } from "../controllers/store.controller.js";
 
 import { upload } from "../middlewares/multer.middleware.js";
@@ -81,6 +82,7 @@ router.route("/update/submit-kyc/:storeId").post(
   submitKYCVerification,
 );
 router.route("/get/store-by-id/store/:storeId").get(getStoreById);
+router.route("/get/store-for-franchise").get(getStoreListForFranchise);
 
 // store staff routes
 router

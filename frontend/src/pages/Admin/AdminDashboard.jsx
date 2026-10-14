@@ -16,6 +16,7 @@ import { useToast } from "../../components/hooks/ToastContext";
 import AddCategoryForm from "./AddCategoryForm";
 import AddSubCategoryForm from "./AddSubcategoryForm";
 import AddStoreForm from "./AddStoreForm";
+import AddNewFranchiseForm from "./AddFranchiseForm";
 
 function AdminDashboard() {
   const user = useSelector((state) => state.auth.user);
@@ -32,6 +33,7 @@ function AdminDashboard() {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isSubCategoryOpen, setIsSubCategoryOpen] = useState(false);
   const [isAddStoreOpen, setIsAddStoreOpen] = useState(false);
+  const [addFranchise, setAddFranchise] = useState(false);
   const [categoryLoading, setCategoryLoading] = useState(false);
   const [subCategoryLoading, setSubCategoryLoading] = useState(false);
   const { alertInfo } = useToast();
@@ -44,7 +46,6 @@ function AdminDashboard() {
           ? await FetchData("enquiries/admin/list", "get")
           : await FetchData(`admin/get/data/dashboard-data/${query}`, "get");
       setData(res.data.data);
-      // console.log(res.data.data);
     } catch (err) {
       // console.log(err);
     }
@@ -177,7 +178,7 @@ function AdminDashboard() {
               <HiOutlineX size={22} />
             </button>
           </div>
-          <div className="flex h-full w-full flex-col items-end justify-start">
+          <div className="flex h-full w-full flex-col items-end justify-between">
             <ul className="flex w-full flex-col gap-2">
               {filteredSections.map((data, index) => (
                 <li
@@ -338,6 +339,35 @@ function AdminDashboard() {
               </div>
 
               <DashboardTable tableRole="adminsQuery" TableData={data} />
+            </div>
+          )}
+          {activeSection === "franchise" && (
+            <div>
+              <div className="mb-5 flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Franchise
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    Manage your Franchise here
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    LabelName="Add franchise"
+                    onClick={() => setAddFranchise(true)}
+                  />
+                </div>
+              </div>
+              <DashboardTable tableRole="franchise" TableData={data} />
+              {addFranchise && (
+                <AddNewFranchiseForm
+                  handleReload={() => fetchDashboard({ query: "franchise" })}
+                  onClose={() => setAddFranchise(false)}
+                />
+              )}
             </div>
           )}
         </main>

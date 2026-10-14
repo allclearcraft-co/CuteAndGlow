@@ -15,6 +15,7 @@ import { Address } from "../models/address.model.js";
 import mongoose from "mongoose";
 import { validatePassword } from "../validators/password.validator.js";
 import { UploadImages } from "../utils/imageKit.io.js";
+import { Franchise } from "../models/franchise.model.js";
 
 const createStoreWithServices = asyncHandler(async (req, res) => {
   if (!["admin", "subAdmin", "sales", "marketing"].includes(req.user?.role)) {
@@ -587,6 +588,18 @@ const dashboardData = asyncHandler(async (req, res) => {
       return res
         .status(200)
         .json(new ApiResponse(200, admin, "Data fetched successfully !"));
+    }
+
+    case "franchise": {
+      const franchise = await Franchise.find()
+        .populate({ path: "store", select: "storeName storeContactNumber" })
+        .select("name store")
+        .sort({ createdAt: -1 });
+      if (!franchise) throw new ApiError(400, "No data found");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, franchise, "Data fetched successfully !"));
     }
 
     default:

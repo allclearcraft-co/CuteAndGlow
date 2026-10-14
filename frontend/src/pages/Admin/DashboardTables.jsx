@@ -87,7 +87,6 @@ const TABLE_CONFIG = {
       { header: "Actions", key: "actions" },
     ],
   },
-
   pricing: {
     text: "Subscriptions",
     searchKeys: ["planName", "planFor"],
@@ -108,7 +107,6 @@ const TABLE_CONFIG = {
       { header: "Actions", key: "actions" },
     ],
   },
-
   booking: {
     text: "Bookings",
     searchKeys: ["service.name", "bookingAmount"],
@@ -168,22 +166,28 @@ const TABLE_CONFIG = {
       { header: "Actions", key: "actions" },
     ],
   },
+  franchise: {
+    text: "Franchise",
+    searchKeys: ["name", "store.storeContactNumber", "store.storeName"],
+    viewRoute: (id) => `#`,
+    // viewRoute: (id) => `/admin/current/${"admin"}/${id}`,
+    columns: [
+      { header: "Name", key: "name" },
+      { header: "Store name", key: "store.storeName" },
+      { header: "Store contact number", key: "store.storeContactNumber" },
+      { header: "Actions", key: "actions" },
+    ],
+  },
 };
 
 const DashboardTable = ({ TableData, tableRole = "", Text }) => {
   const TableHeader = TABLE_CONFIG[tableRole];
-  console.log(TableData);
-
   const [search, setSearch] = useState("");
-
   const getNestedValue = (obj, path) =>
     path.split(".").reduce((acc, key) => acc?.[key], obj);
-
   const filterData = useMemo(() => {
     if (!search.trim()) return TableData;
-
     const q = search.toLowerCase();
-
     return TableData.filter((row) =>
       TableHeader.searchKeys.some((key) =>
         String(getNestedValue(row, key) ?? "")
