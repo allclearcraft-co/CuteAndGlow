@@ -65,10 +65,16 @@ function Landing() {
             />
           </div>
           <p>or</p>
-          <Button
-            LabelName="Explore services"
-            onClick={() => navigate("/services/all")}
-          />
+          <div className="flex justify-center items-center gap-5">
+            <Button
+              LabelName="Register Parlor / Stores"
+              onClick={() => navigate("/auth/register/store")}
+            />
+            <Button
+              LabelName="Explore services"
+              onClick={() => navigate("/services/all")}
+            />
+          </div>
         </div>
       </div>
       <Popup isOpen={isOpen} onClose={closePopup} center={true}>

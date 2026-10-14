@@ -342,6 +342,12 @@ const MobileServiceTags = () => {
           onClick={() => navigate("/course/course-info")}
         />
       </div>
+      <Button
+        LabelName="Register Parlor / Stores"
+        className="w-full"
+        variant="secondary"
+        onClick={() => navigate("/auth/register/store")}
+      />
     </div>
   );
 };
