@@ -76,7 +76,7 @@ const createStoreService = asyncHandler(async (req, res) => {
   }
 
   const serviceCount = await Services.countDocuments({ store: storeId });
-  const serviceLimit = plan.serviceLimit?.count || 2;
+  const serviceLimit = plan.serviceLimit?.count || 25;
   if (!plan.serviceLimit?.unlimited && serviceCount >= serviceLimit) {
     throw new ApiError(
       403,
