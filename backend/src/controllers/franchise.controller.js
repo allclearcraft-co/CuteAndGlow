@@ -29,8 +29,9 @@ const createFranchise = asyncHandler(async (req, res) => {
   if (!adminId) throw new ApiError(400, "Invalid request");
 
   const store = await Store.findById(storeId);
-  if (store.isActive === false)
-    throw new ApiError(400, "The store is not active");
+  if (!store) throw new ApiError(400, "Store not found");
+  // if (store?.isActive === false)
+  // throw new ApiError(400, "The store is not active");
 
   const newFranchise = await Franchise.create({
     name,
@@ -48,7 +49,7 @@ const createFranchise = asyncHandler(async (req, res) => {
     location,
     services,
     advantage,
-    store: store,
+    store: storeId,
   });
 
   return res
@@ -56,4 +57,18 @@ const createFranchise = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, newFranchise, "Created successfully !"));
 });
 
-export { createFranchise };
+const getAllFranchise = asyncHandler(async (req, res) => {
+  const franchise = await Franchise.find()
+    .populate({
+      path: "store",
+      select: "storeName",
+    })
+    .sort({ createdAt: -1 });
+  if (!franchise) throw new ApiError(400, "No data found");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, franchise, "Data fetched successfully !"));
+});
+
+export { createFranchise, getAllFranchise };
