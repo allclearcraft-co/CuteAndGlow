@@ -1,17 +1,58 @@
-import React, { useRef, useState } from "react";
+import { useState } from "react";
 import Button from "../../components/Button";
-import { FaUser, FaStar, FaPlus } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import { FetchData } from "../../utils/FetchFromApi";
 import InputBox from "../../components/Input";
 import { useToast } from "../../components/hooks/ToastContext";
 import { useSelector } from "react-redux";
+import { formInputs } from "../../constants/constants";
 
-const CurrentFranchise = ({ data }) => {
-  //   const user = useSelector((state) => state.auth.user);
-  //   const [loading, setLoading] = useState(false);
-  //   const { alertInfo, alertError } = useToast();
-  //   const [showForm, setShowForm] = useState(false);
-  //   const formRef = useRef();
+const CurrentFranchise = ({ data, onSaved }) => {
+  const user = useSelector((state) => state.auth.user);
+  const { alertSuccess, alertError } = useToast();
+  const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [stores, setStores] = useState([]);
+  const [storeId, setStoreId] = useState("");
+  const [formData, setFormData] = useState({});
+
+  const openEditForm = async () => {
+    setFormData(
+      Object.fromEntries(formInputs.map(({ name }) => [name, data?.[name] || ""])),
+    );
+    setStoreId(data?.store?._id || data?.store || "");
+
+    try {
+      setLoading(true);
+      const response = await FetchData("store/get/store-for-franchise", "get");
+      setStores(response.data.data);
+      setShowForm(true);
+    } catch (err) {
+      alertError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setLoading(true);
+      const response = await FetchData(
+        `franchise/update/modify/franchise-by-id/${user?._id}/${data?._id}`,
+        "post",
+        { ...formData, storeId },
+      );
+      onSaved?.(response.data.data);
+      setShowForm(false);
+      alertSuccess(response.data.message);
+    } catch (err) {
+      alertError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const TableData = [
     {
@@ -103,7 +144,15 @@ const CurrentFranchise = ({ data }) => {
 
   return (
     <div className="space-y-6  h-full w-full p-10 mb-20">
-      <h1 className="text-2xl heading">Current Franchise</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl heading">Current Franchise</h1>
+        <Button
+          LabelName={loading ? "Please wait..." : "Edit Franchise"}
+          onClick={openEditForm}
+          disabled={loading}
+          enableIcon
+        />
+      </div>
       <div className="w-full h-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full border-collapse">
           <tbody>
@@ -126,6 +175,84 @@ const CurrentFranchise = ({ data }) => {
           </tbody>
         </table>
       </div>
+      {showForm && (
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 px-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-franchise-title"
+            className="relative max-h-[90vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-5">
+              <h2
+                id="edit-franchise-title"
+                className="text-xl font-semibold text-gray-800"
+              >
+                Edit Franchise
+              </h2>
+              <Button
+                LabelName={<FaTimes size={18} />}
+                onClick={() => setShowForm(false)}
+                variant="secondary"
+              />
+            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="grid grid-cols-1 gap-4 px-6 py-6 md:grid-cols-2"
+            >
+              {formInputs.map((input) => (
+                <InputBox
+                  key={input.name}
+                  {...input}
+                  value={formData[input.name] ?? ""}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      [input.name]: event.target.value,
+                    }))
+                  }
+                />
+              ))}
+              <div className="w-full py-3">
+                <label
+                  htmlFor="franchise-store"
+                  className="mb-2 block text-sm font-medium text-gray-700"
+                >
+                  Select Store<span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="franchise-store"
+                  name="storeId"
+                  value={storeId}
+                  onChange={(event) => setStoreId(event.target.value)}
+                  required
+                  className="w-full rounded-lg border border-gray-300 bg-neutral-50 px-4 py-2 text-gray-700 outline-none transition hover:shadow-md focus:border-[#8B2954] focus:ring-1 focus:ring-[#8B2954]"
+                >
+                  <option value="">Select a store</option>
+                  {stores.map((store) => (
+                    <option key={store._id} value={store._id}>
+                      {store.storeName}, {store.storeContactNumber}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-full mt-6 flex justify-end gap-3 border-t border-gray-200 pt-5">
+                <Button
+                  LabelName="Cancel"
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setShowForm(false)}
+                />
+                <Button
+                  LabelName={loading ? "Please wait..." : "Save Changes"}
+                  type="submit"
+                  disabled={loading}
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

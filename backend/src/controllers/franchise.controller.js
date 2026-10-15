@@ -95,6 +95,14 @@ const editModel = asyncHandler(async (req, res) => {
 
   const admin = await Admin.findById(adminId);
   if (!admin) throw new ApiError(400, "Invalid request !");
+  if (!name) throw new ApiError(400, "Invalid name");
+  if (!storeId) throw new ApiError(400, "Invalid store");
+
+  const franchise = await Franchise.findById(franchiseId);
+  if (!franchise) throw new ApiError(404, "Franchise not found");
+
+  const store = await Store.findById(storeId);
+  if (!store) throw new ApiError(400, "Store not found");
 
   const updateModel = await Franchise.findByIdAndUpdate(franchiseId, {
     name,
@@ -112,7 +120,13 @@ const editModel = asyncHandler(async (req, res) => {
     location,
     services,
     advantage,
-    storeId,
+    store: storeId,
+  }, { new: true, runValidators: true }).populate({
+    path: "store",
+    select: "storeName storeContactNumber",
+  }).populate({
+    path: "admin",
+    select: "name employeeId role",
   });
 
   return res
