@@ -735,6 +735,23 @@ const getCurrentRequestData = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, category, "Data fetched successfully !"));
     }
 
+    case "franchise": {
+      const franchise = await Franchise.findById(keyId)
+        .populate({
+          path: "admin",
+          select: "name employeeId role",
+        })
+        .populate({
+          path: "store",
+          select: "storeName storeContactNumber",
+        });
+      if (!franchise) throw new ApiError(400, "Unable to fetch data");
+
+      return res
+        .status(200)
+        .json(new ApiResponse(200, franchise, "Data fetched successfully !"));
+    }
+
     default:
       throw new ApiError(400, "Invalid session or query");
   }

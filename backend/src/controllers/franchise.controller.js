@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Store } from "../models/store.model.js";
+import { Admin } from "../models/admin.model.js";
 
 const createFranchise = asyncHandler(async (req, res) => {
   const { adminId } = req.params;
@@ -71,4 +72,52 @@ const getAllFranchise = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, franchise, "Data fetched successfully !"));
 });
 
-export { createFranchise, getAllFranchise };
+const editModel = asyncHandler(async (req, res) => {
+  const { adminId, franchiseId } = req.params;
+  const {
+    name,
+    subtitle,
+    budget,
+    franchiseFee,
+    interior,
+    equipment,
+    stock,
+    marketing,
+    workingCapital,
+    space,
+    staff,
+    roi,
+    location,
+    services,
+    advantage,
+    storeId,
+  } = req.body;
+
+  const admin = await Admin.findById(adminId);
+  if (!admin) throw new ApiError(400, "Invalid request !");
+
+  const updateModel = await Franchise.findByIdAndUpdate(franchiseId, {
+    name,
+    subtitle,
+    budget,
+    franchiseFee,
+    interior,
+    equipment,
+    stock,
+    marketing,
+    workingCapital,
+    space,
+    staff,
+    roi,
+    location,
+    services,
+    advantage,
+    storeId,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateModel, "Updated successfully !"));
+});
+
+export { createFranchise, getAllFranchise, editModel };
