@@ -169,8 +169,7 @@ const TABLE_CONFIG = {
   franchise: {
     text: "Franchise",
     searchKeys: ["name", "store.storeContactNumber", "store.storeName"],
-    viewRoute: (id) => `#`,
-    // viewRoute: (id) => `/admin/current/${"admin"}/${id}`,
+    viewRoute: (id) => `/admin/current/${"franchise"}/${id}`,
     columns: [
       { header: "Name", key: "name" },
       { header: "Store name", key: "store.storeName" },

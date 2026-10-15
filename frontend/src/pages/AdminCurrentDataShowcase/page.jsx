@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { FetchData } from "../../utils/FetchFromApi";
 // import { useToast } from "../../components/hooks/ToastContext";
+import { useSelector } from "react-redux";
 
 import CurrentCustomer from "./CurrentCustomer";
 import CurrentStore from "./CurrentStore";
@@ -11,7 +12,7 @@ import CurrentSubscription from "./CurrentSubscription";
 import CurrentAdmin from "./CurrentAdmin";
 import CurrentBooking from "./CurrentBooking";
 import CurrentCategory from "./CurrentCategory";
-import { useSelector } from "react-redux";
+import CurrentFranchise from "./CurrentFranchise";
 
 const componentMap = {
   customer: CurrentCustomer,
@@ -22,6 +23,7 @@ const componentMap = {
   admin: CurrentAdmin,
   booking: CurrentBooking,
   category: CurrentCategory,
+  franchise: CurrentFranchise,
 };
 
 const CurrentDataShowcase = () => {
