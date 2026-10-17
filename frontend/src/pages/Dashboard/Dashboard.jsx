@@ -176,6 +176,7 @@ function Dashboard() {
               setActiveSection(item.query);
               fetchDashboardData({ query: item.query });
               localStorage.setItem("activeSection", item.query);
+              setShowMoreMenu(false);
             }}
             className={`flex flex-col items-center justify-center transition ${activeSection === item.query ? "text-[#8B2954]" : "text-gray-500"}`}
           >
@@ -215,9 +216,9 @@ function Dashboard() {
                   key={item.query}
                   onClick={() => {
                     setActiveSection(item.query);
-                    setShowMoreMenu(false);
                     fetchDashboardData({ query: item.query });
                     localStorage.setItem("activeSection", item.query);
+                    setShowMoreMenu(false);
                   }}
                   className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-100"
                 >
@@ -236,6 +237,12 @@ function Dashboard() {
             <Overview
               activeServices={() => {
                 setActiveSection("services");
+              }}
+              activeAddress={() => {
+                setActiveSection("address");
+              }}
+              activeBookings={() => {
+                setActiveSection("bookings");
               }}
               data={data}
               role={localStorage.role}
