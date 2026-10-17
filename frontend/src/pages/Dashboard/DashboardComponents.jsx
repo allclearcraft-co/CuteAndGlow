@@ -3045,126 +3045,153 @@ const Booking = ({ data, role, userId, handleReload, callData }) => {
       {/* Cards */}
       {Array.isArray(data) ? (
         <div className="space-y-5 pb-40 md:pb-20 lg:pb-0">
-          {data.map((booking, index) => {
-            const isCancellationOpen = cancellationBookingId === booking?._id;
-            // ONLY DATE: YYYY-MM-DD
-            const bookingDate = new Date(booking?.dateForBooking)
-              ?.toISOString()
-              ?.slice(0, 10);
+          {data
+            ? data.map((booking, index) => {
+                const isCancellationOpen =
+                  cancellationBookingId === booking?._id;
+                // ONLY DATE: YYYY-MM-DD
+                // const bookingDate = new Date(booking?.dateForBooking)
+                //   ?.toISOString()
+                //   ?.slice(0, 10);
 
-            let status;
+                const bookingDate = booking?.dateForBooking
+                  ? new Date(booking.dateForBooking)
+                  : null;
 
-            if (booking?.status === "Cancelled") {
-              status = "Cancelled";
-            } else if (bookingDate < today) {
-              status = "Completed";
-            } else if (bookingDate === today) {
-              status = "Today";
-            } else {
-              status = "Upcoming";
-            }
-            return (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
-              >
-                {/* Top */}
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h2 className="text-2xl font-semibold">
-                      {booking?.service?.name}
-                    </h2>
+                const formattedBookingDate =
+                  bookingDate && !isNaN(bookingDate.getTime())
+                    ? bookingDate.toISOString().slice(0, 10)
+                    : null;
 
-                    <p className="text-gray-500">{booking?.store?.storeName}</p>
-                  </div>
+                // let status;
+                // if (booking?.status === "Cancelled") {
+                //   status = "Cancelled";
+                // } else if (bookingDate < today) {
+                //   status = "Completed";
+                // } else if (bookingDate === today) {
+                //   status = "Today";
+                // } else {
+                //   status = "Upcoming";
+                // }
 
-                  <span
-                    className={`px-4 py-1 rounded-full text-sm font-medium ${
-                      status === "Cancelled"
-                        ? "bg-gray-100 text-gray-700"
-                        : status === "Today"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
+                let status;
+
+                if (booking?.status === "Cancelled") {
+                  status = "Cancelled";
+                } else if (!formattedBookingDate) {
+                  status = "Updating...";
+                } else if (formattedBookingDate < today) {
+                  status = "Completed";
+                } else if (formattedBookingDate === today) {
+                  status = "Today";
+                } else {
+                  status = "Upcoming";
+                }
+                return (
+                  <div
+                    key={index}
+                    className="bg-white rounded-2xl shadow-md p-6 border border-gray-200"
                   >
-                    {status || "Updating..."}
-                  </span>
-                </div>
+                    {/* Top */}
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <h2 className="text-2xl font-semibold">
+                          {booking?.service?.name}
+                        </h2>
 
-                {/* Details */}
-                <div className="grid md:grid-cols-2 gap-1 mt-6">
-                  <div className="flex items-center gap-3">
-                    <FaCalendarAlt className="text-[#8B2954]" />
+                        <p className="text-gray-500">
+                          {booking?.store?.storeName}
+                        </p>
+                      </div>
 
-                    {formatDateString(booking?.dateForBooking)}
-                  </div>
+                      <span
+                        className={`px-4 py-1 rounded-full text-sm font-medium ${
+                          status === "Cancelled"
+                            ? "bg-gray-100 text-gray-700"
+                            : status === "Today"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {status || "Updating..."}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center gap-3">
-                    <FaClock className="text-[#8B2954]" />
-                    {booking?.service?.duration || "--"} min
-                  </div>
+                    {/* Details */}
+                    <div className="grid md:grid-cols-2 gap-1 mt-6">
+                      <div className="flex items-center gap-3">
+                        <FaCalendarAlt className="text-[#8B2954]" />
 
-                  <div className="flex items-center gap-3 heading">
-                    <FaMapMarkerAlt className="text-[#8B2954]" />
-                    {booking?.address?.city}, {booking?.address?.state}
-                  </div>
+                        {formatDateString(booking?.dateForBooking)}
+                      </div>
 
-                  <div className="flex items-center gap-3 heading">
-                    <FaRupeeSign className="text-[#8B2954]" />
+                      <div className="flex items-center gap-3">
+                        <FaClock className="text-[#8B2954]" />
+                        {booking?.service?.duration || "--"} min
+                      </div>
 
-                    {booking?.bookingAmount || "--"}
-                  </div>
+                      <div className="flex items-center gap-3 heading">
+                        <FaMapMarkerAlt className="text-[#8B2954]" />
+                        {booking?.address?.city}, {booking?.address?.state}
+                      </div>
 
-                  <div className="flex items-center gap-3">
-                    <FaUser className="text-[#8B2954]" />
+                      <div className="flex items-center gap-3 heading">
+                        <FaRupeeSign className="text-[#8B2954]" />
 
-                    <strong className="heading">Customer:</strong>
+                        {booking?.bookingAmount || "--"}
+                      </div>
 
-                    <span className="text-sm">
-                      {booking?.customer?.name} |{" "}
-                      {booking?.customer?.contactNumber}
-                    </span>
-                  </div>
+                      <div className="flex items-center gap-3">
+                        <FaUser className="text-[#8B2954]" />
 
-                  <div className="flex items-center gap-3">
-                    <FaStore className="text-[#8B2954]" />
+                        <strong className="heading">Customer:</strong>
 
-                    <strong className="heading">Store:</strong>
+                        <span className="text-sm">
+                          {booking?.customer?.name} |{" "}
+                          {booking?.customer?.contactNumber}
+                        </span>
+                      </div>
 
-                    <span className="text-sm">
-                      {booking?.store?.storeName} |{" "}
-                      {booking?.store?.storeContactNumber}
-                    </span>
-                  </div>
-                </div>
-                {isCancellationOpen && (
-                  <form ref={formRef}>
-                    <InputBox
-                      label="reason to cancel"
-                      placeholder="Please specify reason for cancellation"
-                      name="reason"
-                    />
-                  </form>
-                )}
-                {status === "Completed"
-                  ? ""
-                  : booking?.status !== "Cancelled" && (
-                      <Button
-                        onClick={() =>
-                          isCancellationOpen
-                            ? handleCancelBooking(booking?._id)
-                            : setCancellationBookingId(booking?._id)
-                        }
-                        LabelName={
-                          isCancellationOpen ? "submit" : "Cancel booking"
-                        }
-                        variant="secondary"
-                        disabled={loading}
-                      />
+                      <div className="flex items-center gap-3">
+                        <FaStore className="text-[#8B2954]" />
+
+                        <strong className="heading">Store:</strong>
+
+                        <span className="text-sm">
+                          {booking?.store?.storeName} |{" "}
+                          {booking?.store?.storeContactNumber}
+                        </span>
+                      </div>
+                    </div>
+                    {isCancellationOpen && (
+                      <form ref={formRef}>
+                        <InputBox
+                          label="reason to cancel"
+                          placeholder="Please specify reason for cancellation"
+                          name="reason"
+                        />
+                      </form>
                     )}
-              </div>
-            );
-          })}
+                    {status === "Completed"
+                      ? ""
+                      : booking?.status !== "Cancelled" && (
+                          <Button
+                            onClick={() =>
+                              isCancellationOpen
+                                ? handleCancelBooking(booking?._id)
+                                : setCancellationBookingId(booking?._id)
+                            }
+                            LabelName={
+                              isCancellationOpen ? "submit" : "Cancel booking"
+                            }
+                            variant="secondary"
+                            disabled={loading}
+                          />
+                        )}
+                  </div>
+                );
+              })
+            : ""}
         </div>
       ) : (
         ""
