@@ -58,7 +58,15 @@ import AccordionSection from "../../components/ui/Accordian";
 import { useNavigate } from "react-router-dom";
 import { px } from "framer-motion";
 
-const Overview = ({ data, role, userId, callData, activeServices }) => {
+const Overview = ({
+  data,
+  role,
+  userId,
+  callData,
+  activeServices,
+  activeAddress,
+  activeBookings,
+}) => {
   const [subscription, setSubscription] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currentSubscriptionModel, setCurrentSubscriptionModel] =
@@ -287,7 +295,7 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
     <div className="space-y-6 w-full pb-40 md:pb-20 lg:pb-0">
       {/* Header */}
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
         <div className="text-center md:text-left">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
             Dashboard
@@ -298,24 +306,60 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
           </p>
         </div>
         {role === "Customer" ? (
-          <Button
-            LabelName="Browse services"
-            onClick={() => navigate("/services/all")}
-          />
-        ) : (
-          <div className="flex justify-center items-center w-full gap-5">
+          <div className="flex flex-col justify-center items-center gap-1 md:flex-row w-full lg:w-1/2">
             <Button
+              className="w-full"
+              LabelName="Browse services"
+              onClick={() => navigate("/services/all")}
+              variant="secondary"
+            />
+            <Button
+              className="w-full"
+              LabelName="my bookings"
+              onClick={activeBookings}
+              variant="secondary"
+            />
+            <Button
+              className="w-full"
+              LabelName="add address"
+              variant="secondary"
+              onClick={activeAddress}
+            />
+          </div>
+        ) : (
+          <div className="flex flex-col justify-center items-center gap-1 md:flex-row w-full lg:w-1/2">
+            <Button
+              className="w-full"
               LabelName="add services"
               onClick={activeServices}
               variant="secondary"
             />
             <Button
-              className="lg:hidden block"
+              className="w-full"
+              LabelName="add address"
+              onClick={activeAddress}
+              variant="secondary"
+            />
+            <Button
+              className="w-full"
+              LabelName="my bookings"
+              onClick={activeBookings}
+              variant="secondary"
+            />
+            <Button
+              variant="secondary"
+              className="lg:hidden block w-full"
               LabelName="Select plan"
               onClick={scrollDown}
             />
           </div>
         )}
+        <Button
+          onClick={openProfilePopup}
+          LabelName="Update profile"
+          variant="secondary"
+          className="lg:w-1/4 w-full"
+        />
         {role === "Customer" ? (
           ""
         ) : displayData?.storeEmail ? (
@@ -323,12 +367,6 @@ const Overview = ({ data, role, userId, callData, activeServices }) => {
         ) : (
           <Button LabelName="Add email" onClick={() => setShowForm(true)} />
         )}
-
-        <Button
-          onClick={openProfilePopup}
-          LabelName="Update profile"
-          variant="secondary"
-        />
       </div>
 
       {/* Profile Card */}
