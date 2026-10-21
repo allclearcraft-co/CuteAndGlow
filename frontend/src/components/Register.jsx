@@ -3,7 +3,7 @@ import { IoArrowBack } from "react-icons/io5";
 // import Logo from "../assets/Logo.png";
 import InputBox from "./Input";
 import Button from "./Button";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useToast } from "../components/hooks/ToastContext";
 import { customerRegistrationInputs } from "../constants/constants";
 import { FetchData } from "../utils/FetchFromApi";
@@ -13,6 +13,7 @@ import { addUser, clearUser } from "../redux/slice/authSlice";
 
 const Register = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { userType } = useParams("");
   const { alertSuccess, alertError, alertInfo } = useToast();
   const dispatch = useDispatch();
@@ -65,7 +66,7 @@ const Register = () => {
         dispatch(clearUser());
         dispatch(addUser(result.user));
         formRef.current.reset();
-        navigate("/dashboard");
+        navigate(location.state?.from?.pathname || "/dashboard");
         alertSuccess(response.data.message);
         return;
       }
@@ -80,7 +81,9 @@ const Register = () => {
       {/* Back Button */}
       <button
         onClick={() => {
-          navigate(`/auth/${"login"}/${"customer"}`);
+          navigate(`/auth/${"login"}/${"customer"}`, {
+            state: location.state,
+          });
         }}
         className="w-12 h-12 rounded-full border flex items-center justify-center hover:bg-[#8B2954] hover:text-white transition"
       >
@@ -116,7 +119,11 @@ const Register = () => {
           <p className="text-center mt-8 text-gray-600 hidden md:block">
             Already have an account?{" "}
             <button
-              onClick={() => navigate(`/auth/${"login"}/${userType}`)}
+              onClick={() =>
+                navigate(`/auth/${"login"}/${userType}`, {
+                  state: location.state,
+                })
+              }
               className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
             >
               Login
@@ -127,6 +134,7 @@ const Register = () => {
         <form ref={formRef} onSubmit={handleRegister}>
           {customerRegistrationInputs.map((data, index) => (
             <InputBox
+              placeholder={data.placeholder}
               key={index}
               label={
                 userType === "customer"
@@ -173,7 +181,11 @@ const Register = () => {
         <p className="text-center mt-8 text-gray-600 block md:hidden">
           Already have an account?{" "}
           <button
-            onClick={() => navigate(`/auth/${"login"}/${userType}`)}
+            onClick={() =>
+              navigate(`/auth/${"login"}/${userType}`, {
+                state: location.state,
+              })
+            }
             className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
           >
             Login
@@ -188,6 +200,7 @@ const Register = () => {
         data={data}
         verificationType="registerVerification"
         otpNumber={otpNumber}
+        redirectTo={location.state?.from?.pathname}
       />
     </div>
   );

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "./hooks/ToastContext";
 import { BsGeoAlt } from "react-icons/bs";
+import { FaHeart, FaShoppingCart } from "react-icons/fa";
 import InputBox from "./Input";
 import { saveCoordinates } from "../utils/location-service";
 
@@ -55,6 +56,7 @@ const AccordionCard = ({ children, isScrolled }) => {
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state) => state.auth.user);
+  const cartCount = useSelector((state) => state.shopping.cartItems.length);
   const userRole = user?.role.toLowerCase();
   const { alertInfo } = useToast();
   const dispatch = useDispatch();
@@ -240,6 +242,27 @@ const Header = () => {
             <a href="/" className="text-white hover:text-pink-200 transition">
               <HiHome />
             </a>
+            <button
+              type="button"
+              aria-label="Favorite services"
+              onClick={() => navigate("/customer/favorite")}
+              className="relative text-white hover:text-pink-200 transition"
+            >
+              <FaHeart />
+            </button>
+            <button
+              type="button"
+              aria-label="Cart"
+              onClick={() => navigate("/cart")}
+              className="relative text-white hover:text-pink-200 transition"
+            >
+              <FaShoppingCart />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4">
+                  {cartCount}
+                </span>
+              )}
+            </button>
             <div
               className={`${city ? "" : "absolute top-0 right-0"} hidden bg-white w-[20vw] rounded-xl p-1 lg:block`}
             >
