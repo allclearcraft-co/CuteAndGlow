@@ -4,10 +4,43 @@ import { FaClock, FaStar } from "react-icons/fa";
 import Button from "../Button";
 import { truncateString } from "../../utils/utility-functions";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { FaCartPlus } from "react-icons/fa";
+import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import { addToCart, toggleFavorite } from "../../redux/slice/shoppingSlice";
+import { useToast } from "../hooks/ToastContext";
 
 const CustomerServiceCard = ({ service, currentServicePage = false }) => {
   const [showDetails, setShowDetails] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { alertSuccess, alertInfo } = useToast();
+  const { cartItems, favoriteServices } = useSelector(
+    (state) => state.shopping,
+  );
+  const isInCart = cartItems.some((item) => item._id === service?._id);
+  const isFavorite = favoriteServices.some(
+    (item) => item._id === service?._id,
+  );
+
+  const handleAddToCart = () => {
+    if (isInCart) {
+      alertInfo("This service is already in your cart.");
+      return;
+    }
+    dispatch(addToCart(service));
+    alertSuccess("Service added to your cart.");
+  };
+
+  const handleToggleFavorite = () => {
+    dispatch(toggleFavorite(service));
+    alertInfo(
+      isFavorite
+        ? "Service removed from favorites."
+        : "Service added to favorites.",
+    );
+  };
+
   return (
     <>
       <div className="w-[90vw] lg:w-[30vw] group bg-white rounded-2xl overflow-hidden border border-neutral-200 shadow-sm hover:shadow-xl duration-300 flex flex-col h-full">
@@ -27,6 +60,32 @@ const CustomerServiceCard = ({ service, currentServicePage = false }) => {
             <span className=" bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold">
               {service?.serviceFor || "Everyone"}
             </span>
+          </div>
+          <div className="absolute top-3 left-3 flex gap-2">
+            <button
+              type="button"
+              aria-label={
+                isFavorite ? "Remove from favorites" : "Add to favorites"
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+                handleToggleFavorite();
+              }}
+              className="rounded-full bg-white/95 p-2 text-xl text-[#8B2954] shadow"
+            >
+              {isFavorite ? <MdFavorite /> : <MdFavoriteBorder />}
+            </button>
+            <button
+              type="button"
+              aria-label={isInCart ? "Already in cart" : "Add to cart"}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleAddToCart();
+              }}
+              className="rounded-full bg-white/95 p-2 text-lg text-[#8B2954] shadow"
+            >
+              <FaCartPlus />
+            </button>
           </div>
         </div>
 
@@ -124,6 +183,18 @@ const CustomerServiceCard = ({ service, currentServicePage = false }) => {
               LabelName="quick view"
               variant="outline"
               onClick={() => setShowDetails(true)}
+            />
+
+            <Button
+              LabelName={isInCart ? "In cart" : "Add to cart"}
+              variant="secondary"
+              onClick={handleAddToCart}
+            />
+
+            <Button
+              LabelName={isFavorite ? "Favorited" : "Add to favorites"}
+              variant="secondary"
+              onClick={handleToggleFavorite}
             />
 
             <Button

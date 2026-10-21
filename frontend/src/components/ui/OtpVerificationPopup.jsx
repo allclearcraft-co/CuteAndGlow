@@ -16,6 +16,7 @@ function OtpVerificationPopup({
   verificationType = "",
   userType,
   otpNumber, // delete this input when the sms config is complete
+  redirectTo,
 }) {
   const [otp, setOtp] = useState("");
   const formRef = useRef();
@@ -78,7 +79,7 @@ function OtpVerificationPopup({
       dispatch(addUser(user));
       formRef.current.reset();
       onClose();
-      navigate(`/dashboard`);
+      navigate(redirectTo || "/dashboard");
       alertSuccess(response.data.message || "Otp Verified successfully !");
     } catch (err) {
       alertError(err?.response?.data);
