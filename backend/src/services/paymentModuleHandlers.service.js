@@ -1,8 +1,14 @@
-import { PAYMENT_MODULES } from "../constants/payment.constants.js";
+import {
+  BOOKING_STATUS,
+  PAYMENT_MODULES,
+} from "../constants/payment.constants.js";
 import { Store } from "../models/store.model.js";
 import { Subscription } from "../models/subscription.model.js";
 import { Customer } from "../models/customer.model.js";
 import { Professional } from "../models/professional.model.js";
+import { ServiceBookingOrder } from "../models/serviceBookingOrder.model.js";
+import { ServiceBookings } from "../models/serviceBooking.model.js";
+import { Services } from "../models/service.model.js";
 import sendEmail from "../services/mail.service.js";
 import paymentConfirmationTemplate from "../template/paymentConfirmation.mail.template.js";
 
@@ -178,9 +184,134 @@ const registrationHandler = {
   onPaymentFailed: async () => true,
 };
 
+const serviceBookingHandler = {
+  onPaymentSuccess: async (transaction) => {
+    const order = await ServiceBookingOrder.findById(transaction.moduleId);
+    if (!order) return false;
+    if (order.status === "Confirmed") return true;
+
+    const processingOrder = await ServiceBookingOrder.findOneAndUpdate(
+      { _id: order._id, status: "Pending" },
+      { $set: { status: "Processing" } },
+      { new: true },
+    );
+    if (!processingOrder) {
+      const latestOrder = await ServiceBookingOrder.findById(order._id);
+      return latestOrder?.status === "Confirmed";
+    }
+
+    try {
+      const customer = await Customer.findById(order.customer);
+      if (!customer) throw new Error("Booking customer no longer exists");
+
+      const serviceIds = order.items.map((item) => item.service);
+      const services = await Services.find({ _id: { $in: serviceIds } })
+        .populate("store", "storeName storeEmail storeContactNumber")
+        .populate("professional", "name email contactNumber");
+      const servicesById = new Map(
+        services.map((service) => [service._id.toString(), service]),
+      );
+
+      if (servicesById.size !== order.items.length) {
+        throw new Error("One or more services in the booking order are missing");
+      }
+
+      const existingBookings = await ServiceBookings.find({
+        bookingOrder: order._id,
+      });
+      let bookings = existingBookings;
+      if (existingBookings.length !== order.items.length) {
+        if (existingBookings.length) {
+          await ServiceBookings.deleteMany({ bookingOrder: order._id });
+        }
+        bookings = await ServiceBookings.insertMany(
+          order.items.map((item) => {
+            const service = servicesById.get(item.service.toString());
+            return {
+              service: item.service,
+              customer: order.customer,
+              address: order.address,
+              store: service.store?._id,
+              professional: service.professional?._id,
+              dateOfBooking: new Date(),
+              dateForBooking: item.dateForBooking,
+              modeOfPayment: "Online Payment",
+              bookingAmount: item.bookingAmount,
+              status: BOOKING_STATUS.CONFIRMED,
+              paymentTransaction: transaction._id,
+              bookingOrder: order._id,
+            };
+          }),
+        );
+      }
+
+      await Customer.updateOne(
+        { _id: order.customer },
+        { $addToSet: { bookings: { $each: bookings.map(({ _id }) => _id) } } },
+      );
+
+      order.bookings = bookings.map(({ _id }) => _id);
+      order.status = "Confirmed";
+      await order.save();
+
+      for (const booking of bookings) {
+        const service = servicesById.get(booking.service.toString());
+        const providerEmail = service.store?.storeEmail || service.professional?.email;
+        const providerName = service.store?.storeName || service.professional?.name;
+        const providerContact =
+          service.store?.storeContactNumber || service.professional?.contactNumber;
+        const date = new Date(booking.dateForBooking);
+        const formattedDate = `${String(date.getDate()).padStart(2, "0")}/${String(
+          date.getMonth() + 1,
+        ).padStart(2, "0")}/${String(date.getFullYear()).slice(-2)}`;
+
+        try {
+          await sendEmail({
+            to: customer.email,
+            subject: "Appointment booking confirmation",
+            html: serviceBookingTemplate(
+              customer.name,
+              service.name,
+              formattedDate,
+              providerName,
+              providerContact,
+            ),
+          });
+          if (providerEmail) {
+            await sendEmail({
+              to: providerEmail,
+              subject: "Appointment booking confirmation",
+              html: serviceBookingTemplate(
+                customer.name,
+                service.name,
+                formattedDate,
+                providerName,
+                providerContact,
+              ),
+            });
+          }
+        } catch (error) {
+          console.error("Booking confirmation email failed:", error);
+        }
+      }
+
+      return Boolean(order.bookings.length);
+    } catch (error) {
+      await ServiceBookingOrder.updateOne(
+        { _id: order._id, status: "Processing" },
+        { $set: { status: "Pending" } },
+      );
+      throw error;
+    }
+  },
+
+  onPaymentFailed: async () => true,
+};
+
 const handlers = {
   [PAYMENT_MODULES.REGISTRATION_CHARGE]: registrationHandler,
   [PAYMENT_MODULES.SUBSCRIPTION]: subscriptionHandler,
+  [PAYMENT_MODULES.SERVICE_BOOKING]: serviceBookingHandler,
 };
 
 const notifyPaymentSuccess = async (transaction) => {

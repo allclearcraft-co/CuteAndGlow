@@ -79,4 +79,17 @@ app.use("/api/v1/category-subcategory", categoryRoutes);
 app.use("/api/v1/enquiries", enquiryRoutes);
 app.use("/api/v1/franchise", franchiseRoutes);
 
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+
+  if (error.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      success: false,
+      message: "Uploaded file exceeds the 2 MB limit.",
+    });
+  }
+
+  return next(error);
+});
+
 export { app };

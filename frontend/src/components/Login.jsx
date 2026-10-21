@@ -3,7 +3,7 @@ import { IoArrowBack } from "react-icons/io5";
 // import Logo from "../assets/Logo.png";
 import InputBox from "./Input";
 import Button from "./Button";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import LoginSvg from "../assets/Login.svg";
 import { FetchData } from "../utils/FetchFromApi";
 import { useRef } from "react";
@@ -15,13 +15,14 @@ import { addUser, clearUser } from "../redux/slice/authSlice";
 
 const Login = ({ onRegister }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const formRef = useRef();
   const { userType } = useParams("");
   const { alertSuccess, alertError, alertInfo } = useToast({});
   const [data, setData] = useState();
   const [otpPopup, setOtpPopup] = useState(false);
   const [otpNumber, setOTPNumber] = useState("");
-  const [loginWithPassword, setLoginWithPassword] = useState(false);
+  const [loginWithPassword, setLoginWithPassword] = useState(true);
   const [forgotPassword, setForgotPassword] = useState(false);
   const [resetRequested, setResetRequested] = useState(false);
   const [popup, setPopup] = useState(false);
@@ -63,7 +64,7 @@ const Login = ({ onRegister }) => {
       dispatch(clearUser());
       dispatch(addUser(user));
       formRef.current.reset();
-      navigate(`/dashboard`);
+      navigate(location.state?.from?.pathname || "/dashboard");
       alertInfo(response.data.message);
     } catch (err) {
       alertError(err?.response?.data);
@@ -170,6 +171,11 @@ const Login = ({ onRegister }) => {
                   type="password"
                   name="password"
                   placeholder="Password"
+                  onClick={() =>
+                    alertInfo(
+                      "Password should be of min 8 characters, it should include at-least 1 uppercase, 1 lowercase, 1 special character, 1 number",
+                    )
+                  }
                 />
               ) : (
                 ""
@@ -205,7 +211,11 @@ const Login = ({ onRegister }) => {
             <p className="text-center mt-8 text-gray-600">
               Don't have an account?{" "}
               <button
-                onClick={() => navigate(`/auth/${"register"}/${userType}`)}
+                onClick={() =>
+                  navigate(`/auth/${"register"}/${userType}`, {
+                    state: location.state,
+                  })
+                }
                 className="text-[#8B2954] font-semibold hover:underline cursor-pointer"
               >
                 Register
@@ -282,6 +292,7 @@ const Login = ({ onRegister }) => {
         data={data}
         verificationType="loginVerification"
         otpNumber={otpNumber}
+        redirectTo={location.state?.from?.pathname}
       />
     </div>
   );

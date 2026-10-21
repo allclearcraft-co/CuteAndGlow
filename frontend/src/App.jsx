@@ -22,6 +22,11 @@ import AdminAuth from "./pages/Auth/AdminAuth";
 import CurrentDataShowcase from "./pages/AdminCurrentDataShowcase/page";
 import BeautyAcademy from "./pages/BeautyCourse/BeautyAcademy";
 import FranchiseModels from "./pages/Franchise/FranchiseModels";
+import BottomNavigation from "./components/BottomNavigator";
+import Cart from "./pages/Cart";
+import FavoriteServices from "./pages/FavoriteServices";
+import CartCheckout from "./pages/CartCheckout";
+import { clearAuthStorage } from "./utils/utility-functions";
 
 function App() {
   const location = useLocation();
@@ -68,7 +73,7 @@ function App() {
         dispatch(addUser(user));
       } catch (error) {
         console.log("Re-login failed:", error?.message);
-        localStorage.clear();
+        clearAuthStorage();
         dispatch(clearUser());
       } finally {
         dispatch(stopAuthLoading());
@@ -96,6 +101,10 @@ function App() {
 
           <Route path="/auth/:type/:userType" element={<Authentication />} />
           <Route path="/services/all" element={<Service />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/cart/checkout" element={<CartCheckout />} />
+          <Route path="/cart/secure-checkout" element={<Cart />} />
+          <Route path="/customer/favorite" element={<FavoriteServices />} />
           <Route
             path="/services/:serviceId/current-service"
             element={<CurrentService />}
@@ -131,6 +140,7 @@ function App() {
         </Routes>
       </div>
       {!hideFooter && <Footer />}
+      <BottomNavigation />
     </div>
   );
 }

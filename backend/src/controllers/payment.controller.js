@@ -33,6 +33,10 @@ import {
   runPaymentFailedHandler,
 } from "../services/paymentModuleHandlers.service.js";
 import { Subscription } from "../models/subscription.model.js";
+import mongoose from "mongoose";
+import { Services } from "../models/service.model.js";
+import { Address } from "../models/address.model.js";
+import { ServiceBookingOrder } from "../models/serviceBookingOrder.model.js";
 
 /**
  * CREATE PAYMENT
@@ -59,6 +63,12 @@ const createPayment = asyncHandler(async (req, res) => {
 
   if (!Object.values(PAYMENT_MODULES).includes(module)) {
     throw new ApiError(400, "Invalid payment module");
+  }
+  if (module === PAYMENT_MODULES.SERVICE_BOOKING) {
+    throw new ApiError(
+      400,
+      "Service booking payments must use the customer cart checkout",
+    );
   }
 
   const numericAmount = Number(amount);
@@ -153,6 +163,130 @@ const createPayment = asyncHandler(async (req, res) => {
   );
 });
 
+const createServiceBookingPayment = asyncHandler(async (req, res) => {
+  const { items, address } = req.body;
+  if (!Array.isArray(items) || items.length === 0 || !address) {
+    throw new ApiError(400, "Cart services and a booking address are required");
+  }
+
+  if (
+    items.some(
+      (item) =>
+        !mongoose.Types.ObjectId.isValid(item?.serviceId) ||
+        !item?.dateForBooking ||
+        Number.isNaN(new Date(item.dateForBooking).getTime()),
+    )
+  ) {
+    throw new ApiError(400, "Every cart service needs a valid booking date");
+  }
+
+  const serviceIds = items.map((item) => item.serviceId);
+  if (new Set(serviceIds.map(String)).size !== serviceIds.length) {
+    throw new ApiError(400, "The cart contains duplicate services");
+  }
+
+  const customerAddress = await Address.findOne({
+    _id: address,
+    customer: req.user._id,
+  });
+  if (!customerAddress) {
+    throw new ApiError(400, "Select an address saved to your customer account");
+  }
+
+  const services = await Services.find({
+    _id: { $in: serviceIds },
+    isActive: true,
+  });
+  if (services.length !== serviceIds.length) {
+    throw new ApiError(400, "One or more services are unavailable");
+  }
+
+  const servicesById = new Map(
+    services.map((service) => [service._id.toString(), service]),
+  );
+  const orderItems = items.map((item) => {
+    const service = servicesById.get(item.serviceId.toString());
+    const price = Number(service.price?.sellingPrice);
+    if (!Number.isFinite(price) || price <= 0) {
+      throw new ApiError(400, `Invalid price for ${service.name}`);
+    }
+
+    return {
+      service: service._id,
+      dateForBooking: new Date(item.dateForBooking),
+      bookingAmount: price,
+    };
+  });
+  const amountInPaise = orderItems.reduce(
+    (total, item) => total + Math.round(item.bookingAmount * 100),
+    0,
+  );
+  const amount = amountInPaise / 100;
+
+  const order = await ServiceBookingOrder.create({
+    customer: req.user._id,
+    address: customerAddress._id,
+    items: orderItems,
+    amount,
+  });
+  const transaction = await createTransaction({
+    module: PAYMENT_MODULES.SERVICE_BOOKING,
+    moduleId: order._id,
+    user: req.user._id,
+    userModel: "Customer",
+    amount,
+    metadata: { serviceCount: orderItems.length },
+  });
+  order.paymentTransaction = transaction._id;
+  await order.save();
+
+  const razorpayOrder = await createRazorpayOrder({
+    amount,
+    currency: "INR",
+    receipt: transaction.transactionNumber,
+    notes: {
+      transactionId: transaction._id.toString(),
+      transactionNumber: transaction.transactionNumber,
+      module: PAYMENT_MODULES.SERVICE_BOOKING,
+      moduleId: order._id.toString(),
+      user: req.user._id.toString(),
+    },
+  });
+  if (!razorpayOrder?.id) {
+    throw new ApiError(500, "Unable to create Razorpay order");
+  }
+
+  const updatedTransaction = await updateGatewayOrder(transaction._id, {
+    orderId: razorpayOrder.id,
+    receipt: razorpayOrder.receipt,
+    amount: razorpayOrder.amount / 100,
+    currency: razorpayOrder.currency,
+    notes: razorpayOrder.notes || {},
+  });
+
+  return res.status(201).json(
+    new ApiResponse(
+      201,
+      {
+        transaction: {
+          _id: updatedTransaction._id,
+          transactionNumber: updatedTransaction.transactionNumber,
+          amount: updatedTransaction.amount,
+        },
+        razorpay: {
+          key: process.env.RAZORPAY_KEY_ID,
+          orderId: razorpayOrder.id,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          name: "Cute & Glow",
+          description: `${orderItems.length} service booking${orderItems.length === 1 ? "" : "s"}`,
+        },
+      },
+      "Cart payment order created successfully",
+    ),
+  );
+});
+
 /**
  * GET SINGLE TRANSACTION
  */
@@ -209,6 +343,15 @@ const verifyPayment = asyncHandler(async (req, res) => {
   }
 
   if (transaction.paymentStatus === PAYMENT_STATUS.CAPTURED) {
+    if (transaction.module === PAYMENT_MODULES.SERVICE_BOOKING) {
+      const bookingConfirmed = await runPaymentSuccessHandler(transaction);
+      if (!bookingConfirmed) {
+        throw new ApiError(
+          409,
+          "Payment was captured, but bookings are still being confirmed. Please retry verification.",
+        );
+      }
+    }
     return res
       .status(200)
       .json(new ApiResponse(200, transaction, "Payment already verified"));
@@ -263,6 +406,19 @@ const verifyPayment = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Payment order mismatch");
   }
 
+  if (
+    payment.amount !== Math.round(transaction.amount * 100) ||
+    payment.currency !== transaction.currency
+  ) {
+    await markPaymentFailed(
+      transaction._id,
+      "Payment amount or currency does not match the order",
+      payment,
+    );
+    await runPaymentFailedHandler(transaction);
+    throw new ApiError(400, "Payment amount or currency mismatch");
+  }
+
   if (payment.status !== "captured" && payment.status !== "authorized") {
     await markPaymentFailed(
       transaction._id,
@@ -286,7 +442,16 @@ const verifyPayment = asyncHandler(async (req, res) => {
     gatewayPayload: payment,
   });
 
-  await runPaymentSuccessHandler(updatedTransaction);
+  const handlerResult = await runPaymentSuccessHandler(updatedTransaction);
+  if (
+    transaction.module === PAYMENT_MODULES.SERVICE_BOOKING &&
+    !handlerResult
+  ) {
+    throw new ApiError(
+      409,
+      "Payment was captured, but bookings are still being confirmed. Please retry verification.",
+    );
+  }
 
   return res.status(200).json(
     new ApiResponse(
@@ -512,6 +677,7 @@ const retryPayment = asyncHandler(async (req, res) => {
 
 export {
   createPayment,
+  createServiceBookingPayment,
   getPaymentTransaction,
   verifyPayment,
   paymentWebhook,

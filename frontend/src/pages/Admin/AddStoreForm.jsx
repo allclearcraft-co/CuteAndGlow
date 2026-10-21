@@ -285,7 +285,9 @@ function AddStoreForm({ isOpen, onClose, onSuccess }) {
       setForm(initialForm());
       onSuccess();
     } catch (error) {
-      alertError(error?.response?.data);
+      alertError(
+        error?.response?.data || error?.message || "Unable to add the store.",
+      );
     } finally {
       setLoading(false);
     }
