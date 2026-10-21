@@ -242,14 +242,14 @@ const Header = () => {
             <a href="/" className="text-white hover:text-pink-200 transition">
               <HiHome />
             </a>
-            <button
+            {/* <button
               type="button"
               aria-label="Favorite services"
               onClick={() => navigate("/customer/favorite")}
               className="relative text-white hover:text-pink-200 transition"
             >
               <FaHeart />
-            </button>
+            </button> */}
             <button
               type="button"
               aria-label="Cart"
