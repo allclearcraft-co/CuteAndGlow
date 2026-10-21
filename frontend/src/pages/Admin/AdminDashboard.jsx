@@ -99,6 +99,7 @@ function AdminDashboard() {
     } catch (error) {
       alert(
         error?.response?.data?.message ||
+          error?.message ||
           "Something went wrong while adding the category.",
       );
     } finally {
@@ -138,6 +139,7 @@ function AdminDashboard() {
     } catch (error) {
       alert(
         error?.response?.data?.message ||
+          error?.message ||
           "Something went wrong while adding the subcategory.",
       );
     } finally {

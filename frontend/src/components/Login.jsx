@@ -171,6 +171,11 @@ const Login = ({ onRegister }) => {
                   type="password"
                   name="password"
                   placeholder="Password"
+                  onClick={() =>
+                    alertInfo(
+                      "Password should be of min 8 characters, it should include at-least 1 uppercase, 1 lowercase, 1 special character, 1 number",
+                    )
+                  }
                 />
               ) : (
                 ""

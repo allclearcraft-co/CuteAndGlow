@@ -3620,7 +3620,7 @@ const Services = ({ data, role, userId, handleReload, callData, showPlan }) => {
       resetServiceForm();
       handleReload();
     } catch (err) {
-      alertError(err.response?.data);
+      alertError(err.response?.data || err.message);
       // alertInfo("Please upgrade plan for adding more services");
     } finally {
       setLoading(false);
