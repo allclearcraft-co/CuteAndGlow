@@ -33,6 +33,12 @@ import { IoMdPricetag } from "react-icons/io";
 import { IoClose } from "react-icons/io5";
 import { BsChevronDown } from "react-icons/bs";
 import CustomerServiceCard from "../../components/ui/CustomerServiceCard";
+import { FaCartPlus } from "react-icons/fa";
+import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import {
+  addToCart,
+  toggleFavorite,
+} from "../../redux/slice/shoppingSlice";
 
 const AccordionCard = ({ description, isScrolled = false }) => {
   const [isOpen, setIsOpen] = useState(description?.length > 5 ? true : false);
@@ -132,10 +138,18 @@ const CurrentService = () => {
   const [popup, setPopup] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
   const user = useSelector((state) => state.auth.user);
+  const { cartItems, favoriteServices } = useSelector(
+    (state) => state.shopping,
+  );
   const userId = user?._id;
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { alertInfo } = useToast();
+  const { alertInfo, alertSuccess } = useToast();
   const [otherServices, setOtherServices] = useState([]);
+  const isInCart = cartItems.some((item) => item._id === services?._id);
+  const isFavorite = favoriteServices.some(
+    (item) => item._id === services?._id,
+  );
 
   const ServiceInfo = [
     {
@@ -292,22 +306,58 @@ const CurrentService = () => {
                         ).toLocaleString("en-IN")}
                       </h3>
 
-                      <Button
-                        LabelName="Book now"
-                        onClick={() => {
-                          user
-                            ? navigate(
-                                `/services/book-service/${services?.name}/${services?._id}/${userId}`,
-                              )
-                            : alertInfo(
-                                "Please login or register to continue !",
-                              );
-                          setPopup(true);
-                          setTimeout(() => {
-                            setPopup(false);
-                          }, 5000);
-                        }}
-                      />
+                      <div className="flex flex-wrap justify-end gap-2 mt-3">
+                        <Button
+                          LabelName={
+                            <span className="flex items-center gap-2">
+                              <FaCartPlus />
+                              {isInCart ? "In cart" : "Add to cart"}
+                            </span>
+                          }
+                          variant="secondary"
+                          onClick={() => {
+                            if (isInCart) {
+                              alertInfo("This service is already in your cart.");
+                              return;
+                            }
+                            dispatch(addToCart(services));
+                            alertSuccess("Service added to your cart.");
+                          }}
+                        />
+                        <Button
+                          LabelName={
+                            <span className="flex items-center gap-2">
+                              {isFavorite ? <MdFavorite /> : <MdFavoriteBorder />}
+                              {isFavorite ? "Favorited" : "Favorite"}
+                            </span>
+                          }
+                          variant="secondary"
+                          onClick={() => {
+                            dispatch(toggleFavorite(services));
+                            alertInfo(
+                              isFavorite
+                                ? "Service removed from favorites."
+                                : "Service added to favorites.",
+                            );
+                          }}
+                        />
+                        <Button
+                          LabelName="Book now"
+                          onClick={() => {
+                            user
+                              ? navigate(
+                                  `/services/book-service/${services?.name}/${services?._id}/${userId}`,
+                                )
+                              : alertInfo(
+                                  "Please login or register to continue !",
+                                );
+                            setPopup(true);
+                            setTimeout(() => {
+                              setPopup(false);
+                            }, 5000);
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 

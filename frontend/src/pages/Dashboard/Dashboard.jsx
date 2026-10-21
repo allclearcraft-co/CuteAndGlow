@@ -24,6 +24,7 @@ import { useToast } from "../../components/hooks/ToastContext.jsx";
 import Popup from "../../components/ui/Popup.jsx";
 import InputBox from "../../components/Input.jsx";
 import { useRef } from "react";
+import { clearAuthStorage } from "../../utils/utility-functions";
 
 function Dashboard() {
   const role = localStorage.getItem("role");
@@ -87,7 +88,7 @@ function Dashboard() {
   ).slice(4);
 
   const logout = () => {
-    localStorage.clear();
+    clearAuthStorage();
     dispatch(clearUser());
     alertInfo("You are logged out successfully");
     navigate("/");

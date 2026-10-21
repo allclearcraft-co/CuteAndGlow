@@ -17,6 +17,7 @@ import AddCategoryForm from "./AddCategoryForm";
 import AddSubCategoryForm from "./AddSubcategoryForm";
 import AddStoreForm from "./AddStoreForm";
 import AddNewFranchiseForm from "./AddFranchiseForm";
+import { clearAuthStorage } from "../../utils/utility-functions";
 
 function AdminDashboard() {
   const user = useSelector((state) => state.auth.user);
@@ -58,7 +59,7 @@ function AdminDashboard() {
   }, []);
 
   const logout = () => {
-    localStorage.clear();
+    clearAuthStorage();
     dispatch(clearUser());
     alertInfo("You are logged out successfully");
     navigate("/");
