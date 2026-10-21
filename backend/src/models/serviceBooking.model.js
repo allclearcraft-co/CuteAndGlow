@@ -9,6 +9,14 @@ const bookingSchema = new mongoose.Schema(
     address: { type: mongoose.Schema.Types.ObjectId, ref: "Address" },
     store: { type: mongoose.Schema.Types.ObjectId, ref: "Store" },
     professional: { type: mongoose.Schema.Types.ObjectId, ref: "Professional" },
+    paymentTransaction: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PaymentTransaction",
+    },
+    bookingOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServiceBookingOrder",
+    },
 
     dateOfBooking: { type: Date, required: true },
     dateForBooking: { type: Date, required: true },
