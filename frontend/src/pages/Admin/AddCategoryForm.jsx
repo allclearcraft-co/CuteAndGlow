@@ -38,11 +38,6 @@ const AddCategoryForm = ({ isOpen, onClose, onSubmit, loading = false }) => {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Image size must be less than 5MB.");
-      return;
-    }
-
     setImage(file);
     setPreview(URL.createObjectURL(file));
   };
@@ -157,7 +152,7 @@ const AddCategoryForm = ({ isOpen, onClose, onSubmit, loading = false }) => {
                 </p>
 
                 <p className="mt-1 text-xs text-gray-500">
-                  PNG, JPG, JPEG or WEBP · Maximum 5MB
+                  PNG, JPG, JPEG or WEBP · Large images are compressed below 2MB
                 </p>
               </button>
             ) : (
