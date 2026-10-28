@@ -7,7 +7,7 @@ const welcomeTemplate = (name) => `
         name="viewport"
         content="width=device-width, initial-scale=1.0"
       />
-      <title>Welcome to Parikrama</title>
+      <title>Welcome to Cute and Glow</title>
     </head>
 
     <body
@@ -82,7 +82,7 @@ const welcomeTemplate = (name) => `
                       font-weight:600;
                     "
                   >
-                    Welcome to Parikrama
+                    Welcome to Cute and Glow
                   </h1>
 
                   <p
@@ -124,7 +124,7 @@ const welcomeTemplate = (name) => `
                     "
                   >
                     We are pleased to welcome you to
-                    <strong style="color:#374151;">Parikrama</strong>.
+                    <strong style="color:#374151;">Cute and Glow</strong>.
                     Your account has been successfully registered and is
                     ready to use.
                   </p>
@@ -168,7 +168,7 @@ const welcomeTemplate = (name) => `
                           "
                         >
                           You can now access the services and features
-                          available through your Parikrama account.
+                          available through your Cute and glow account.
                         </p>
 
                       </td>
@@ -185,7 +185,7 @@ const welcomeTemplate = (name) => `
                       color:#6b7280;
                     "
                   >
-                    Thank you for choosing Parikrama. We look forward to
+                    Thank you for choosing Cute and Glow. We look forward to
                     providing you with a seamless and reliable experience.
                   </p>
 
@@ -198,7 +198,7 @@ const welcomeTemplate = (name) => `
                     "
                   >
                     Regards,<br />
-                    <strong>Team Parikrama</strong>
+                    <strong>Team Cute and Glow</strong>
                   </p>
 
                 </td>
@@ -254,7 +254,7 @@ const welcomeTemplate = (name) => `
                 text-align:center;
               "
             >
-              © ${new Date().getFullYear()} Parikrama. All Rights Reserved.
+              © ${new Date().getFullYear()} Cute and Glow. All Rights Reserved.
             </p>
 
           </td>
