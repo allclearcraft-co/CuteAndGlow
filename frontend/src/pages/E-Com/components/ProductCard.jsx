@@ -52,8 +52,12 @@ const ProductCard = ({ product }) => {
           <span className="text-xl font-semibold text-[#8B2954]">
             ₹{Number(product.price).toLocaleString("en-IN")}
           </span>
-          <span className={`text-xs ${soldOut ? "text-red-600" : "text-green-700"}`}>
-            {soldOut ? "Out of stock" : `${product.stock} in stock`}
+          <span
+            className={`text-xs ${soldOut ? "text-red-600" : product.stock < 5 ? "text-orange-700" : "text-green-700"}`}
+          >
+            {soldOut
+              ? "Out of stock"
+              : `${product.stock < 5 ? "Only few left" : "In stock"}`}
           </span>
         </div>
         <button

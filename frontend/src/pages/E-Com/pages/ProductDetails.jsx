@@ -73,11 +73,18 @@ const ProductDetails = () => {
         <p className="mt-4 whitespace-pre-wrap text-neutral-700">
           {product.description || "No description provided."}
         </p>
-        <p className="mt-5 text-sm text-neutral-600">
+        {/* <p className="mt-5 text-sm text-neutral-600">
           {product.stock > 0
             ? `${product.stock} available`
             : "Currently out of stock"}
-        </p>
+        </p> */}
+        {/* <span
+          className={`text-xs ${soldOut ? "text-red-600" : product.stock < 5 ? "text-orange-700" : "text-green-700"}`}
+        >
+          {soldOut
+            ? "Out of stock"
+            : `${product.stock < 5 ? "Only few left" : "In stock"}`}
+        </span> */}
         <button
           type="button"
           disabled={product.stock < 1}
