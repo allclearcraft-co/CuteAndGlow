@@ -416,7 +416,7 @@ const paymentConfirmationTemplate = ({
                 text-align:center;
               "
             >
-              © ${new Date().getFullYear()} Parikrama. All Rights Reserved.
+              © ${new Date().getFullYear()} Cue and Glow. All Rights Reserved.
             </p>
 
           </td>
