@@ -15,7 +15,10 @@ import { createRazorpayOrder } from "../services/razorpay.service.js";
 const createProductOrderPayment = asyncHandler(async (req, res) => {
   const { items, address } = req.body;
   if (!Array.isArray(items) || items.length === 0 || !address) {
-    throw new ApiError(400, "Cart products and a shipping address are required.");
+    throw new ApiError(
+      400,
+      "Cart products and a shipping address are required.",
+    );
   }
   if (
     items.some(
@@ -37,7 +40,10 @@ const createProductOrderPayment = asyncHandler(async (req, res) => {
     customer: req.user._id,
   });
   if (!customerAddress) {
-    throw new ApiError(400, "Select an address saved to your customer account.");
+    throw new ApiError(
+      400,
+      "Select an address saved to your customer account.",
+    );
   }
 
   const products = await Product.find({
@@ -66,8 +72,7 @@ const createProductOrderPayment = asyncHandler(async (req, res) => {
     };
   });
   const totalPaise = orderItems.reduce(
-    (total, item) =>
-      total + Math.round(item.unitPrice * 100) * item.quantity,
+    (total, item) => total + Math.round(item.unitPrice * 100) * item.quantity,
     0,
   );
   const amount = totalPaise / 100;
@@ -163,7 +168,7 @@ const createProductOrderPayment = asyncHandler(async (req, res) => {
             orderId: razorpayOrder.id,
             amount: razorpayOrder.amount,
             currency: razorpayOrder.currency,
-            name: "Parikrama",
+            name: "Cute & Glow",
             description: `${orderItems.length} product order`,
           },
         },

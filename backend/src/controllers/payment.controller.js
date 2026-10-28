@@ -157,7 +157,7 @@ const createPayment = asyncHandler(async (req, res) => {
           orderId: razorpayOrder.id,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
-          name: "Parikrama",
+          name: "Cute & Glow",
           description: `${module} payment`,
         },
       },
@@ -451,10 +451,9 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
   const handlerResult = await runPaymentSuccessHandler(updatedTransaction);
   if (
-    [
-      PAYMENT_MODULES.SERVICE_BOOKING,
-      PAYMENT_MODULES.PRODUCT_ORDER,
-    ].includes(transaction.module) &&
+    [PAYMENT_MODULES.SERVICE_BOOKING, PAYMENT_MODULES.PRODUCT_ORDER].includes(
+      transaction.module,
+    ) &&
     !handlerResult
   ) {
     throw new ApiError(
@@ -676,7 +675,7 @@ const retryPayment = asyncHandler(async (req, res) => {
           orderId: razorpayOrder.id,
           amount: razorpayOrder.amount,
           currency: razorpayOrder.currency,
-          name: "Parikrama",
+          name: "Cute & Glow",
           description: `${transaction.module} payment retry`,
         },
       },
