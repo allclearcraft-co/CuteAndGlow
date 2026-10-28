@@ -1,14 +1,12 @@
-import { useEffect, useState } from "react";
-import { Route, Routes, useLocation } from "react-router-dom";
-import Button from "./components/Button";
-import InputBox from "./components/Input";
+import { useEffect } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
 import Authentication from "./pages/Auth/Authentication";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ScrollToTop from "./components/hooks/ScrollToTop";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { addUser, clearUser, stopAuthLoading } from "./redux/slice/authSlice";
 import { FetchData } from "./utils/FetchFromApi";
 import Service from "./pages/Services/Service";
@@ -27,14 +25,15 @@ import Cart from "./pages/Cart";
 import FavoriteServices from "./pages/FavoriteServices";
 import CartCheckout from "./pages/CartCheckout";
 import { clearAuthStorage } from "./utils/utility-functions";
+import EcomHome from "./pages/E-Com/pages/home/EcomHome";
+import ProductDetails from "./pages/E-Com/pages/ProductDetails";
+import ProductOrders from "./pages/E-Com/pages/ProductOrders";
 
 function App() {
   const location = useLocation();
   const hideFooterRoutes = ["/dashboard", "/admin/dashboard"];
   const hideFooter = hideFooterRoutes.includes(location.pathname);
-  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const isHome = location.pathname === "/";
   /* ================= AUTO LOGIN ================= */
 
   useEffect(() => {
@@ -81,7 +80,7 @@ function App() {
     };
 
     reLogin();
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="font-para_regular">
@@ -137,6 +136,21 @@ function App() {
             element={<AdminAuth resetPassword={true} />}
           />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+          {/* ========================= E-COM ================================== */}
+
+          <Route path="/e-commerce" element={<EcomHome />} />
+          <Route
+            path="/e-commerce/products/:productId"
+            element={<ProductDetails />}
+          />
+          <Route path="/e-commerce/orders" element={<ProductOrders />} />
+          <Route path="/e-com/home" element={<Navigate to="/e-commerce" replace />} />
+          <Route
+            path="/e-com/current-product/:productId"
+            element={<ProductDetails />}
+          />
+          <Route path="/e-com" element={<Navigate to="/e-commerce" replace />} />
         </Routes>
       </div>
       {!hideFooter && <Footer />}
