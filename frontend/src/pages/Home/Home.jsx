@@ -94,7 +94,20 @@ function Home() {
       <div className="lg:hidden">
         <MobileServiceTags />
       </div>
-      <div className="px-3 lg:px-10">
+      <div className="px-3 space-y-5 lg:px-10">
+        <Button
+          variant="secondary"
+          className="w-full hidden lg:block"
+          LabelName={
+            <h1 className="text-6xl w-full text-left py-10 px-5 flex justify-between items-center italic ">
+              Welcome to our <br /> E-Commerce{" "}
+              <span className="text-base heading capitalize text-wrap text-center cursor-pointer flex justify-center items-center h-fit px-4 py-2 rounded-xl bg-white text-black border border-[#8B2954] shadow-md">
+                Explore now
+              </span>
+            </h1>
+          }
+          onClick={() => navigate("/e-commerce")}
+        />
         <HomeBanner banners={homeBanners} />
       </div>
       <div className="flex flex-col justify-center items-center gap-5 px-2 w-full mt-10">
