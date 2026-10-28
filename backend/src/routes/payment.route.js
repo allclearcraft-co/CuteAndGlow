@@ -21,6 +21,7 @@ router.post(
 router.get("/transaction/:transactionId", getPaymentTransaction);
 router.post("/verify", VerifyStore, verifyPayment);
 router.post("/service-booking/verify", VerifyCustomer, verifyPayment);
+router.post("/product-order/verify", VerifyCustomer, verifyPayment);
 router.post("/webhook", paymentWebhook);
 router.post("/retry/:transactionId", retryPayment);
 
