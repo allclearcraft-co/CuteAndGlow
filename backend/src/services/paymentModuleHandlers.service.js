@@ -9,6 +9,8 @@ import { Professional } from "../models/professional.model.js";
 import { ServiceBookingOrder } from "../models/serviceBookingOrder.model.js";
 import { ServiceBookings } from "../models/serviceBooking.model.js";
 import { Services } from "../models/service.model.js";
+import { Product } from "../models/product.model.js";
+import { ProductOrder } from "../models/productOrder.model.js";
 import sendEmail from "../services/mail.service.js";
 import paymentConfirmationTemplate from "../template/paymentConfirmation.mail.template.js";
 
@@ -308,10 +310,52 @@ const serviceBookingHandler = {
   onPaymentFailed: async () => true,
 };
 
+const productOrderHandler = {
+  onPaymentSuccess: async (transaction) => {
+    const updatedOrder = await ProductOrder.findOneAndUpdate(
+      { _id: transaction.moduleId, status: "Pending Payment" },
+      {
+        status: "Processing",
+        paymentTransaction: transaction._id,
+      },
+      { new: true },
+    );
+    if (updatedOrder) return true;
+    const existingOrder = await ProductOrder.findById(transaction.moduleId);
+    return ["Processing", "Packed", "Shipped", "Delivered"].includes(
+      existingOrder?.status,
+    );
+  },
+
+  onPaymentFailed: async (transaction) => {
+    const order = await ProductOrder.findOneAndUpdate(
+      {
+        _id: transaction.moduleId,
+        status: "Pending Payment",
+        stockReleased: false,
+      },
+      { status: "Payment Failed", stockReleased: true },
+      { new: true },
+    );
+    if (!order) return true;
+
+    await Promise.all(
+      order.items.map((item) =>
+        Product.updateOne(
+          { _id: item.product },
+          { $inc: { stock: item.quantity } },
+        ),
+      ),
+    );
+    return true;
+  },
+};
+
 const handlers = {
   [PAYMENT_MODULES.REGISTRATION_CHARGE]: registrationHandler,
   [PAYMENT_MODULES.SUBSCRIPTION]: subscriptionHandler,
   [PAYMENT_MODULES.SERVICE_BOOKING]: serviceBookingHandler,
+  [PAYMENT_MODULES.PRODUCT_ORDER]: productOrderHandler,
 };
 
 const notifyPaymentSuccess = async (transaction) => {
