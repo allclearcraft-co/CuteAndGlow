@@ -64,10 +64,13 @@ const createPayment = asyncHandler(async (req, res) => {
   if (!Object.values(PAYMENT_MODULES).includes(module)) {
     throw new ApiError(400, "Invalid payment module");
   }
-  if (module === PAYMENT_MODULES.SERVICE_BOOKING) {
+  if (
+    module === PAYMENT_MODULES.SERVICE_BOOKING ||
+    module === PAYMENT_MODULES.PRODUCT_ORDER
+  ) {
     throw new ApiError(
       400,
-      "Service booking payments must use the customer cart checkout",
+      "Cart payments must use their dedicated customer checkout",
     );
   }
 
@@ -189,6 +192,7 @@ const createServiceBookingPayment = asyncHandler(async (req, res) => {
     _id: address,
     customer: req.user._id,
   });
+
   if (!customerAddress) {
     throw new ApiError(400, "Select an address saved to your customer account");
   }
@@ -343,7 +347,10 @@ const verifyPayment = asyncHandler(async (req, res) => {
   }
 
   if (transaction.paymentStatus === PAYMENT_STATUS.CAPTURED) {
-    if (transaction.module === PAYMENT_MODULES.SERVICE_BOOKING) {
+    if (
+      transaction.module === PAYMENT_MODULES.SERVICE_BOOKING ||
+      transaction.module === PAYMENT_MODULES.PRODUCT_ORDER
+    ) {
       const bookingConfirmed = await runPaymentSuccessHandler(transaction);
       if (!bookingConfirmed) {
         throw new ApiError(
@@ -444,12 +451,15 @@ const verifyPayment = asyncHandler(async (req, res) => {
 
   const handlerResult = await runPaymentSuccessHandler(updatedTransaction);
   if (
-    transaction.module === PAYMENT_MODULES.SERVICE_BOOKING &&
+    [
+      PAYMENT_MODULES.SERVICE_BOOKING,
+      PAYMENT_MODULES.PRODUCT_ORDER,
+    ].includes(transaction.module) &&
     !handlerResult
   ) {
     throw new ApiError(
       409,
-      "Payment was captured, but bookings are still being confirmed. Please retry verification.",
+      "Payment was captured, but order confirmation is still processing. Please retry verification.",
     );
   }
 
