@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Button from "../components/Button";
 import { useToast } from "../components/hooks/ToastContext";
-import { clearCart } from "../redux/slice/shoppingSlice";
+import { clearCart, getCartItemType } from "../redux/slice/shoppingSlice";
 import { FetchData } from "../utils/FetchFromApi";
 
 const getTomorrow = () => {
@@ -15,7 +15,13 @@ const getTomorrow = () => {
 };
 
 const CartCheckout = () => {
-  const items = useSelector((state) => state.shopping.cartItems);
+  const cartItems = useSelector((state) => state.shopping.cartItems);
+  const [searchParams] = useSearchParams();
+  const checkoutType =
+    searchParams.get("type") === "products" ? "product" : "service";
+  const items = cartItems.filter(
+    (item) => getCartItemType(item) === checkoutType,
+  );
   const { isAuthenticated, isAuthLoading, user } = useSelector(
     (state) => state.auth,
   );
@@ -36,7 +42,15 @@ const CartCheckout = () => {
   const amount =
     items.reduce(
       (total, item) =>
-        total + Math.round(Number(item?.price?.sellingPrice || 0) * 100),
+        total +
+        Math.round(
+          Number(
+            checkoutType === "product"
+              ? item?.price || 0
+              : item?.charges || item?.price?.sellingPrice || 0,
+          ) * 100,
+        ) *
+          (checkoutType === "product" ? item.quantity || 1 : 1),
       0,
     ) / 100;
 
@@ -83,7 +97,14 @@ const CartCheckout = () => {
     return () => {
       cancelled = true;
     };
-  }, [canCheckout, isAuthLoading, items.length, navigate, user?._id]);
+  }, [
+    canCheckout,
+    checkoutType,
+    isAuthLoading,
+    items.length,
+    navigate,
+    user?._id,
+  ]);
 
   const setDateForService = (serviceId, dateForBooking) => {
     setBookingDates((current) => ({ ...current, [serviceId]: dateForBooking }));
@@ -102,17 +123,22 @@ const CartCheckout = () => {
 
     setPaying(true);
     try {
-      const response = await FetchData(
-        "payment/service-booking/create",
-        "post",
-        {
-          address: addressId,
-          items: items.map((item) => ({
-            serviceId: item._id,
-            dateForBooking: bookingDates[item._id] || getTomorrow(),
-          })),
-        },
-      );
+      const response =
+        checkoutType === "product"
+          ? await FetchData("products/orders/create-payment", "post", {
+              address: addressId,
+              items: items.map((item) => ({
+                productId: item._id,
+                quantity: item.quantity || 1,
+              })),
+            })
+          : await FetchData("payment/service-booking/create", "post", {
+              address: addressId,
+              items: items.map((item) => ({
+                serviceId: item._id,
+                dateForBooking: bookingDates[item._id] || getTomorrow(),
+              })),
+            });
       const { transaction, razorpay } = response.data.data;
       const checkout = new window.Razorpay({
         key: razorpay.key,
@@ -123,13 +149,23 @@ const CartCheckout = () => {
         order_id: razorpay.orderId,
         handler: async (paymentResponse) => {
           try {
-            await FetchData("payment/service-booking/verify", "post", {
+            await FetchData(
+              checkoutType === "product"
+                ? "payment/product-order/verify"
+                : "payment/service-booking/verify",
+              "post",
+              {
               transactionId: transaction._id,
               ...paymentResponse,
-            });
-            dispatch(clearCart());
-            alertSuccess("Payment received and all appointments are booked.");
-            navigate("/dashboard");
+              },
+            );
+            dispatch(clearCart(checkoutType));
+            alertSuccess(
+              checkoutType === "product"
+                ? "Payment received. Your product order is being processed."
+                : "Payment received and all appointments are booked.",
+            );
+            navigate(checkoutType === "product" ? "/cart" : "/dashboard");
           } catch (error) {
             alertError(
               error?.response?.data?.message ||
@@ -152,7 +188,7 @@ const CartCheckout = () => {
     } catch (error) {
       setPaying(false);
       alertError(
-        error?.response?.data?.message || "Unable to start cart payment",
+        error?.response?.data?.message || "Unable to start checkout payment",
       );
     }
   };
@@ -169,54 +205,70 @@ const CartCheckout = () => {
     <main className="max-w-5xl mx-auto px-4 md:px-8 py-10 pb-24 lg:pb-10 min-h-[50vh]">
       <h1 className="heading text-3xl text-[#8B2954] mb-2">Cart checkout</h1>
       <p className="text-neutral-600 mb-8">
-        Choose an appointment date for each service, then pay once for the full
-        cart.
+        {checkoutType === "product"
+          ? "Confirm your delivery address and pay securely for the products."
+          : "Choose an appointment date for each service, then pay securely."}
       </p>
 
       <form onSubmit={startPayment}>
         <div className="space-y-4">
-          {items.map((service) => (
+          {items.map((item) => {
+            const isProduct = checkoutType === "product";
+            return (
             <article
-              key={service._id}
+              key={item._id}
               className="flex flex-col sm:flex-row gap-4 border border-neutral-200 rounded-xl p-4"
             >
               <img
-                src={service?.coverImage?.[0]?.url || "/images/placeholder.jpg"}
-                alt={service.name}
+                src={
+                  (isProduct
+                    ? item?.images?.[0]?.url
+                    : item?.coverImage?.[0]?.url) || "/images/placeholder.jpg"
+                }
+                alt={item.name}
                 className="w-full sm:w-32 h-32 object-cover rounded-lg"
               />
               <div className="flex-1">
-                <h2 className="heading text-xl">{service.name}</h2>
+                <h2 className="heading text-xl">{item.name}</h2>
                 <p className="text-sm text-neutral-600">
-                  {service?.store?.storeName || service?.professional?.name}
+                  {isProduct
+                    ? `Quantity: ${item.quantity || 1}`
+                    : item?.store?.storeName || item?.professional?.name}
                 </p>
                 <p className="text-lg text-[#8B2954] my-2">
                   ₹
-                  {Number(service?.price?.sellingPrice || 0).toLocaleString(
-                    "en-IN",
-                  )}
+                  {(
+                    Number(
+                      isProduct
+                        ? item.price || 0
+                        : item?.charges || item?.price?.sellingPrice || 0,
+                    ) * (isProduct ? item.quantity || 1 : 1)
+                  ).toLocaleString("en-IN")}
                 </p>
-                <label className="text-sm font-medium">
-                  Appointment date
-                  <input
-                    type="date"
-                    required
-                    min={getTomorrow()}
-                    value={bookingDates[service._id] || getTomorrow()}
-                    onChange={(event) =>
-                      setDateForService(service._id, event.target.value)
-                    }
-                    className="block border border-neutral-300 rounded-lg px-3 py-2 mt-1"
-                  />
-                </label>
+                {!isProduct && (
+                  <label className="text-sm font-medium">
+                    Appointment date
+                    <input
+                      type="date"
+                      required
+                      min={getTomorrow()}
+                      value={bookingDates[item._id] || getTomorrow()}
+                      onChange={(event) =>
+                        setDateForService(item._id, event.target.value)
+                      }
+                      className="block border border-neutral-300 rounded-lg px-3 py-2 mt-1"
+                    />
+                  </label>
+                )}
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
         <section className="mt-8 border-t border-neutral-200 pt-6 space-y-5">
           <label className="block font-medium">
-            Booking address
+            {checkoutType === "product" ? "Delivery address" : "Booking address"}
             <select
               required
               value={addressId}
@@ -251,12 +303,16 @@ const CartCheckout = () => {
             </span>
           </div>
           <p className="text-sm text-neutral-600">
-            Final payable amount is calculated from current service prices.
-            Online payment is required to confirm all appointments.
+            Final payable amount is validated against current prices and stock.
+            Online payment is required to confirm checkout.
           </p>
           <Button
             LabelName={
-              paying ? "Opening secure payment..." : "Pay for all services"
+              paying
+                ? "Opening secure payment..."
+                : checkoutType === "product"
+                  ? "Pay for products"
+                  : "Pay for services"
             }
             type="submit"
             className="w-full sm:w-auto"

@@ -243,6 +243,16 @@ export const adminDashboardSection = [
     label: "Franchise",
     count: 0,
   },
+  {
+    query: "products",
+    label: "E-commerce products & stock",
+    count: 0,
+  },
+  {
+    query: "product_orders",
+    label: "E-commerce orders",
+    count: 0,
+  },
 ];
 
 export const homeBanners = [

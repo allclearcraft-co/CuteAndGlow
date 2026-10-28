@@ -4,10 +4,9 @@ import { HiOutlineMenu, HiOutlineX } from "react-icons/hi";
 import DashboardTable from "./DashboardTables";
 import { FetchData } from "../../utils/FetchFromApi";
 import Button from "../../components/Button";
-import InputBox from "../../components/Input";
 import { useNavigate } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import AdminAuth from "../Auth/AdminAuth";
 import SubscriptionModelForm from "./SubscriptionForm";
 import { useDispatch, useSelector } from "react-redux";
@@ -18,6 +17,8 @@ import AddSubCategoryForm from "./AddSubcategoryForm";
 import AddStoreForm from "./AddStoreForm";
 import AddNewFranchiseForm from "./AddFranchiseForm";
 import { clearAuthStorage } from "../../utils/utility-functions";
+import ProductManagement from "./ProductManagement";
+import ProductOrderManagement from "./ProductOrderManagement";
 
 function AdminDashboard() {
   const user = useSelector((state) => state.auth.user);
@@ -45,17 +46,41 @@ function AdminDashboard() {
       const res =
         query === "enquiries"
           ? await FetchData("enquiries/admin/list", "get")
+          : query === "products"
+            ? await FetchData("products/admin/list", "get")
+            : query === "product_orders"
+              ? await FetchData("products/admin/orders", "get")
           : await FetchData(`admin/get/data/dashboard-data/${query}`, "get");
       setData(res.data.data);
-    } catch (err) {
-      // console.log(err);
+    } catch (error) {
+      console.error("Unable to load admin dashboard data", error);
     }
   };
 
   useEffect(() => {
-    fetchDashboard({
-      query: localStorage.getItem("adminDashboardQuery") || "store",
-    });
+    let cancelled = false;
+    const loadInitialData = async () => {
+      const query = localStorage.getItem("adminDashboardQuery") || "store";
+      try {
+        const response =
+          query === "enquiries"
+            ? await FetchData("enquiries/admin/list", "get")
+            : query === "products"
+              ? await FetchData("products/admin/list", "get")
+              : query === "product_orders"
+                ? await FetchData("products/admin/orders", "get")
+                : await FetchData(`admin/get/data/dashboard-data/${query}`, "get");
+        if (!cancelled) setData(response.data.data);
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Unable to load admin dashboard data", error);
+        }
+      }
+    };
+    loadInitialData();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const logout = () => {
@@ -373,6 +398,8 @@ function AdminDashboard() {
               )}
             </div>
           )}
+          {activeSection === "products" && <ProductManagement />}
+          {activeSection === "product_orders" && <ProductOrderManagement />}
         </main>
       </div>
     );

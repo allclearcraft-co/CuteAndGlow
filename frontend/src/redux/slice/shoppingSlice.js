@@ -15,6 +15,9 @@ const initialState = {
   favoriteServices: readItems("favoriteServices"),
 };
 
+export const getCartItemType = (item) =>
+  item?.itemType === "product" ? "product" : "service";
+
 const shoppingSlice = createSlice({
   name: "shopping",
   initialState,
@@ -23,20 +26,70 @@ const shoppingSlice = createSlice({
       const service = action.payload;
       if (
         !service?._id ||
-        state.cartItems.some((item) => item._id === service._id)
+        state.cartItems.some(
+          (item) =>
+            item._id === service._id && getCartItemType(item) === "service",
+        )
       ) {
         return;
       }
 
-      state.cartItems.push(service);
+      state.cartItems.push({ ...service, itemType: "service", quantity: 1 });
+    },
+    addProductToCart: (state, action) => {
+      const product = action.payload;
+      if (!product?._id || product.isActive === false || product.stock < 1) {
+        return;
+      }
+
+      const existing = state.cartItems.find(
+        (item) =>
+          item._id === product._id && getCartItemType(item) === "product",
+      );
+      if (existing) {
+        existing.quantity = Math.min(
+          (existing.quantity || 1) + 1,
+          product.stock,
+        );
+        existing.stock = product.stock;
+        return;
+      }
+      state.cartItems.push({
+        ...product,
+        itemType: "product",
+        quantity: 1,
+      });
     },
     removeFromCart: (state, action) => {
+      const { id, itemType } =
+        typeof action.payload === "object"
+          ? action.payload
+          : { id: action.payload, itemType: undefined };
       state.cartItems = state.cartItems.filter(
-        (item) => item._id !== action.payload,
+        (item) =>
+          item._id !== id ||
+          (itemType && getCartItemType(item) !== itemType),
       );
     },
-    clearCart: (state) => {
-      state.cartItems = [];
+    updateCartQuantity: (state, action) => {
+      const { id, quantity } = action.payload || {};
+      if (!Number.isInteger(quantity) || quantity < 1) return;
+      const product = state.cartItems.find(
+        (item) =>
+          item._id === id && getCartItemType(item) === "product",
+      );
+      if (product) {
+        product.quantity = Math.min(quantity, Number(product.stock) || quantity);
+      }
+    },
+    clearCart: (state, action) => {
+      if (!action.payload) {
+        state.cartItems = [];
+      } else {
+        state.cartItems = state.cartItems.filter(
+          (item) => getCartItemType(item) !== action.payload,
+        );
+      }
     },
     toggleFavorite: (state, action) => {
       const service = action.payload;
@@ -52,7 +105,13 @@ const shoppingSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, clearCart, toggleFavorite } =
-  shoppingSlice.actions;
+export const {
+  addToCart,
+  addProductToCart,
+  removeFromCart,
+  updateCartQuantity,
+  clearCart,
+  toggleFavorite,
+} = shoppingSlice.actions;
 
 export default shoppingSlice.reducer;
