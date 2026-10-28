@@ -2,7 +2,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { FaTrash } from "react-icons/fa";
 import Button from "../components/Button";
-import { removeFromCart } from "../redux/slice/shoppingSlice";
+import {
+  getCartItemType,
+  removeFromCart,
+  updateCartQuantity,
+} from "../redux/slice/shoppingSlice";
 
 const Cart = () => {
   const items = useSelector((state) => state.shopping.cartItems);
@@ -13,8 +17,23 @@ const Cart = () => {
   const navigate = useNavigate();
   const canCheckout =
     isAuthenticated && user?.role?.toLowerCase() === "customer";
+  const serviceItems = items.filter(
+    (item) => getCartItemType(item) === "service",
+  );
+  const productItems = items.filter(
+    (item) => getCartItemType(item) === "product",
+  );
+  const cartQuantity = items.reduce(
+    (total, item) =>
+      total + (getCartItemType(item) === "product" ? item.quantity || 1 : 1),
+    0,
+  );
+  const productQuantity = productItems.reduce(
+    (total, item) => total + (item.quantity || 1),
+    0,
+  );
 
-  const startCheckout = () => {
+  const startCheckout = (itemType) => {
     if (!canCheckout) {
       navigate("/auth/login/customer", {
         state: { from: { pathname: "/cart" } },
@@ -22,7 +41,7 @@ const Cart = () => {
       return;
     }
 
-    navigate("/cart/checkout");
+    navigate(`/cart/checkout?type=${itemType === "product" ? "products" : "services"}`);
   };
 
   return (
@@ -30,84 +49,158 @@ const Cart = () => {
       <h1 className="heading text-3xl text-[#8B2954] mb-2">Your cart</h1>
       <p className="text-neutral-600 mb-8">
         {items.length
-          ? `${items.length} service${items.length === 1 ? "" : "s"} saved`
-          : "Your cart is empty. Add services to keep them here."}
+          ? `${cartQuantity} item${cartQuantity === 1 ? "" : "s"} in your shared services and products cart`
+          : "Your cart is empty. Browse services or products to get started."}
       </p>
 
       {items.length ? (
         <>
           <div className="space-y-4">
-            {items.map((service) => (
-              <article
-                key={service._id}
-                className="flex flex-col sm:flex-row gap-4 border border-neutral-200 rounded-xl p-4"
-              >
-                <img
-                  src={
-                    service?.coverImage?.[0]?.url || "/images/placeholder.jpg"
-                  }
-                  alt={service.name}
-                  className="w-full sm:w-36 h-36 object-cover rounded-lg"
-                />
-                <div className="flex-1">
-                  <h2 className="heading text-xl">{service.name}</h2>
-                  <p className="text-sm text-neutral-600">
-                    {service?.store?.storeName || service?.professional?.name}
-                  </p>
-                  <p className="text-lg text-[#8B2954] mt-2">
-                    ₹
-                    {Number(
-                      service?.charges || service?.price?.sellingPrice || 0,
-                    ).toLocaleString("en-IN")}
-                  </p>
-                  <div className="flex flex-wrap gap-3 mt-4">
-                    <Button
-                      LabelName="View service"
-                      variant="secondary"
-                      onClick={() =>
-                        navigate(`/services/${service._id}/current-service`)
-                      }
-                    />
-                    <Button
-                      LabelName={
-                        <span className="flex items-center gap-2">
-                          <FaTrash /> Remove
-                        </span>
-                      }
-                      variant="secondary"
-                      onClick={() => dispatch(removeFromCart(service._id))}
-                    />
+            {items.map((item) => {
+              const isProduct = getCartItemType(item) === "product";
+              const unitPrice = isProduct
+                ? Number(item.price || 0)
+                : Number(item?.charges || item?.price?.sellingPrice || 0);
+              const quantity = isProduct ? item.quantity || 1 : 1;
+              return (
+                <article
+                  key={`${isProduct ? "product" : "service"}-${item._id}`}
+                  className="flex flex-col gap-4 rounded-xl border border-neutral-200 p-4 sm:flex-row"
+                >
+                  <img
+                    src={
+                      (isProduct
+                        ? item?.images?.[0]?.url
+                        : item?.coverImage?.[0]?.url) || "/images/placeholder.jpg"
+                    }
+                    alt={item.name}
+                    className="h-36 w-full rounded-lg object-cover sm:w-36"
+                  />
+                  <div className="flex-1">
+                    <p className="text-xs uppercase tracking-wide text-neutral-500">
+                      {isProduct ? "Product" : "Service"}
+                    </p>
+                    <h2 className="heading text-xl">{item.name}</h2>
+                    <p className="text-sm text-neutral-600">
+                      {isProduct
+                        ? `${item.category || "Store"}${item.stock !== undefined ? ` · ${item.stock} in stock` : ""}`
+                        : item?.store?.storeName || item?.professional?.name}
+                    </p>
+                    <p className="mt-2 text-lg text-[#8B2954]">
+                      ₹{(unitPrice * quantity).toLocaleString("en-IN")}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Button
+                        LabelName={isProduct ? "View product" : "View service"}
+                        variant="secondary"
+                        onClick={() =>
+                          navigate(
+                            isProduct
+                              ? `/e-commerce/products/${item._id}`
+                              : `/services/${item._id}/current-service`,
+                          )
+                        }
+                      />
+                      {isProduct && (
+                        <div className="flex items-center gap-2 rounded-lg border px-2">
+                          <button
+                            type="button"
+                            aria-label={`Decrease ${item.name} quantity`}
+                            disabled={quantity <= 1}
+                            onClick={() =>
+                              dispatch(
+                                updateCartQuantity({
+                                  id: item._id,
+                                  quantity: quantity - 1,
+                                }),
+                              )
+                            }
+                            className="px-2 py-1 disabled:opacity-40"
+                          >
+                            −
+                          </button>
+                          <span>{quantity}</span>
+                          <button
+                            type="button"
+                            aria-label={`Increase ${item.name} quantity`}
+                            disabled={quantity >= Number(item.stock || 0)}
+                            onClick={() =>
+                              dispatch(
+                                updateCartQuantity({
+                                  id: item._id,
+                                  quantity: quantity + 1,
+                                }),
+                              )
+                            }
+                            className="px-2 py-1 disabled:opacity-40"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                      <Button
+                        LabelName={
+                          <span className="flex items-center gap-2">
+                            <FaTrash /> Remove
+                          </span>
+                        }
+                        variant="secondary"
+                        onClick={() =>
+                          dispatch(
+                            removeFromCart({
+                              id: item._id,
+                              itemType: isProduct ? "product" : "service",
+                            }),
+                          )
+                        }
+                      />
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
           <div className="mt-8 border-t border-neutral-200 pt-6">
             <p className="text-sm text-neutral-600 mb-4">
-              Choose a date for each service and pay once for all services in
-              your cart.
+              Checkout services and products separately; both stay in this
+              shared cart until their respective checkout is complete.
             </p>
-            <Button
-              LabelName={
-                isAuthLoading ? "Checking sign-in..." : "Continue to booking"
-              }
-              className="w-full sm:w-auto"
-              onClick={startCheckout}
-              disabled={isAuthLoading}
-            />
+            <div className="flex flex-col gap-3 sm:flex-row">
+              {serviceItems.length > 0 && (
+                <Button
+                  LabelName={isAuthLoading ? "Checking sign-in..." : `Book ${serviceItems.length} service${serviceItems.length === 1 ? "" : "s"}`}
+                  onClick={() => startCheckout("service")}
+                  disabled={isAuthLoading}
+                />
+              )}
+              {productItems.length > 0 && (
+                <Button
+                  LabelName={isAuthLoading ? "Checking sign-in..." : `Checkout ${productQuantity} product${productQuantity === 1 ? "" : "s"}`}
+                  onClick={() => startCheckout("product")}
+                  disabled={isAuthLoading}
+                />
+              )}
+            </div>
             {!canCheckout && (
               <p className="text-sm text-neutral-500 mt-3">
-                You can add services without signing in. Customer login is
-                required to continue to booking.
+                  You can add items without signing in. Customer login is
+                  required to continue to checkout.
               </p>
             )}
           </div>
         </>
       ) : (
-        <Button
-          LabelName="Browse services"
-          onClick={() => navigate("/services/all")}
-        />
+        <div className="flex flex-wrap gap-3">
+          <Button
+            LabelName="Browse services"
+            onClick={() => navigate("/services/all")}
+          />
+          <Button
+            LabelName="Shop products"
+            variant="secondary"
+            onClick={() => navigate("/e-commerce")}
+          />
+        </div>
       )}
     </main>
   );
