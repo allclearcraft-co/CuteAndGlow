@@ -15,6 +15,8 @@ const allowedOrigins = [
   process.env.ORIGIN_1,
   process.env.ORIGIN_2,
   process.env.ORIGIN_3,
+  process.env.ORIGIN_4,
+  process.env.ORIGIN_5,
 ].filter(Boolean);
 
 const app = express();
@@ -66,6 +68,7 @@ import subscriptionRoutes from "./routes/subscription.route.js";
 import categoryRoutes from "./routes/category.route.js";
 import enquiryRoutes from "./routes/enquiry.route.js";
 import franchiseRoutes from "./routes/franchise.route.js";
+import productRoutes from "./routes/product.route.js";
 
 app.use("/api/v1/customer", customerRoutes);
 app.use("/api/v1/professional", professionalRoutes);
@@ -78,6 +81,7 @@ app.use("/api/v1/subscription", subscriptionRoutes);
 app.use("/api/v1/category-subcategory", categoryRoutes);
 app.use("/api/v1/enquiries", enquiryRoutes);
 app.use("/api/v1/franchise", franchiseRoutes);
+app.use("/api/v1/products", productRoutes);
 
 app.use((error, req, res, next) => {
   if (res.headersSent) return next(error);
