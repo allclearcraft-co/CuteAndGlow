@@ -83,7 +83,7 @@ const EcomHome = () => {
     <main className="mx-auto min-h-[50vh] max-w-7xl px-4 py-8 pb-24 lg:px-8">
       <header className="mb-8 rounded-2xl bg-[#8B2954] px-6 py-8 text-white md:px-10">
         <p className="text-sm uppercase tracking-[0.2em] text-white/80">
-          Parikrama store
+          Cute and Glow store
         </p>
         <h1 className="heading mt-2 text-3xl md:text-4xl">Shop beauty essentials</h1>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
