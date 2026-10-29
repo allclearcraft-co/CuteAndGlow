@@ -69,8 +69,7 @@ const Overview = ({
 }) => {
   const [subscription, setSubscription] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [currentSubscriptionModel, setCurrentSubscriptionModel] =
-    useState(null);
+  const [planToConfirm, setPlanToConfirm] = useState(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [profileForm, setProfileForm] = useState({});
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -230,11 +229,21 @@ const Overview = ({
     }
   };
 
-  const purchasePlan = async (plan) => {
+  const purchasePlan = async (plan, confirmed = false) => {
     if (role !== "Store") {
       alertError(
         "Subscription payments are currently available for stores only",
       );
+      return;
+    }
+
+    const currentPlanId = data?.store?.subscription?.subscriptionModel;
+    if (
+      !confirmed &&
+      data?.store?.subscription?.subscriptionPurchased === true &&
+      String(currentPlanId) !== String(plan._id)
+    ) {
+      setPlanToConfirm(plan);
       return;
     }
 
@@ -2191,6 +2200,36 @@ const Overview = ({
           </div>
         </div>
       )}
+      <Popup
+        isOpen={Boolean(planToConfirm)}
+        onClose={() => setPlanToConfirm(null)}
+        center
+      >
+        <div className="w-full max-w-md space-y-5 pr-8">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Change subscription plan?
+          </h2>
+          <p className="text-gray-700">
+            You are going to purchase a new plan, the current plan will be
+            deactivated
+          </p>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="secondary"
+              LabelName="Cancel"
+              onClick={() => setPlanToConfirm(null)}
+            />
+            <Button
+              LabelName="Confirm"
+              onClick={() => {
+                const plan = planToConfirm;
+                setPlanToConfirm(null);
+                if (plan) purchasePlan(plan, true);
+              }}
+            />
+          </div>
+        </div>
+      </Popup>
       {showForm && (
         <div className="fixed top-0 left-0 z-50 flex justify-center items-center h-screen w-full bg-black/80">
           <div>
