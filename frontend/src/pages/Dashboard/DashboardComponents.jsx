@@ -253,6 +253,7 @@ const Overview = ({
         await FetchData(`subscription/purchase/${plan._id}/${userId}`, "post");
         alertSuccess("Basic subscription activated successfully");
         await callData();
+        setTimeout(() => window.location.reload(), 2000);
         return;
       }
 
@@ -282,6 +283,7 @@ const Overview = ({
             });
             alertSuccess("Subscription purchased successfully");
             await callData();
+            setTimeout(() => window.location.reload(), 2000);
           } catch (err) {
             alertError(
               err.response?.data?.message || "Payment verification failed",
@@ -1851,7 +1853,7 @@ const Overview = ({
                       className="w-full"
                       LabelName={
                         purchasingPlanId === selectedPlan?._id
-                          ? "Opening payment..."
+                          ? "Please wait..."
                           : "Book Plan"
                       }
                       onClick={() => purchasePlan(selectedPlan)}
@@ -2188,7 +2190,7 @@ const Overview = ({
                     className="w-full"
                     LabelName={
                       purchasingPlanId === i?._id
-                        ? "Opening payment..."
+                        ? "Please wait..."
                         : "Book Plan"
                     }
                     onClick={() => purchasePlan(i)}
