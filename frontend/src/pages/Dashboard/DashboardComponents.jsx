@@ -1875,7 +1875,8 @@ const Overview = ({
                 {/* ================= HEADER ================= */}
                 <div className="bg-[#8B2954] w-full text-center px-4 py-6 text-white">
                   <h1 className="text-3xl uppercase font-semibold">
-                    {i?.planName}
+                    {i?.planName}{" "}
+                    {i?.price?.sellingPrice === 0 ? "( Free )" : ""}
                   </h1>
 
                   <p className="font-light text-sm mt-1">{i?.tagline}</p>
@@ -4589,7 +4590,9 @@ const Images = ({ data, role, userId, subscription }) => {
       </div>
 
       {/* Gallery */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div
+        className={`w-full bg-red-200  ${gallery?.length === 0 ? "" : "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-5"}`}
+      >
         {gallery.map((image) => (
           <div
             key={image.fileId}
@@ -4617,14 +4620,20 @@ const Images = ({ data, role, userId, subscription }) => {
         subscription?.mediaLimit?.photos <= gallery?.length ? (
           "Your have uploaded the number of images which comes under your plan,Please upgrade your plan to add more."
         ) : (
-          <label className="border-2 border-dashed border-[#8B2954] rounded-xl h-48 flex flex-col justify-center items-center cursor-pointer hover:bg-pink-50 transition">
+          <label className="border-2 border-dashed border-[#8B2954] rounded-xl h-48 flex flex-col justify-center items-center cursor-pointer hover:bg-pink-50 transition w-full lg:w-fit">
             <FaImage className="text-4xl text-[#8B2954]" />
             <p className="mt-3 font-medium">
               {uploading ? "Uploading..." : "Add Images"}
             </p>
+            <p className="mt-3 font-medium">
+              {uploading
+                ? ""
+                : "Select all the images you need to upload, you can maximum upload 10 images at a time."}
+            </p>
             <input
+              // className="bg-neutral-300 p-2 rounded-md"
               type="file"
-              hidden
+              // hidden
               multiple
               accept="image/*"
               onChange={handleGalleryUpload}
