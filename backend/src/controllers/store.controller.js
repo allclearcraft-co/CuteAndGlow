@@ -759,11 +759,7 @@ const dashboardData = asyncHandler(async (req, res) => {
       return res
         .status(200)
         .json(
-          new ApiResponse(
-            200,
-            store.images || {},
-            "Images fetched successfully",
-          ),
+          new ApiResponse(200, store.images, "Images fetched successfully"),
         );
     }
 
@@ -979,14 +975,17 @@ const addGalleryImages = asyncHandler(async (req, res) => {
   const plan = await Subscription.findById(
     store.subscription?.subscriptionModel,
   );
-  if (
-    !store.subscription?.subscriptionPurchased ||
-    !store.subscription?.subscriptionValidity ||
-    store.subscription.subscriptionValidity <= new Date() ||
-    !plan?.isActive
-  ) {
+  if (!store.subscription?.subscriptionPurchased) {
     throw new ApiError(403, "Purchase an active subscription to upload images");
   }
+  // if (
+  //   !store.subscription?.subscriptionPurchased ||
+  //   !store.subscription?.subscriptionValidity ||
+  //   store.subscription.subscriptionValidity <= new Date() ||
+  //   !plan?.isActive
+  // ) {
+  //   throw new ApiError(403, "Purchase an active subscription to upload images");
+  // }
 
   const files = req.files || [];
   if (!files.length)

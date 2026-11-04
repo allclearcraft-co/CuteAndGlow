@@ -30,6 +30,7 @@ const storeSchema = new mongoose.Schema(
     // extras for profile
     storeTimings: { openFrom: { type: Date }, openTill: { type: Date } },
     images: {
+      coverImage: { url: String, fileId: String },
       logo: { url: String, fileId: String },
       gallery: [{ url: String, fileId: String }],
     },
