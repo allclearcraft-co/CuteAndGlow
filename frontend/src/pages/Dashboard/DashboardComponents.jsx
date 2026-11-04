@@ -4487,9 +4487,9 @@ const CurrentlyUnderBooking = ({ data, role }) => {
 };
 
 const Images = ({ data, userId, subscription, callData }) => {
-  const storeImages = data?.images || {};
-  const coverImage = storeImages.logo || {};
-  const [gallery, setGallery] = useState(storeImages.gallery || []);
+  const coverImage = data?.logo || {};
+  const [galleryOverride, setGalleryOverride] = useState(null);
+  const gallery = galleryOverride ?? data?.gallery ?? [];
   const [pendingImages, setPendingImages] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -4557,7 +4557,7 @@ const Images = ({ data, userId, subscription, callData }) => {
         formData,
         true,
       );
-      setGallery(response.data.data.gallery || []);
+      setGalleryOverride(response.data.data.gallery || []);
       pendingImages.forEach(({ preview }) => {
         URL.revokeObjectURL(preview);
         previewUrls.current.delete(preview);
@@ -4582,7 +4582,7 @@ const Images = ({ data, userId, subscription, callData }) => {
       );
 
       alertSuccess(response.data.message);
-      setGallery(response.data.data.gallery || []);
+      setGalleryOverride(response.data.data.gallery || []);
       await callData?.();
     } catch (err) {
       alertError(err.response?.data?.message || "Unable to delete image");
@@ -4604,7 +4604,7 @@ const Images = ({ data, userId, subscription, callData }) => {
         formData,
         true,
       );
-      setGallery(response.data.data.gallery || []);
+      setGalleryOverride(response.data.data.gallery || []);
       alertSuccess(response.data.message);
       await callData?.();
     } catch (err) {
@@ -4618,7 +4618,7 @@ const Images = ({ data, userId, subscription, callData }) => {
 
   const photoLimitReached =
     !subscription?.mediaLimit?.unlimitedPhotos &&
-    gallery.length >= (subscription?.mediaLimit?.photos || 0);
+    gallery?.length >= (subscription?.mediaLimit?.photos || 0);
 
   return subscription ? (
     <div className="space-y-6 w-full">
@@ -4658,7 +4658,7 @@ const Images = ({ data, userId, subscription, callData }) => {
 
         <div className="flex items-center gap-3">
           <span className="bg-pink-100 text-[#8B2954] px-4 py-2 rounded-full text-sm">
-            {gallery.length} Images
+            {gallery?.length} Images
           </span>
           <button
             type="button"
@@ -4673,7 +4673,7 @@ const Images = ({ data, userId, subscription, callData }) => {
 
       {/* Gallery */}
       <div className="grid w-full grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4">
-        {gallery.map((image) => (
+        {gallery?.map((image) => (
           <div
             key={image.fileId}
             className="group relative overflow-hidden rounded-xl bg-white shadow"
