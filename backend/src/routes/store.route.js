@@ -14,6 +14,8 @@ import {
   addGalleryImages,
   deleteGalleryImage,
   replaceGalleryImage,
+  uploadCoverImage,
+  deleteCoverImage,
   getStaffForService,
   registrationFeePaid,
   passwordLogin,
@@ -98,6 +100,10 @@ router
 router
   .route("/update/replace-gallery-image/:storeId/:fileId")
   .post(VerifyStore, upload.single("image"), replaceGalleryImage);
+router
+  .route("/update/cover-image/:storeId")
+  .post(VerifyStore, upload.single("coverImage"), uploadCoverImage)
+  .delete(VerifyStore, deleteCoverImage);
 router
   .route("/get/staff-for-service/store-staff/:storeId")
   .get(VerifyStore, getStaffForService);

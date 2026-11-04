@@ -89,6 +89,8 @@ const StoreProfessional = () => {
   const [loading, setLoading] = useState(false);
   const { alertError } = useToast();
 
+  const coverImage = data?.images.coverImage?.url;
+
   const getData = async () => {
     try {
       setLoading(true);
@@ -113,9 +115,6 @@ const StoreProfessional = () => {
 
   return (
     <div className="p-5 lg:p-10 flex flex-col gap-2 lg:gap-5">
-      <div>
-        <ImageSlider data={data} />
-      </div>
       <h1 className="text-3xl font-semibold heading capitalize flex items-center">
         {data?.isVerified === true ? (
           <span>
@@ -126,6 +125,10 @@ const StoreProfessional = () => {
         )}
         {data?.storeName}
       </h1>
+
+      <div className="bg-cyan-200 h-96 overflow-hidden rounded-xl object-cover">
+        <img src={coverImage} className="object-cover h-full w-full" />
+      </div>
       <h1>
         <strong className="heading">Contact Info: </strong>
         <span>{data?.storeEmail}</span> |{" "}
@@ -151,15 +154,21 @@ const StoreProfessional = () => {
           Service listed by {data?.storeName}
         </h1>
         <div className="w-full overflow-scroll flex p-5 gap-3">
-          {service?.map((service) => (
-            <div key={service._id} className="w-fit">
-              <CustomerServiceCard
-                service={service}
-                currentServicePage={true}
-              />
-            </div>
-          ))}
+          {service?.length === 0
+            ? "No services found"
+            : service?.map((service) => (
+                <div key={service._id} className="w-fit">
+                  <CustomerServiceCard
+                    service={service}
+                    currentServicePage={true}
+                  />
+                </div>
+              ))}
         </div>
+      </div>
+      <div>
+        <h1>More images from our store's gallery</h1>
+        <ImageSlider data={data} />
       </div>
     </div>
   );

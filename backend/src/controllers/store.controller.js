@@ -759,11 +759,7 @@ const dashboardData = asyncHandler(async (req, res) => {
       return res
         .status(200)
         .json(
-          new ApiResponse(
-            200,
-            store.images || {},
-            "Images fetched successfully",
-          ),
+          new ApiResponse(200, store.images, "Images fetched successfully"),
         );
     }
 
@@ -979,14 +975,17 @@ const addGalleryImages = asyncHandler(async (req, res) => {
   const plan = await Subscription.findById(
     store.subscription?.subscriptionModel,
   );
-  if (
-    !store.subscription?.subscriptionPurchased ||
-    !store.subscription?.subscriptionValidity ||
-    store.subscription.subscriptionValidity <= new Date() ||
-    !plan?.isActive
-  ) {
+  if (!store.subscription?.subscriptionPurchased) {
     throw new ApiError(403, "Purchase an active subscription to upload images");
   }
+  // if (
+  //   !store.subscription?.subscriptionPurchased ||
+  //   !store.subscription?.subscriptionValidity ||
+  //   store.subscription.subscriptionValidity <= new Date() ||
+  //   !plan?.isActive
+  // ) {
+  //   throw new ApiError(403, "Purchase an active subscription to upload images");
+  // }
 
   const files = req.files || [];
   if (!files.length)
@@ -1074,6 +1073,50 @@ const replaceGalleryImage = asyncHandler(async (req, res) => {
     .status(200)
     .json(
       new ApiResponse(200, store.images, "Gallery image replaced successfully"),
+    );
+});
+
+const uploadCoverImage = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  const store = await Store.findById(storeId);
+  if (!store) throw new ApiError(404, "Store not found");
+  if (!req.file) throw new ApiError(400, "Please select a cover image");
+
+  const safeName = store.storeName.toLowerCase().replace(/[^a-z0-9-_]+/g, "-");
+  const uploaded = await UploadImages(req.file.filename, {
+    folderStructure: `store/cover-images/${safeName}-${storeId}`,
+  });
+  const previousFileId = store.images?.coverImage?.fileId;
+  store.images = {
+    ...(store.images?.toObject?.() || store.images || {}),
+    coverImage: { url: uploaded.url, fileId: uploaded.fileId },
+  };
+  await store.save();
+
+  if (previousFileId) await DeleteImage(previousFileId);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, store.images, "Cover image saved successfully"));
+});
+
+const deleteCoverImage = asyncHandler(async (req, res) => {
+  const { storeId } = req.params;
+  const store = await Store.findById(storeId);
+  if (!store) throw new ApiError(404, "Store not found");
+
+  const fileId = store.images?.coverImage?.fileId;
+  if (!fileId) throw new ApiError(404, "Cover image not found");
+
+  store.set("images.coverImage", undefined);
+  store.markModified("images");
+  await store.save();
+  await DeleteImage(fileId);
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, store.images, "Cover image deleted successfully"),
     );
 });
 
@@ -1171,6 +1214,8 @@ export {
   addGalleryImages,
   deleteGalleryImage,
   replaceGalleryImage,
+  uploadCoverImage,
+  deleteCoverImage,
   getStaffForService,
   registrationFeePaid,
   getStoreById,

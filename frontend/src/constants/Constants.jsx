@@ -12,7 +12,7 @@ import {
 import { GoVerified } from "react-icons/go";
 import { IoIosHappy } from "react-icons/io";
 import { IoStorefrontSharp } from "react-icons/io5";
-import { MdDomainVerification } from "react-icons/md";
+import { MdDomainVerification, MdFaceRetouchingNatural } from "react-icons/md";
 import { RiFlowerFill, RiTeamFill } from "react-icons/ri";
 
 export const ChooseUs = [
@@ -95,7 +95,7 @@ export const DashboardSectionList = [
   },
   {
     label: "Services",
-    icon: <FaUser />,
+    icon: <MdFaceRetouchingNatural />,
     query: "services",
     roles: ["Store", "Professional"],
   },

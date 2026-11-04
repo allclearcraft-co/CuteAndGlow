@@ -4487,9 +4487,16 @@ const CurrentlyUnderBooking = ({ data, role }) => {
 };
 
 const Images = ({ data, userId, subscription, callData }) => {
-  const storeImages = data?.images || {};
-  const coverImage = storeImages.logo || {};
-  const [gallery, setGallery] = useState(storeImages.gallery || []);
+  const [coverImageOverride, setCoverImageOverride] = useState(undefined);
+  const coverImage =
+    coverImageOverride !== undefined
+      ? coverImageOverride
+      : data?.coverImage || null;
+  const [pendingCoverImage, setPendingCoverImage] = useState(null);
+  const [isEditingCover, setIsEditingCover] = useState(false);
+  const [savingCoverImage, setSavingCoverImage] = useState(false);
+  const [galleryOverride, setGalleryOverride] = useState(null);
+  const gallery = galleryOverride ?? data?.gallery ?? [];
   const [pendingImages, setPendingImages] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -4544,6 +4551,69 @@ const Images = ({ data, userId, subscription, callData }) => {
     );
   };
 
+  const handleCoverSelection = (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    if (pendingCoverImage?.preview) {
+      URL.revokeObjectURL(pendingCoverImage.preview);
+      previewUrls.current.delete(pendingCoverImage.preview);
+    }
+    const preview = URL.createObjectURL(file);
+    previewUrls.current.add(preview);
+    setPendingCoverImage({ file, preview });
+  };
+
+  const saveCoverImage = async () => {
+    if (!pendingCoverImage) return;
+
+    try {
+      setSavingCoverImage(true);
+      const formData = new FormData();
+      formData.append("coverImage", pendingCoverImage.file);
+      const response = await FetchData(
+        `store/update/cover-image/${userId}`,
+        "post",
+        formData,
+        true,
+      );
+      setCoverImageOverride(response.data.data.coverImage || null);
+      URL.revokeObjectURL(pendingCoverImage.preview);
+      previewUrls.current.delete(pendingCoverImage.preview);
+      setPendingCoverImage(null);
+      setIsEditingCover(false);
+      alertSuccess(response.data.message);
+      await callData?.();
+    } catch (err) {
+      alertError(
+        err.response?.data?.message ||
+          err.message ||
+          "Unable to save cover image",
+      );
+    } finally {
+      setSavingCoverImage(false);
+    }
+  };
+
+  const deleteCoverImage = async () => {
+    try {
+      setSavingCoverImage(true);
+      const response = await FetchData(
+        `store/update/cover-image/${userId}`,
+        "delete",
+      );
+      setCoverImageOverride(null);
+      setIsEditingCover(false);
+      alertSuccess(response.data.message);
+      await callData?.();
+    } catch (err) {
+      alertError(err.response?.data?.message || "Unable to delete cover image");
+    } finally {
+      setSavingCoverImage(false);
+    }
+  };
+
   const uploadPendingImages = async () => {
     if (!pendingImages.length) return;
 
@@ -4557,7 +4627,7 @@ const Images = ({ data, userId, subscription, callData }) => {
         formData,
         true,
       );
-      setGallery(response.data.data.gallery || []);
+      setGalleryOverride(response.data.data.gallery || []);
       pendingImages.forEach(({ preview }) => {
         URL.revokeObjectURL(preview);
         previewUrls.current.delete(preview);
@@ -4582,7 +4652,7 @@ const Images = ({ data, userId, subscription, callData }) => {
       );
 
       alertSuccess(response.data.message);
-      setGallery(response.data.data.gallery || []);
+      setGalleryOverride(response.data.data.gallery || []);
       await callData?.();
     } catch (err) {
       alertError(err.response?.data?.message || "Unable to delete image");
@@ -4604,7 +4674,7 @@ const Images = ({ data, userId, subscription, callData }) => {
         formData,
         true,
       );
-      setGallery(response.data.data.gallery || []);
+      setGalleryOverride(response.data.data.gallery || []);
       alertSuccess(response.data.message);
       await callData?.();
     } catch (err) {
@@ -4618,7 +4688,7 @@ const Images = ({ data, userId, subscription, callData }) => {
 
   const photoLimitReached =
     !subscription?.mediaLimit?.unlimitedPhotos &&
-    gallery.length >= (subscription?.mediaLimit?.photos || 0);
+    gallery?.length >= (subscription?.mediaLimit?.photos || 0);
 
   return subscription ? (
     <div className="space-y-6 w-full">
@@ -4636,19 +4706,88 @@ const Images = ({ data, userId, subscription, callData }) => {
 
       {/* Cover Image */}
 
-      <div className="bg-white rounded-2xl shadow">
-        <div className="relative">
-          <img
-            src={coverImage?.url}
-            alt="Cover"
-            className="w-full h-52 md:h-72 object-cover rounded-t-2xl"
-          />
+      <div className="overflow-hidden rounded-2xl bg-white shadow">
+        <div className="relative h-52 bg-gray-100 md:h-72">
+          {pendingCoverImage?.preview || coverImage?.url ? (
+            <img
+              src={pendingCoverImage?.preview || coverImage.url}
+              alt="Store cover"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-500">
+              <FaCamera className="text-3xl" />
+              <span>No cover image</span>
+            </div>
+          )}
 
-          <div className="absolute bottom-4 right-4 bg-white/90 shadow px-4 py-2 rounded-lg flex items-center gap-2 text-gray-600">
-            <FaCamera />
-            Cover image
+          <div className="absolute bottom-4 left-4 rounded-lg bg-white/90 px-4 py-2 text-gray-600 shadow">
+            <FaCamera className="mr-2 inline" /> Cover image
           </div>
+          <button
+            type="button"
+            onClick={() => setIsEditingCover((editing) => !editing)}
+            className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-gray-800 shadow hover:bg-gray-100"
+          >
+            {isEditingCover ? <FaTimes /> : <FaEdit />}
+            {isEditingCover ? "Done" : coverImage ? "Edit cover" : "Add cover"}
+          </button>
+
+          {isEditingCover && (
+            <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/45">
+              <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-800 hover:bg-gray-100">
+                <FaUpload />
+                {coverImage ? "Replace cover" : "Choose cover"}
+                <input
+                  className="sr-only"
+                  type="file"
+                  accept="image/*"
+                  disabled={savingCoverImage}
+                  onChange={handleCoverSelection}
+                />
+              </label>
+              {coverImage && (
+                <button
+                  type="button"
+                  disabled={savingCoverImage}
+                  onClick={deleteCoverImage}
+                  className="rounded-lg bg-red-600 p-3 text-white hover:bg-red-700 disabled:opacity-50"
+                  aria-label="Delete cover image"
+                >
+                  <FaTrash />
+                </button>
+              )}
+            </div>
+          )}
         </div>
+        {pendingCoverImage && (
+          <div className="flex flex-wrap items-center gap-3 p-4">
+            <span className="mr-auto text-sm text-gray-600">
+              Cover preview ready
+            </span>
+            <button
+              type="button"
+              disabled={savingCoverImage}
+              onClick={saveCoverImage}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#8B2954] px-4 py-2 text-sm font-medium text-white hover:bg-[#742247] disabled:opacity-60"
+            >
+              <FaCloudUploadAlt />
+              {savingCoverImage ? "Saving..." : "Save cover"}
+            </button>
+            <button
+              type="button"
+              disabled={savingCoverImage}
+              onClick={() => {
+                URL.revokeObjectURL(pendingCoverImage.preview);
+                previewUrls.current.delete(pendingCoverImage.preview);
+                setPendingCoverImage(null);
+              }}
+              className="rounded-lg border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Gallery Header */}
@@ -4658,7 +4797,7 @@ const Images = ({ data, userId, subscription, callData }) => {
 
         <div className="flex items-center gap-3">
           <span className="bg-pink-100 text-[#8B2954] px-4 py-2 rounded-full text-sm">
-            {gallery.length} Images
+            {gallery?.length} Images
           </span>
           <button
             type="button"
@@ -4673,7 +4812,7 @@ const Images = ({ data, userId, subscription, callData }) => {
 
       {/* Gallery */}
       <div className="grid w-full grid-cols-2 gap-5 md:grid-cols-3 xl:grid-cols-4">
-        {gallery.map((image) => (
+        {gallery?.map((image) => (
           <div
             key={image.fileId}
             className="group relative overflow-hidden rounded-xl bg-white shadow"
