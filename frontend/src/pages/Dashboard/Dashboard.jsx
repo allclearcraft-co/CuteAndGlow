@@ -25,6 +25,7 @@ import Popup from "../../components/ui/Popup.jsx";
 import InputBox from "../../components/Input.jsx";
 import { useRef } from "react";
 import { clearAuthStorage } from "../../utils/utility-functions";
+import { motion, AnimatePresence } from "framer-motion";
 
 function Dashboard() {
   const role = localStorage.getItem("role");
@@ -193,45 +194,55 @@ function Dashboard() {
         </button>
       </div>
       {/* More Menu */}
+      <AnimatePresence>
+        {showMoreMenu && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: "auto", opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: "spring", duration: 0.4, ease: "easeInOut" }}
+            className="h-fit"
+          >
+            <div
+              className="fixed inset-0 bg-black/40 z-40 md:hidden"
+              onClick={() => setShowMoreMenu(false)}
+            />
 
-      {showMoreMenu && (
-        <div className="h-fit">
-          <div
-            className="fixed inset-0 bg-black/40 z-40 md:hidden"
-            onClick={() => setShowMoreMenu(false)}
-          />
+            <div className="fixed bottom-16 left-0 w-full bg-white rounded-t-3xl p-5 z-50 md:hidden">
+              <div className="w-14 h-1 rounded-full bg-gray-300 mx-auto mb-5"></div>
 
-          <div className="fixed bottom-16 left-0 w-full bg-white rounded-t-3xl p-5 z-50 md:hidden">
-            <div className="w-14 h-1 rounded-full bg-gray-300 mx-auto mb-5"></div>
-
-            <div className="grid grid-cols-2 gap-4 h-fit">
-              <button
-                onClick={() => logout()}
-                className="bg-white text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
-              >
-                <IoLogOut />
-                Logout
-              </button>
-              {moreNavItems.map((item) => (
+              <div className="grid grid-cols-3 gap-4 h-fit">
+                {moreNavItems.map((item) => (
+                  <button
+                    key={item.query}
+                    onClick={() => {
+                      setActiveSection(item.query);
+                      fetchDashboardData({ query: item.query });
+                      localStorage.setItem("activeSection", item.query);
+                      setShowMoreMenu(false);
+                    }}
+                    className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-100"
+                  >
+                    <span className="text-3xl text-[#8B2954]">{item.icon}</span>
+                    <span className="text-sm">{item.label}</span>
+                  </button>
+                ))}
                 <button
-                  key={item.query}
-                  onClick={() => {
-                    setActiveSection(item.query);
-                    fetchDashboardData({ query: item.query });
-                    localStorage.setItem("activeSection", item.query);
-                    setShowMoreMenu(false);
-                  }}
+                  onClick={() => logout()}
+                  // className="bg-white text-neutral-800 flex justify-start items-center rounded-lg py-2 gap-2 px-10 w-full cursor-pointer"
                   className="flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-gray-100"
                 >
-                  <span className="text-2xl text-[#8B2954]">{item.icon}</span>
-
-                  <span className="text-sm">{item.label}</span>
+                  <span className="text-2xl text-[#8B2954]">
+                    <IoLogOut />
+                  </span>
+                  <span className="text-sm">Logout</span>
                 </button>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="overflow-scroll h-full w-full">
         <main className="w-full h-full p-1 lg:p-5">
           {activeSection === "overview" && (
