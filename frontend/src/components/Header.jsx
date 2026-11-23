@@ -8,8 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "./hooks/ToastContext";
 import { BsGeoAlt } from "react-icons/bs";
-import { FaHeart, FaShoppingCart } from "react-icons/fa";
+import { FaExternalLinkAlt, FaHeart, FaShoppingCart } from "react-icons/fa";
 import InputBox from "./Input";
+import Button from "./Button";
 import { saveCoordinates } from "../utils/location-service";
 
 const AccordionCard = ({ children, isScrolled }) => {
@@ -231,15 +232,27 @@ const Header = () => {
           <span
             className={`logo_style ${isScrolled ? " text-[#F3DB8F]" : "text-black"}`}
           >
-            Cute & Glow
+            Makeup <br />
+            <span className="text-xs">by Cute & Glow</span>
           </span>
         </a>
-        <AccordionCard isScrolled={isScrolled}>
-          <div className="flex items-center justify-between md:gap-4 gap-2 bg-[#8B2954] rounded-full h-11 px-1 w-fit">
-            <a href="/" className="text-white hover:text-pink-200 transition">
-              <HiHome />
-            </a>
-            {/* <button
+        <div className="flex justify-center items-center ">
+          <a
+            href="https://cuteandglow.com"
+            target="blank"
+            className="heading capitalize text-wrap text-center cursor-pointer lg:flex justify-center items-center h-fit px-4 py-2 rounded-xl bg-[#8B2954] text-white hidden"
+          >
+            <h1 className="flex justify-center items-center gap-1 text-xs">
+              Cute and Glow <FaExternalLinkAlt />
+            </h1>
+          </a>
+
+          <AccordionCard isScrolled={isScrolled}>
+            <div className="flex items-center justify-between md:gap-4 gap-2 bg-[#8B2954] rounded-full h-11 px-1 w-fit">
+              <a href="/" className="text-white hover:text-pink-200 transition">
+                <HiHome />
+              </a>
+              {/* <button
               type="button"
               aria-label="Favorite services"
               onClick={() => navigate("/customer/favorite")}
@@ -247,108 +260,109 @@ const Header = () => {
             >
               <FaHeart />
             </button> */}
-            <button
-              type="button"
-              aria-label="Cart"
-              onClick={() => navigate("/cart")}
-              className="relative text-white hover:text-pink-200 transition"
-            >
-              <FaShoppingCart />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4">
-                  {cartCount}
-                </span>
-              )}
-            </button>
-            <div
-              className={`${city ? "" : "absolute top-0 right-0"} hidden bg-white w-[20vw] rounded-xl p-1 lg:block`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <BsGeoAlt className="text-[#8B2954]" />
-                  <span className="font-medium text-gray-800 text-xs">
-                    {city || locationMessage}
+              <button
+                type="button"
+                aria-label="Cart"
+                onClick={() => navigate("/cart")}
+                className="relative text-white hover:text-pink-200 transition"
+              >
+                <FaShoppingCart />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-600 text-white text-[10px] leading-4">
+                    {cartCount}
                   </span>
+                )}
+              </button>
+              <div
+                className={`${city ? "" : "absolute top-0 right-0"} hidden bg-white w-[20vw] rounded-xl p-1 lg:block`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <BsGeoAlt className="text-[#8B2954]" />
+                    <span className="font-medium text-gray-800 text-xs">
+                      {city || locationMessage}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setShowCityPicker((prev) => !prev);
+                      setShowManualInput(true);
+                    }}
+                    className="text-sm text-[#8B2954] font-medium"
+                  >
+                    {city ? "Change" : "Select"}
+                  </button>
                 </div>
 
+                {!city && (
+                  <button
+                    onClick={detectLocation}
+                    className="text-xs text-[#8B2954] mt-1 underline"
+                  >
+                    Use Current Location
+                  </button>
+                )}
+
+                {(showManualInput || showCityPicker) && (
+                  <div className="relative ">
+                    <InputBox
+                      className="text-xs"
+                      type="text"
+                      placeholder="Search by pincode, city..."
+                      value={manualCity}
+                      onChange={(e) => setManualCity(e.target.value)}
+                    />
+
+                    {suggestions.length > 0 && (
+                      <div className="absolute z-20 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-52 overflow-auto">
+                        {suggestions.map((item) => (
+                          <button
+                            key={item.place_id}
+                            onClick={() =>
+                              saveLocation(
+                                item.address?.city ||
+                                  item.address?.town ||
+                                  item.address?.village ||
+                                  item.display_name.split(",")[0],
+                                item.lat,
+                                item.lon,
+                              )
+                            }
+                            className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
+                          >
+                            {item.display_name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              {user ? (
                 <button
                   onClick={() => {
-                    setShowCityPicker((prev) => !prev);
-                    setShowManualInput(true);
+                    navigate(
+                      userRole === "admin" ? "/admin/dashboard" : "/dashboard",
+                    );
                   }}
-                  className="text-sm text-[#8B2954] font-medium"
+                  className="flex justify-center items-start rounded-full py-1 px-3 bg-white text-black cursor-pointer"
                 >
-                  {city ? "Change" : "Select"}
+                  <FiUser /> <span>Dashboard</span>
                 </button>
-              </div>
-
-              {!city && (
+              ) : (
                 <button
-                  onClick={detectLocation}
-                  className="text-xs text-[#8B2954] mt-1 underline"
+                  onClick={() => {
+                    navigate(`/auth/${"login"}/${"customer"}`);
+                  }}
+                  className=" bg-white text-black border border-[#8B2954] shadow-md heading capitalize text-wrap text-center cursor-pointer flex justify-center items-center h-fit px-1 py-1 rounded-full text-xs"
                 >
-                  Use Current Location
+                  Login / Register
                 </button>
-              )}
-
-              {(showManualInput || showCityPicker) && (
-                <div className="relative ">
-                  <InputBox
-                    className="text-xs"
-                    type="text"
-                    placeholder="Search by pincode, city..."
-                    value={manualCity}
-                    onChange={(e) => setManualCity(e.target.value)}
-                  />
-
-                  {suggestions.length > 0 && (
-                    <div className="absolute z-20 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-52 overflow-auto">
-                      {suggestions.map((item) => (
-                        <button
-                          key={item.place_id}
-                          onClick={() =>
-                            saveLocation(
-                              item.address?.city ||
-                                item.address?.town ||
-                                item.address?.village ||
-                                item.display_name.split(",")[0],
-                              item.lat,
-                              item.lon,
-                            )
-                          }
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm"
-                        >
-                          {item.display_name}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               )}
             </div>
-            {user ? (
-              <button
-                onClick={() => {
-                  navigate(
-                    userRole === "admin" ? "/admin/dashboard" : "/dashboard",
-                  );
-                }}
-                className="flex justify-center items-start rounded-full py-1 px-3 bg-white text-black cursor-pointer"
-              >
-                <FiUser /> <span>Dashboard</span>
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  navigate(`/auth/${"login"}/${"customer"}`);
-                }}
-                className=" bg-white text-black border border-[#8B2954] shadow-md heading capitalize text-wrap text-center cursor-pointer flex justify-center items-center h-fit px-1 py-1 rounded-full text-xs"
-              >
-                Login / Register
-              </button>
-            )}
-          </div>
-        </AccordionCard>
+          </AccordionCard>
+        </div>
       </div>
     </header>
   );
