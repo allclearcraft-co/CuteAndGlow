@@ -12,6 +12,7 @@ import { FaExternalLinkAlt, FaHeart, FaShoppingCart } from "react-icons/fa";
 import InputBox from "./Input";
 import Button from "./Button";
 import { saveCoordinates } from "../utils/location-service";
+import { RiJewelryFill } from "react-icons/ri";
 
 const AccordionCard = ({ children, isScrolled }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -232,18 +233,18 @@ const Header = () => {
           <span
             className={`logo_style ${isScrolled ? " text-[#F3DB8F]" : "text-black"}`}
           >
-            Makeup <br />
+            Makeup <br className="block md:hidden"/>
             <span className="text-xs">by Cute & Glow</span>
           </span>
         </a>
-        <div className="flex justify-center items-center ">
+        <div className="flex justify-center items-center gap-10">
           <a
             href="https://cuteandglow.com"
             target="blank"
             className="heading capitalize text-wrap text-center cursor-pointer lg:flex justify-center items-center h-fit px-4 py-2 rounded-xl bg-[#8B2954] text-white hidden"
           >
             <h1 className="flex justify-center items-center gap-1 text-xs">
-              Cute and Glow <FaExternalLinkAlt />
+              Shop now <RiJewelryFill />
             </h1>
           </a>
 
