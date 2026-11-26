@@ -4,6 +4,7 @@ import { MdFavorite } from "react-icons/md";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { BiSolidShoppingBagAlt } from "react-icons/bi";
+import { RiJewelryFill } from "react-icons/ri";
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -18,9 +19,10 @@ const BottomNavigation = () => {
 
   const items = [
     {
-      label: "Cute & Glow",
-      image:
-        "https://ik.imagekit.io/cuteandglow/WhatsApp%20Image%202026-09-11%20at%208.26.34%20AM.jpeg",
+      label: "Shop now",
+      icon: <RiJewelryFill />,
+      // image:
+      //   "https://ik.imagekit.io/cuteandglow/WhatsApp%20Image%202026-09-11%20at%208.26.34%20AM.jpeg",
       link: "https://cuteandglow.com",
       target: "blank",
     },
@@ -30,17 +32,17 @@ const BottomNavigation = () => {
       url: "/",
     },
     { label: "Services", icon: <FaMagic />, url: "/services/all" },
-    {
-      label: "E-Com",
-      icon: <BiSolidShoppingBagAlt />,
-      url: "/e-commerce",
-    },
+    // {
+    //   label: "E-Com",
+    //   icon: <BiSolidShoppingBagAlt />,
+    //   url: "/e-commerce",
+    // },
     { label: "Favorite", icon: <MdFavorite />, url: "/customer/favorite" },
     { label: "Cart", icon: <IoIosCart />, url: "/cart" },
   ];
 
   return (
-    <div className="w-full lg:hidden fixed bottom-0 left-0 h-16 bg-neutral-100 grid grid-cols-6 place-items-center border-[0.1px] border-neutral-400">
+    <div className="w-full lg:hidden fixed bottom-0 left-0 h-16 bg-neutral-100 grid grid-cols-5 place-items-center border-[0.1px] border-neutral-400">
       {items.map((item, index) => (
         <a
           href={item.link}
