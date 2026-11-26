@@ -95,7 +95,7 @@ function Home() {
         <MobileServiceTags />
       </div>
       <div className="px-3 space-y-5 lg:px-10">
-        <Button
+        {/* <Button
           variant="secondary"
           className="w-full hidden lg:block"
           LabelName={
@@ -107,7 +107,7 @@ function Home() {
             </h1>
           }
           onClick={() => navigate("/e-commerce")}
-        />
+        /> */}
         <HomeBanner banners={homeBanners} />
       </div>
       <div className="flex flex-col justify-center items-center gap-5 px-2 w-full mt-10">
