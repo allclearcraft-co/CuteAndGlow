@@ -5,6 +5,7 @@ import Popup from "../../components/ui/Popup";
 import ExploreServices from "../../components/ExploreServices";
 import { useNavigate } from "react-router-dom";
 import { FaExternalLinkAlt } from "react-icons/fa";
+import { RiJewelryFill } from "react-icons/ri";
 
 function Landing() {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,7 +82,7 @@ function Landing() {
               className="heading capitalize text-wrap text-center cursor-pointer flex justify-center items-center h-fit px-4 py-2 rounded-xl bg-[#8B2954] text-white"
             >
               <h1 className="flex justify-center items-center gap-1 text-x">
-                Cute and Glow <FaExternalLinkAlt />
+                Shop now <RiJewelryFill />
               </h1>
             </a>
           </div>
